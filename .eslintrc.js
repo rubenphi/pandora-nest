@@ -20,9 +20,9 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-  },"overrides": [
+  },overrides: [
     {
-      "files": [ "src/**/*.js" ],
+      "files": [ "src/**/*.ts" ],
       "rules": {
         "quotes": [ 2, "single" ]
       }
