@@ -8,7 +8,7 @@ export class CursosService {
       id: '1',
       name: '901',
       exist: true,
-    }
+    },
   ];
 
   getCursos(): Curso[] {
@@ -25,7 +25,7 @@ export class CursosService {
     });
   }
   updateCurso(id: string, cursoI: any) {
-    let curso: Curso = this.getCurso(id);
+    const curso: Curso = this.getCurso(id);
     curso.exist = cursoI.exist;
     curso.name = cursoI.name;
     return curso;
@@ -33,7 +33,7 @@ export class CursosService {
 
   deleteCurso(id: string) {
     const index = this.cursos.findIndex((curso) => curso.id === id);
-    if (index >= 0) {    
+    if (index >= 0) {
       this.cursos.splice(index, 1);
     }
   }

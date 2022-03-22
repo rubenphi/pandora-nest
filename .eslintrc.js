@@ -20,5 +20,12 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-  },
+  },"overrides": [
+    {
+      "files": [ "src/**/*.js" ],
+      "rules": {
+        "quotes": [ 2, "single" ]
+      }
+    }
+  ]
 };
