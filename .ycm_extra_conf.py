@@ -15,7 +15,7 @@ flags = [
   '-isystem/usr/include/',
   ]
 
-SOURCE_EXTENSIONS = [ '.cpp', '.cxx', '.cc', '.c', ]
+SOURCE_EXTENSIONS = [ '.ts', '.js', '.json',]
 
 def FlagsForFile( filename, **kwargs ):
   return {
@@ -23,14 +23,6 @@ def FlagsForFile( filename, **kwargs ):
   'do_cache': True
   }
   
-SOURCE_EXTENSIONS = [
-        '.cpp',
-        '.cxx',
-        '.cc',
-        '.c',
-        '.m',
-        '.mm'
-        ]
 
 SOURCE_DIRECTORIES = [
         'src',
