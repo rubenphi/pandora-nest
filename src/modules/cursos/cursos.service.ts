@@ -1,42 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Repository } from 'typeorm';
+
 import { Curso } from './curso.entity';
 import { CreateCursoDto, UpdateCursoDto } from './dto';
 
 @Injectable()
 export class CursosService {
-	private cursos: Curso[] = [
-		{
-			id: '1',
-			name: '901',
-			exist: true,
-		},
-	];
+	constructor(private readonly cursoRepository: Repository<Curso>) {}
 
-	getCursos(): Curso[] {
-		return this.cursos;
+	async getCursos(): Promise<Curso[]> {
+		return await this.cursoRepository.find();
 	}
-	getCurso(id: string): Curso {
-		const curso = this.cursos.find((curso) => curso.id == id);
+	async getCurso(id: number): Promise<Curso> {
+		const curso = await this.cursoRepository.findOne({ where: { id: id } });
 		if (!curso) {
 			throw new NotFoundException('Curso no encontrado');
 		}
 		return curso;
 	}
-	createCurso(cursoDto: CreateCursoDto) {
-		this.cursos.push({
-			id: (Math.floor(Math.random() * 2000) + 1).toString(),
-			name: cursoDto.name,
-			exist: true,
-		});
+	async createCurso(cursoDto: CreateCursoDto) {
+		const curso = await this.cursoRepository.create(cursoDto);
+		return this.cursoRepository.save(curso);
 	}
-	updateCurso(id: string, cursoDto: UpdateCursoDto) {
-		const curso: Curso = this.getCurso(id);
+	async updateCurso(id: number, cursoDto: UpdateCursoDto) {
+		const curso: Curso = await this.cursoRepository.preload({ id, cursoDto });
 		curso.exist = cursoDto.exist;
 		curso.name = cursoDto.name;
 		return curso;
 	}
 
-	deleteCurso(id: string) {
+	deleteCurso(id: number) {
 		const index = this.cursos.findIndex((curso) => curso.id === id);
 		if (index >= 0) {
 			this.cursos.splice(index, 1);

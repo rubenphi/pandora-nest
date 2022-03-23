@@ -19,7 +19,7 @@ export class CursosController {
 		return this.cursoService.getCursos();
 	}
 	@Get(':id')
-	getCurso(@Param('id') id: string): Curso {
+	getCurso(@Param('id') id: number): Curso {
 		return this.cursoService.getCurso(id);
 	}
 
@@ -30,11 +30,11 @@ export class CursosController {
 	}
 
 	@Patch(':id')
-	updateCurso(@Param('id') id: string, @Body() curso: UpdateCursoDto): Curso {
+	updateCurso(@Param('id') id: number, @Body() curso: UpdateCursoDto): Curso {
 		return this.cursoService.updateCurso(id, curso);
 	}
 	@Delete(':id')
-	deleteCurso(@Param('id') id: string): void {
+	deleteCurso(@Param('id') id: number): void {
 		return this.cursoService.deleteCurso(id);
 	}
 }
