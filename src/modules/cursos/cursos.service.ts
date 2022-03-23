@@ -6,7 +6,7 @@ import { CreateCursoDto, UpdateCursoDto } from './dto';
 
 @Injectable()
 export class CursosService {
-	constructor(private readonly cursoRepository: Repository<Curso>) {}
+	constructor(private readonly cursoRepository: Repository<Curso>) { }
 
 	async getCursos(): Promise<Curso[]> {
 		return await this.cursoRepository.find();
@@ -23,9 +23,13 @@ export class CursosService {
 		return this.cursoRepository.save(curso);
 	}
 	async updateCurso(id: number, cursoDto: UpdateCursoDto) {
-		const curso: Curso = await this.cursoRepository.preload({ id, cursoDto });
-		curso.exist = cursoDto.exist;
-		curso.name = cursoDto.name;
+		const { name, exist } = cursoDto;
+		const curso: Curso = await this.cursoRepository.preload({
+			id,
+			name,
+			exist,
+		});
+
 		return curso;
 	}
 
