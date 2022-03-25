@@ -13,7 +13,7 @@ export class CursosService {
 	) {}
 
 	async getCursos(): Promise<Curso[]> {
-		return await this.cursoRepository.find({ relations: ['grupos'] });
+		return await this.cursoRepository.find();
 	}
 	async getCurso(id: number): Promise<Curso> {
 		const curso: Curso = await this.cursoRepository.findOne({
@@ -30,11 +30,10 @@ export class CursosService {
 		return this.cursoRepository.save(curso);
 	}
 	async updateCurso(id: number, cursoDto: UpdateCursoDto): Promise<Curso> {
-		const { name, exist } = cursoDto;
 		const curso: Curso = await this.cursoRepository.preload({
-			id,
-			name,
-			exist,
+			id: id,
+			name: cursoDto.name,
+			exist: cursoDto.exist,
 		});
 		if (!curso) {
 			throw new NotFoundException('El curso que deseas actualizar no existe');

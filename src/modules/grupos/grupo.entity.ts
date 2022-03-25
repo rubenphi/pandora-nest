@@ -15,10 +15,12 @@ export class Grupo {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 	@Column({ nullable: false })
-	nombre: string;
+	name: string;
 	@ManyToOne(() => Curso, (curso) => curso.grupos, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'curso_id' })
 	curso: Curso;
+	@Column({ nullable: false })
+	exist: boolean;
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()
