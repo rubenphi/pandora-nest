@@ -4,7 +4,7 @@ export class CreateGrupoDto {
 	@IsString()
 	readonly name: string;
 	@IsInt()
-	readonly curso_id: number;
+	readonly curso: number;
 	@IsBoolean()
 	readonly exist: boolean;
 }

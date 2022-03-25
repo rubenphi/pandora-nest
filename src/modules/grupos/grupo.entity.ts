@@ -16,7 +16,7 @@ export class Grupo {
 	id: number;
 	@Column({ nullable: false })
 	nombre: string;
-	@ManyToOne(() => Curso, (curso) => curso.grupos, { cascade: true })
+	@ManyToOne(() => Curso, (curso) => curso.grupos, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'curso_id' })
 	curso: Curso;
 	@CreateDateColumn()
