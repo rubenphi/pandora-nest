@@ -16,7 +16,7 @@ export class GruposService {
 	) {}
 
 	async getGrupos(): Promise<Grupo[]> {
-		return await this.grupoRepository.find({ relations: ['curso'] });
+		return await this.grupoRepository.find();
 	}
 	async getGrupo(id: number): Promise<Grupo> {
 		const grupo: Grupo = await this.grupoRepository.findOne({
