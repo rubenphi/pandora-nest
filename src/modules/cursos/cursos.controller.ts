@@ -15,26 +15,28 @@ import { CreateCursoDto, UpdateCursoDto } from './dto';
 export class CursosController {
 	constructor(private readonly cursoService: CursosService) {}
 	@Get()
-	getCursos(): Curso[] {
+	getCursos(): Promise<Curso[]> {
 		return this.cursoService.getCursos();
 	}
 	@Get(':id')
-	getCurso(@Param('id') id: number): Curso {
+	getCurso(@Param('id') id: number): Promise<Curso> {
 		return this.cursoService.getCurso(id);
 	}
 
 	@Post()
-	createCurso(@Body() curso: CreateCursoDto): void {
-		console.log(curso instanceof CreateCursoDto);
+	createCurso(@Body() curso: CreateCursoDto): Promise<Curso> {
 		return this.cursoService.createCurso(curso);
 	}
 
 	@Patch(':id')
-	updateCurso(@Param('id') id: number, @Body() curso: UpdateCursoDto): Curso {
+	updateCurso(
+		@Param('id') id: number,
+		@Body() curso: UpdateCursoDto,
+	): Promise<Curso> {
 		return this.cursoService.updateCurso(id, curso);
 	}
 	@Delete(':id')
-	deleteCurso(@Param('id') id: number): void {
+	deleteCurso(@Param('id') id: number): Promise<void> {
 		return this.cursoService.deleteCurso(id);
 	}
 }

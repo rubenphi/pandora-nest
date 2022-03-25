@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CursosModule } from './modules/cursos/cursos.module';
+import { GruposModule } from './modules/grupos/grupos.module';
 
 @Module({
 	imports: [
 		CursosModule,
 		TypeOrmModule.forRoot({
 			type: 'postgres',
-			host: 'localhost',
+			host: '127.0.0.1',
 			port: 5432,
 			username: 'ruben',
 			password: 'japon93',
@@ -15,6 +16,7 @@ import { CursosModule } from './modules/cursos/cursos.module';
 			autoLoadEntities: true,
 			synchronize: true,
 		}),
+		GruposModule,
 	],
 })
 export class AppModule {}
