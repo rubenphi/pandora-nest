@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CursosModule } from './modules/cursos/cursos.module';
 import { GruposModule } from './modules/grupos/grupos.module';
 import { CuestionariosModule } from './modules/cuestionarios/cuestionarios.module';
+import { PreguntasModule } from './modules/preguntas/preguntas.module';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { CuestionariosModule } from './modules/cuestionarios/cuestionarios.modul
 		}),
 		GruposModule,
 		CuestionariosModule,
+		PreguntasModule,
 	],
 })
 export class AppModule {}

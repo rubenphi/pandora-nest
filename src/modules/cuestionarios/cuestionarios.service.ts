@@ -16,7 +16,7 @@ export class CuestionariosService {
 	) {}
 
 	async getCuestionarios(): Promise<Cuestionario[]> {
-		return await this.cuestionarioRepository.find();
+		return await this.cuestionarioRepository.find({ relations: ['curso'] });
 	}
 	async getCuestionario(id: number): Promise<Cuestionario> {
 		const cuestionario: Cuestionario =
@@ -67,13 +67,16 @@ export class CuestionariosService {
 		}
 		return cuestionario;
 	}
- 
+
 	async deleteCuestionario(id: number): Promise<void> {
-		const cuestionario: Cuestionario = await this.cuestionarioRepository.findOne({
-			where: { id: id },
-		});
+		const cuestionario: Cuestionario =
+			await this.cuestionarioRepository.findOne({
+				where: { id: id },
+			});
 		if (!cuestionario) {
-			throw new NotFoundException('El cuestionario que deseas eliminar no existe');
+			throw new NotFoundException(
+				'El cuestionario que deseas eliminar no existe',
+			);
 		}
 		this.cuestionarioRepository.remove(cuestionario);
 	}
