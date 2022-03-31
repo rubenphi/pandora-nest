@@ -23,6 +23,8 @@ export class Pregunta {
 	})
 	@JoinColumn({ name: 'cuestionario_id' })
 	cuestionario: Cuestionario;
+	@Column({ nullable: false })
+	valor: number;
 	@Column()
 	photo: string;
 	@Column({ nullable: false })
