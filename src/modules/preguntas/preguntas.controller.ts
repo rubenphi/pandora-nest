@@ -11,6 +11,9 @@ import {
 } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { v4 as uuid } from 'uuid';
+import { extname } from 'path';
+
 
 import { Pregunta } from './pregunta.entity';
 import { PreguntasService } from './preguntas.service';
@@ -32,9 +35,9 @@ export class PreguntasController {
 	@UseInterceptors(
 		FileInterceptor('file', {
 			storage: diskStorage({
-				destination: './uploadas',
+				destination: './uploads',
 				filename: function (req, file, cb) {
-					cb(null, file.originalname + '_' + Date.now());
+					cb(null, `${uuid()}${extname(file.originalname)}`);
 				},
 			}),
 		}),
@@ -43,7 +46,7 @@ export class PreguntasController {
 		@Body() pregunta: CreatePreguntaDto,
 		@UploadedFile() file: Express.Multer.File,
 	): Promise<Pregunta> {
-		pregunta.photo = file.filename;
+		pregunta.photo = '/uploads/' + file.filename;
 		return this.preguntaService.createPregunta(pregunta);
 	}
 
