@@ -1,20 +1,26 @@
-import { IsString, IsInt, IsBoolean, IsOptional } from 'class-validator';
+import {
+	IsNotEmpty,
+	IsString,
+	IsInt,
+	IsBoolean,
+	IsOptional,
+} from 'class-validator';
 
 export class CreatePreguntaDto {
 	@IsString()
 	readonly titulo: string;
 	@IsString()
 	readonly enunciado: string;
-	@IsInt()
+	@IsNotEmpty()
 	readonly valor: number;
 	@IsOptional()
-	readonly photo?: string;
-	@IsBoolean()
+	photo?: string;
+	@IsNotEmpty()
 	readonly visible: boolean;
-	@IsBoolean()
+	@IsNotEmpty()
 	readonly disponible: boolean;
-	@IsInt()
+	@IsNotEmpty()
 	readonly cuestionario_id: number;
-	@IsBoolean()
+	@IsNotEmpty()
 	readonly exist: boolean;
 }

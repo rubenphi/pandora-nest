@@ -6,7 +6,12 @@ import {
 	Body,
 	Patch,
 	Delete,
+	UploadedFile,
+	UseInterceptors,
 } from '@nestjs/common';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import { Pregunta } from './pregunta.entity';
 import { PreguntasService } from './preguntas.service';
 import { CreatePreguntaDto, UpdatePreguntaDto } from './dto';
@@ -24,7 +29,21 @@ export class PreguntasController {
 	}
 
 	@Post()
-	createPregunta(@Body() pregunta: CreatePreguntaDto): Promise<Pregunta> {
+	@UseInterceptors(
+		FileInterceptor('file', {
+			storage: diskStorage({
+				destination: './uploadas',
+				filename: function (req, file, cb) {
+					cb(null, file.originalname + '_' + Date.now());
+				},
+			}),
+		}),
+	)
+	createPregunta(
+		@Body() pregunta: CreatePreguntaDto,
+		@UploadedFile() file: Express.Multer.File,
+	): Promise<Pregunta> {
+		pregunta.photo = file.filename;
 		return this.preguntaService.createPregunta(pregunta);
 	}
 
