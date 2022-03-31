@@ -1,26 +1,32 @@
+import { Type } from 'class-transformer';
 import {
-	IsNotEmpty,
 	IsString,
 	IsInt,
 	IsBoolean,
 	IsOptional,
 } from 'class-validator';
 
+
 export class CreatePreguntaDto {
 	@IsString()
 	readonly titulo: string;
 	@IsString()
 	readonly enunciado: string;
-	@IsNotEmpty()
+	@Type(() => Number)
+	@IsInt()
 	readonly valor: number;
 	@IsOptional()
 	photo?: string;
-	@IsNotEmpty()
+	@Type(() => Boolean)
+	@IsBoolean()
 	readonly visible: boolean;
-	@IsNotEmpty()
+	@Type(() => Boolean)
+	@IsBoolean()
 	readonly disponible: boolean;
-	@IsNotEmpty()
+	@Type(() => Number)
+	@IsInt()
 	readonly cuestionario_id: number;
-	@IsNotEmpty()
+	@Type(() => Boolean)
+	@IsBoolean()
 	readonly exist: boolean;
 }
