@@ -25,7 +25,7 @@ export class Pregunta {
 	cuestionario: Cuestionario;
 	@Column({ nullable: false })
 	valor: number;
-	@Column()
+	@Column({ nullable: true })
 	photo: string;
 	@Column({ nullable: false })
 	visible: boolean;
@@ -37,4 +37,5 @@ export class Pregunta {
 	createdAt: Date;
 	@UpdateDateColumn()
 	updatedAt: Date;
+	then: Pregunta | PromiseLike<Pregunta>;
 }
