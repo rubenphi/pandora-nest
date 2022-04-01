@@ -22,7 +22,7 @@ export class PreguntasService {
 	async getPregunta(id: number): Promise<Pregunta> {
 		const pregunta: Pregunta = await this.preguntaRepository.findOne({
 			where: { id: id },
-			relations: ['curso'],
+			relations: ['cuestionario'],
 		});
 		if (!pregunta) {
 			throw new NotFoundException('Pregunta no encontrada');
@@ -68,10 +68,10 @@ export class PreguntasService {
 		});
 		if (!pregunta) {
 			throw new NotFoundException('La pregunta que deseas actualizar no existe');
-		}else if(pregunta && !pregunta.photo) {
-			fs.unlinkSync(imageUrl);
+		}else if(pregunta && !pregunta.photo && imageUrl) {
+			 fs.unlinkSync(imageUrl);
 		}
-		return pregunta;
+		return this.preguntaRepository.save(pregunta);
 	}
 
 	async deletePregunta(id: number): Promise<void> {

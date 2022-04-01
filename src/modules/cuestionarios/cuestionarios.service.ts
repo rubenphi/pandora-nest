@@ -65,7 +65,7 @@ export class CuestionariosService {
 				'El cuestionario que deseas actualizar no existe',
 			);
 		}
-		return cuestionario;
+		return this.cuestionarioRepository.save(cuestionario);
 	}
 
 	async deleteCuestionario(id: number): Promise<void> {

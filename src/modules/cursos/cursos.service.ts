@@ -38,7 +38,7 @@ export class CursosService {
 		if (!curso) {
 			throw new NotFoundException('El curso que deseas actualizar no existe');
 		}
-		return curso;
+		return this.cursoRepository.save(curso);
 	}
 
 	async deleteCurso(id: number): Promise<void> {

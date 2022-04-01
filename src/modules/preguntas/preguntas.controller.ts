@@ -35,7 +35,7 @@ export class PreguntasController {
 	@Post()
 	@UseFilters(DeleteFileException)
 	@UseInterceptors(
-		FileInterceptor('file', {
+		FileInterceptor('photo', {
 			storage: diskStorage({
 				destination: './uploads',
 				filename: function (req, file, cb) {
@@ -59,7 +59,7 @@ export class PreguntasController {
 	@Patch(':id')
 	@UseFilters(DeleteFileException)
 	@UseInterceptors(
-		FileInterceptor('file', {
+		FileInterceptor('photo', {
 			storage: diskStorage({
 				destination: './uploads',
 				filename: function (req, file, cb) {
