@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as fs from 'fs';
 
 import { Pregunta } from './pregunta.entity';
 import { CreatePreguntaDto, UpdatePreguntaDto } from './dto';
@@ -24,7 +25,7 @@ export class PreguntasService {
 			relations: ['curso'],
 		});
 		if (!pregunta) {
-			throw new NotFoundException('Grupo no encontrado');
+			throw new NotFoundException('Pregunta no encontrada');
 		}
 		return pregunta;
 	}
@@ -53,6 +54,7 @@ export class PreguntasService {
 			await this.cuestionarioRepository.findOne({
 				where: { id: preguntaDto.cuestionario_id },
 			});
+		const imageUrl = await (await this.preguntaRepository.findOne( { where: {id: id} })).photo;
 		const pregunta: Pregunta = await this.preguntaRepository.preload({
 			id: id,
 			title: preguntaDto.titulo,
@@ -65,7 +67,9 @@ export class PreguntasService {
 			exist: preguntaDto.exist,
 		});
 		if (!pregunta) {
-			throw new NotFoundException('El grupo que deseas actualizar no existe');
+			throw new NotFoundException('La pregunta que deseas actualizar no existe');
+		}else if(pregunta && !pregunta.photo) {
+			fs.unlinkSync(imageUrl);
 		}
 		return pregunta;
 	}
@@ -75,7 +79,9 @@ export class PreguntasService {
 			where: { id: id },
 		});
 		if (!pregunta) {
-			throw new NotFoundException('El grupo que deseas eliminar no existe');
+			throw new NotFoundException('La pregunta que deseas eliminar no existe');
+		}else if(pregunta.photo) {
+			fs.unlinkSync(pregunta.photo);
 		}
 		this.preguntaRepository.remove(pregunta);
 	}

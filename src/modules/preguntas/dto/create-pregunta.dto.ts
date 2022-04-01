@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
 	IsString,
 	IsInt,
@@ -17,16 +17,22 @@ export class CreatePreguntaDto {
 	readonly valor: number;
 	@IsOptional()
 	photo?: string;
-	@Type(() => Boolean)
+	@Transform(({ value }) => {
+		return [true, 'enabled', 'true'].indexOf(value) > -1;
+	  })
 	@IsBoolean()
 	readonly visible: boolean;
-	@Type(() => Boolean)
+	@Transform(({ value }) => {
+		return [true, 'enabled', 'true'].indexOf(value) > -1;
+	  })
 	@IsBoolean()
 	readonly disponible: boolean;
 	@Type(() => Number)
 	@IsInt()
 	readonly cuestionario_id: number;
-	@Type(() => Boolean)
+	@Transform(({ value }) => {
+		return [true, 'enabled', 'true'].indexOf(value) > -1;
+	  })
 	@IsBoolean()
 	readonly exist: boolean;
 }
