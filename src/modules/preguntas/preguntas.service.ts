@@ -54,7 +54,9 @@ export class PreguntasService {
 			await this.cuestionarioRepository.findOne({
 				where: { id: preguntaDto.cuestionario_id },
 			});
-		const imageUrl = await (await this.preguntaRepository.findOne( { where: {id: id} })).photo;
+		const imageUrl = await (
+			await this.preguntaRepository.findOne({ where: { id: id } })
+		).photo;
 		const pregunta: Pregunta = await this.preguntaRepository.preload({
 			id: id,
 			title: preguntaDto.titulo,
@@ -67,9 +69,11 @@ export class PreguntasService {
 			exist: preguntaDto.exist,
 		});
 		if (!pregunta) {
-			throw new NotFoundException('La pregunta que deseas actualizar no existe');
-		}else if(pregunta && !pregunta.photo && imageUrl) {
-			 fs.unlinkSync(imageUrl);
+			throw new NotFoundException(
+				'La pregunta que deseas actualizar no existe',
+			);
+		} else if (pregunta && !pregunta.photo && imageUrl) {
+			fs.unlinkSync(imageUrl);
 		}
 		return this.preguntaRepository.save(pregunta);
 	}
@@ -80,7 +84,7 @@ export class PreguntasService {
 		});
 		if (!pregunta) {
 			throw new NotFoundException('La pregunta que deseas eliminar no existe');
-		}else if(pregunta.photo) {
+		} else if (pregunta.photo) {
 			fs.unlinkSync(pregunta.photo);
 		}
 		this.preguntaRepository.remove(pregunta);

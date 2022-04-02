@@ -52,7 +52,7 @@ export class GruposService {
 		if (!grupo) {
 			throw new NotFoundException('El grupo que deseas actualizar no existe');
 		}
-		return grupo;
+		return this.grupoRepository.save(grupo);
 	}
 
 	async deleteGrupo(id: number): Promise<void> {
