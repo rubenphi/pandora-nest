@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CursosModule } from './modules/cursos/cursos.module';
-import { GruposModule } from './modules/grupos/grupos.module';
-import { CuestionariosModule } from './modules/cuestionarios/cuestionarios.module';
-import { PreguntasModule } from './modules/preguntas/preguntas.module';
+import { CoursesModule } from './modules/courses/courses.module';
+import { GroupsModule } from './modules/groups/groups.module';
+import { LessonsModule } from './modules/lessons/lessons.module';
+import { QuestionsModule } from './modules/questions/questions.module';
 import { FilesController } from './modules/files/files.controller';
+import { FilesModule } from './modules/files/files.module';
+import { OptionsModule } from './modules/options/options.module';
+
 
 @Module({
 	imports: [
-		CursosModule,
 		TypeOrmModule.forRoot({
 			type: 'postgres',
 			host: '127.0.0.1',
@@ -19,10 +21,13 @@ import { FilesController } from './modules/files/files.controller';
 			autoLoadEntities: true,
 			synchronize: true,
 		}),
-		GruposModule,
-		CuestionariosModule,
-		PreguntasModule,
+		CoursesModule,
+		GroupsModule,
+		LessonsModule,
+		QuestionsModule,
+		FilesModule,
+		OptionsModule,
 	],
-	controllers: [FilesController],
+	controllers: [FilesController]
 })
 export class AppModule {}
