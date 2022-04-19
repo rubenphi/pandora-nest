@@ -6,9 +6,11 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinColumn,
+	OneToMany
 } from 'typeorm';
 
 import { Question } from 'src/modules/questions/question.entity';
+import { Answer } from 'src/modules/answers/answer.entity';
 
 @Entity()
 export class Option {
@@ -25,6 +27,8 @@ export class Option {
 	})
 	@JoinColumn({ name: 'question_id' })
 	question: Question;
+	@OneToMany(() => Answer, (answer) => answer.option)
+	answers: Answer[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

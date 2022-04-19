@@ -11,6 +11,8 @@ import {
 
 import { Course } from 'src/modules/courses/course.entity';
 import { Question } from 'src/modules/questions/question.entity';
+import { Answer } from 'src/modules/answers/answer.entity';
+
 
 @Entity()
 export class Lesson {
@@ -25,6 +27,8 @@ export class Lesson {
 	course: Course;
 	@OneToMany(() => Question, (question) => question.lesson)
 	questions: Question[];
+	@OneToMany(() => Answer, (answer) => answer.group)
+	answers: Answer[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

@@ -7,6 +7,9 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { FilesController } from './modules/files/files.controller';
 import { FilesModule } from './modules/files/files.module';
 import { OptionsModule } from './modules/options/options.module';
+import { AnswersController } from './modules/answers/answers.controller';
+import { AnswersService } from './modules/answers/answers.service';
+import { AnswersModule } from './modules/answers/answers.module';
 
 
 @Module({
@@ -27,7 +30,9 @@ import { OptionsModule } from './modules/options/options.module';
 		QuestionsModule,
 		FilesModule,
 		OptionsModule,
+		AnswersModule,
 	],
-	controllers: [FilesController]
+	controllers: [FilesController, AnswersController],
+	providers: [AnswersService]
 })
 export class AppModule {}
