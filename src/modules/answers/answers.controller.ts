@@ -13,7 +13,7 @@ import { CreateAnswerDto, UpdateAnswerDto } from './dto';
 
 @Controller('answers')
 export class AnswersController {
-    constructor(private readonly answerService: AnswersService) {}
+	constructor(private readonly answerService: AnswersService) {}
 	@Get()
 	getAnswers(): Promise<Answer[]> {
 		return this.answerService.getAnswers();

@@ -11,7 +11,6 @@ import { AnswersController } from './modules/answers/answers.controller';
 import { AnswersService } from './modules/answers/answers.service';
 import { AnswersModule } from './modules/answers/answers.module';
 
-
 @Module({
 	imports: [
 		TypeOrmModule.forRoot({
@@ -32,7 +31,5 @@ import { AnswersModule } from './modules/answers/answers.module';
 		OptionsModule,
 		AnswersModule,
 	],
-	controllers: [FilesController, AnswersController],
-	providers: [AnswersService]
 })
 export class AppModule {}
