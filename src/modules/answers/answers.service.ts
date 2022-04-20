@@ -29,11 +29,22 @@ export class AnswersService {
 			relations: ['option', 'question', 'group', 'lesson'],
 		});
 	}
+	async getAnswersByLesson(id: number): Promise<Answer[]> {
+		return await this.answerRepository.find({
+			where: {lesson_id : id},
+		});
+	}
+
 	async getAnswer(id: number): Promise<Answer> {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { id: id },
-				relations: ['option', 'question', 'group', 'lesson'],
+				relations: [
+					'option',
+					'question',
+					'group',
+					'lesson',
+				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
@@ -53,7 +64,9 @@ export class AnswersService {
 				where: { id: answerDto.question_id },
 			})
 			.catch(() => {
-				throw new NotFoundException('Question not found');
+				throw new NotFoundException(
+					'Question not found',
+				);
 			});
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
@@ -81,7 +94,10 @@ export class AnswersService {
 		});
 		return this.answerRepository.save(answer);
 	}
-	async updateAnswer(id: number, answerDto: UpdateAnswerDto): Promise<Answer> {
+	async updateAnswer(
+		id: number,
+		answerDto: UpdateAnswerDto,
+	): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.option_id },
@@ -94,7 +110,9 @@ export class AnswersService {
 				where: { id: answerDto.question_id },
 			})
 			.catch(() => {
-				throw new NotFoundException('Question not found');
+				throw new NotFoundException(
+					'Question not found',
+				);
 			});
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
