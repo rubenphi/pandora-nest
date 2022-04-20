@@ -42,16 +42,16 @@ export class AnswersService {
 	async createAnswer(answerDto: CreateAnswerDto): Promise<Answer> {
 		const option: Option = await this.optionRepository.findOneOrFail({
 			where: { id: answerDto.option_id },
-		}).catch((e)=>e);
+		}).catch(()=> {throw new NotFoundException('option not found')});
 		const question: Question = await this.questionRepository.findOneOrFail({
 			where: { id: answerDto.question_id },
-		}).catch((e)=>e);
+		}).catch(()=> {throw new NotFoundException('question not found')});
 		const group: Group = await this.groupRepository.findOneOrFail({
 			where: { id: answerDto.group_id },
-		}).catch((e)=>e);
+		}).catch(()=> {throw new NotFoundException('group not found')});
 		const lesson: Lesson = await this.lessonRepository.findOneOrFail({
 			where: { id: answerDto.lesson_id },
-		}).catch((e)=>e);
+		}).catch(()=> {throw new NotFoundException('lesson not found')});
 
 		const points: number = option.correct ? question.points : 0;
 		const answer: Answer = await this.answerRepository.create({
