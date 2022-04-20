@@ -30,9 +30,27 @@ export class AnswersService {
 		});
 	}
 	async getAnswersByLesson(id: number): Promise<Answer[]> {
-		return await this.answerRepository.find({
-			where: {lesson_id : id},
-		});
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				where: { id: id },
+				relations: ['answers'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
+		return lesson.answers;
+	}
+
+	async getAnswersByQuestion(id: number): Promise<Answer[]> {
+		const question: Question = await this.questionRepository
+			.findOneOrFail({
+				where: { id: id },
+				relations: ['answers'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Question not found');
+			});
+		return question.answers;
 	}
 
 	async getAnswer(id: number): Promise<Answer> {

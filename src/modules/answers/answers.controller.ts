@@ -23,6 +23,16 @@ export class AnswersController {
 		return this.answerService.getAnswer(id);
 	}
 
+	@Get('lesson/:id')
+	getAnswerByLesson(@Param('id') id: number): Promise<Answer[]> {
+		return this.answerService.getAnswersByLesson(id);
+	}
+
+	@Get('question/:id')
+	getAnswerByQuestion(@Param('id') id: number): Promise<Answer[]> {
+		return this.answerService.getAnswersByQuestion(id);
+	}
+
 	@Post()
 	createAnswer(@Body() answer: CreateAnswerDto): Promise<Answer> {
 		return this.answerService.createAnswer(answer);
