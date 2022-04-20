@@ -29,7 +29,19 @@ export class AnswersService {
 			relations: ['option', 'question', 'group', 'lesson'],
 		});
 	}
-	async getAnswersByLesson(id: number): Promise<any> {
+	async getAnswersByLesson(id: number): Promise<Answer[]> {
+		return await this.answerRepository
+			.find({
+				where: { lesson: { id: id} },relations: [
+					'option',
+					'question',
+					'group',
+					'lesson',
+				],
+			})
+	}
+
+	async getAnswersByLessonSum(id: number): Promise<any> {
 		const answers: Answer[] = await this.answerRepository
 			.find({
 				where: { lesson: { id: id} },relations: [
@@ -45,6 +57,7 @@ export class AnswersService {
 					res[value.id] = { group: value.group, points: 0};
 					suma.push(res[value.id])
 				}
+				res[value.id].points += value.points;
 				return res
 			})
 			return suma

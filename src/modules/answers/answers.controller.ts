@@ -28,6 +28,11 @@ export class AnswersController {
 		return this.answerService.getAnswersByLesson(id);
 	}
 
+	@Get('lesson/result/:id')
+	getAnswerByLessonSum(@Param('id') id: number): Promise<Answer[]> {
+		return this.answerService.getAnswersByLessonSum(id);
+	}
+
 	@Get('question/:id')
 	getAnswerByQuestion(@Param('id') id: number): Promise<Answer[]> {
 		return this.answerService.getAnswersByQuestion(id);
