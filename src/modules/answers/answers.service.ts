@@ -53,11 +53,11 @@ export class AnswersService {
 			})
 			const suma = [];
 			answers.reduce( (res, value) =>  {
-				if (!res[value.id]){
-					res[value.id] = { group: value.group, points: 0};
-					suma.push(res[value.id])
+				if (!res[value.group.id]){
+					res[value.group.id] = { group: value.group, points: 0};
+					suma.push(res[value.group.id])
 				}
-				res[value.id].points += value.points;
+				res[value.group.id].points += value.points;
 				return res
 			})
 			return suma
