@@ -23,18 +23,19 @@ export class OptionsService {
 		return await this.optionRepository.find({ relations: ['question'] });
 	}
 	async getOption(id: number): Promise<Option> {
-		const option: Option = await this.optionRepository.findOne({
-			where: { id: id },
-			relations: ['question'],
-		});
-		if (!option) {
-			throw new NotFoundException('Option not found');
-		}
+		const option: Option = await this.optionRepository
+			.findOneOrFail({
+				where: { id: id },
+				relations: ['question'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Option not found');
+			});
 		return option;
 	}
 	async createOption(optionDto: CreateOptionDto): Promise<Option> {
 		if (
-			await this.optionRepository.findOne({
+			await this.optionRepository.findOneOrFail({
 				where: { identifier: optionDto.identifier },
 			})
 		) {
@@ -43,15 +44,19 @@ export class OptionsService {
 			);
 		} else if (
 			optionDto.correct &&
-			(await this.optionRepository.findOne({ where: { correct: true } }))
+			(await this.optionRepository.findOneOrFail({ where: { correct: true } }))
 		) {
 			throw new BadRequestException(
 				'Cannot mark two answer options as correct',
 			);
 		}
-		const question: Question = await this.questionRepository.findOneOrFail({
-			where: { id: optionDto.question_id },
-		}).catch((e)=>e);
+		const question: Question = await this.questionRepository
+			.findOneOrFail({
+				where: { id: optionDto.question_id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Question not found');
+			});
 		const option: Option = await this.optionRepository.create({
 			sentence: optionDto.sentence,
 			correct: optionDto.correct,
@@ -63,7 +68,7 @@ export class OptionsService {
 	}
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
 		if (
-			await this.optionRepository.findOne({
+			await this.optionRepository.findOneOrFail({
 				where: { identifier: optionDto.identifier, id: Not(id) },
 			})
 		) {
@@ -72,7 +77,7 @@ export class OptionsService {
 			);
 		} else if (
 			optionDto.correct &&
-			(await this.optionRepository.findOne({
+			(await this.optionRepository.findOneOrFail({
 				where: { correct: true, id: Not(id) },
 			}))
 		) {
@@ -80,27 +85,30 @@ export class OptionsService {
 				'Cannot mark two answer options as correct',
 			);
 		}
-		const question: Question = await this.questionRepository.findOneOrFail({
-			where: { id: optionDto.question_id },
-		}).catch((e)=>e);
-		const option: Option = await this.optionRepository.preload({
-			id: id,
-			sentence: optionDto.sentence,
-			correct: optionDto.correct,
-			identifier: optionDto.identifier,
-			question: question,
-			exist: optionDto.exist,
-		});
-		if (!option) {
-			throw new NotFoundException(
-				'The option you want to update does not exist',
-			);
-		}
+		const question: Question = await this.questionRepository
+			.findOneOrFail({
+				where: { id: optionDto.question_id },
+			})
+			.catch((e) => e);
+		const option: Option = await this.optionRepository
+			.preload({
+				id: id,
+				sentence: optionDto.sentence,
+				correct: optionDto.correct,
+				identifier: optionDto.identifier,
+				question: question,
+				exist: optionDto.exist,
+			})
+			.catch(() => {
+				throw new NotFoundException(
+					'The option you want to update does not exist',
+				);
+			});
 		return this.optionRepository.save(option);
 	}
 
 	async deleteOption(id: number): Promise<void> {
-		const option: Option = await this.optionRepository.findOne({
+		const option: Option = await this.optionRepository.findOneOrFail({
 			where: { id: id },
 		});
 		if (!option) {

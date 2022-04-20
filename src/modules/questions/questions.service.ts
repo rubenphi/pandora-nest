@@ -20,20 +20,24 @@ export class QuestionsService {
 		return await this.questionRepository.find({ relations: ['lesson'] });
 	}
 	async getQuestion(id: number): Promise<Question> {
-		const question: Question = await this.questionRepository.findOne({
-			where: { id: id },
-			relations: ['lesson','options'],
-		});
-		if (!question) {
-			throw new NotFoundException('Question not found');
-		}
+		const question: Question = await this.questionRepository
+			.findOneOrFail({
+				where: { id: id },
+				relations: ['lesson', 'options'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Question not found');
+			});
 		return question;
 	}
 	async createQuestion(questionDto: CreateQuestionDto): Promise<Question> {
-		const lesson: Lesson =
-			await this.lessonRepository.findOneOrFail({
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
 				where: { id: questionDto.lesson_id },
-			}).catch((e)=>e);
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
 		const question: Question = await this.questionRepository.create({
 			title: questionDto.title,
 			sentence: questionDto.sentence,
@@ -50,12 +54,15 @@ export class QuestionsService {
 		id: number,
 		questionDto: UpdateQuestionDto,
 	): Promise<Question> {
-		const lesson: Lesson =
-			await this.lessonRepository.findOneOrFail({
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
 				where: { id: questionDto.lesson_id },
-			}).catch((e)=>e);
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
 		const imageUrl = await (
-			await this.questionRepository.findOne({ where: { id: id } })
+			await this.questionRepository.findOneOrFail({ where: { id: id } })
 		).photo;
 		const question: Question = await this.questionRepository.preload({
 			id: id,
@@ -79,12 +86,16 @@ export class QuestionsService {
 	}
 
 	async deleteQuestion(id: number): Promise<void> {
-		const question: Question = await this.questionRepository.findOne({
-			where: { id: id },
-		});
-		if (!question) {
-			throw new NotFoundException('The question you want to delete does not exist');
-		} else if (question.photo) {
+		const question: Question = await this.questionRepository
+			.findOneOrFail({
+				where: { id: id },
+			})
+			.catch(() => {
+				throw new NotFoundException(
+					'The question you want to delete does not exist',
+				);
+			});
+		if (question.photo) {
 			fs.unlinkSync(question.photo);
 		}
 		this.questionRepository.remove(question);

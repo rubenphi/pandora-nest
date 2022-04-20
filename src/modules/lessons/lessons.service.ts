@@ -19,47 +19,47 @@ export class LessonsService {
 		return await this.lessonRepository.find({ relations: ['course'] });
 	}
 	async getLesson(id: number): Promise<Lesson> {
-		const lesson: Lesson =
-			await this.lessonRepository.findOne({
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
 				where: { id: id },
 				relations: ['course'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
 			});
-		if (!lesson) {
-			throw new NotFoundException('Lesson not found');
-		}
 		return lesson;
 	}
-	async createLesson(
-		lessonDto: CreateLessonDto,
-	): Promise<Lesson> {
-		const course: Course = await this.courseRepository.findOneOrFail({
-			where: { id: lessonDto.course_id },
-		}).catch((e)=>e);
-		const lesson: Lesson = await this.lessonRepository.create(
-			{
-				theme: lessonDto.theme,
-				date: lessonDto.date,
-				course: course,
-				exist: lessonDto.exist,
-			},
-		);
+	async createLesson(lessonDto: CreateLessonDto): Promise<Lesson> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id: lessonDto.course_id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+		const lesson: Lesson = await this.lessonRepository.create({
+			theme: lessonDto.theme,
+			date: lessonDto.date,
+			course: course,
+			exist: lessonDto.exist,
+		});
 		return this.lessonRepository.save(lesson);
 	}
-	async updateLesson(
-		id: number,
-		lessonDto: UpdateLessonDto,
-	): Promise<Lesson> {
-		const course: Course = await this.courseRepository.findOneOrFail({
-			where: { id: lessonDto.course_id },
-		}).catch((e)=>e);
-		const lesson: Lesson =
-			await this.lessonRepository.preload({
-				id: id,
-				theme: lessonDto.theme,
-				date: lessonDto.date,
-				course: course,
-				exist: lessonDto.exist,
+	async updateLesson(id: number, lessonDto: UpdateLessonDto): Promise<Lesson> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id: lessonDto.course_id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
 			});
+		const lesson: Lesson = await this.lessonRepository.preload({
+			id: id,
+			theme: lessonDto.theme,
+			date: lessonDto.date,
+			course: course,
+			exist: lessonDto.exist,
+		});
 		if (!lesson) {
 			throw new NotFoundException(
 				'The lesson you want to update does not exist',
@@ -69,15 +69,15 @@ export class LessonsService {
 	}
 
 	async deleteLesson(id: number): Promise<void> {
-		const lesson: Lesson =
-			await this.lessonRepository.findOne({
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
 				where: { id: id },
+			})
+			.catch(() => {
+				throw new NotFoundException(
+					'The lesson you want to delete does not exist',
+				);
 			});
-		if (!lesson) {
-			throw new NotFoundException(
-				'The lesson you want to delete does not exist',
-			);
-		}
 		this.lessonRepository.remove(lesson);
 	}
 }

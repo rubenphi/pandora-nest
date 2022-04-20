@@ -19,19 +19,24 @@ export class GroupsService {
 		return await this.groupRepository.find({ relations: ['course'] });
 	}
 	async getGroup(id: number): Promise<Group> {
-		const group: Group = await this.groupRepository.findOne({
-			where: { id: id },
-			relations: ['course'],
-		});
-		if (!group) {
-			throw new NotFoundException('Group not found');
-		}
+		const group: Group = await this.groupRepository
+			.findOneOrFail({
+				where: { id: id },
+				relations: ['course'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Group not found');
+			});
 		return group;
 	}
 	async createGroup(groupDto: CreateGroupDto): Promise<Group> {
-		const course: Course = await this.courseRepository.findOneOrFail({
-			where: { id: groupDto.course_id },
-		}).catch((e)=>e);
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id: groupDto.course_id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
 		const group: Group = await this.groupRepository.create({
 			name: groupDto.name,
 			course: course,
@@ -40,9 +45,13 @@ export class GroupsService {
 		return this.groupRepository.save(group);
 	}
 	async updateGroup(id: number, groupDto: UpdateGroupDto): Promise<Group> {
-		const course: Course = await this.courseRepository.findOneOrFail({
-			where: { id: groupDto.course_id },
-		}).catch((e)=>e);
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id: groupDto.course_id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
 		const group: Group = await this.groupRepository.preload({
 			id: id,
 			name: groupDto.name,
@@ -50,18 +59,23 @@ export class GroupsService {
 			exist: groupDto.exist,
 		});
 		if (!group) {
-			throw new NotFoundException('The group you want to update does not exist');
+			throw new NotFoundException(
+				'The group you want to update does not exist',
+			);
 		}
 		return this.groupRepository.save(group);
 	}
 
 	async deleteGroup(id: number): Promise<void> {
-		const group: Group = await this.groupRepository.findOne({
-			where: { id: id },
-		});
-		if (!group) {
-			throw new NotFoundException('The group you want to delete does not exist');
-		}
+		const group: Group = await this.groupRepository
+			.findOneOrFail({
+				where: { id: id },
+			})
+			.catch(() => {
+				throw new NotFoundException(
+					'The group you want to delete does not exist',
+				);
+			});
 		this.groupRepository.remove(group);
 	}
 }
