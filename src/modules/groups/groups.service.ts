@@ -29,9 +29,9 @@ export class GroupsService {
 		return group;
 	}
 	async createGroup(groupDto: CreateGroupDto): Promise<Group> {
-		const course: Course = await this.courseRepository.findOne({
+		const course: Course = await this.courseRepository.findOneOrFail({
 			where: { id: groupDto.course_id },
-		});
+		}).catch((e)=>e);
 		const group: Group = await this.groupRepository.create({
 			name: groupDto.name,
 			course: course,
@@ -40,9 +40,9 @@ export class GroupsService {
 		return this.groupRepository.save(group);
 	}
 	async updateGroup(id: number, groupDto: UpdateGroupDto): Promise<Group> {
-		const course: Course = await this.courseRepository.findOne({
+		const course: Course = await this.courseRepository.findOneOrFail({
 			where: { id: groupDto.course_id },
-		});
+		}).catch((e)=>e);
 		const group: Group = await this.groupRepository.preload({
 			id: id,
 			name: groupDto.name,

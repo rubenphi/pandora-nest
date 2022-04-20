@@ -32,9 +32,9 @@ export class LessonsService {
 	async createLesson(
 		lessonDto: CreateLessonDto,
 	): Promise<Lesson> {
-		const course: Course = await this.courseRepository.findOne({
+		const course: Course = await this.courseRepository.findOneOrFail({
 			where: { id: lessonDto.course_id },
-		});
+		}).catch((e)=>e);
 		const lesson: Lesson = await this.lessonRepository.create(
 			{
 				theme: lessonDto.theme,
@@ -49,9 +49,9 @@ export class LessonsService {
 		id: number,
 		lessonDto: UpdateLessonDto,
 	): Promise<Lesson> {
-		const course: Course = await this.courseRepository.findOne({
+		const course: Course = await this.courseRepository.findOneOrFail({
 			where: { id: lessonDto.course_id },
-		});
+		}).catch((e)=>e);
 		const lesson: Lesson =
 			await this.lessonRepository.preload({
 				id: id,

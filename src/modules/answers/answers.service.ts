@@ -8,7 +8,7 @@ import { Option } from '../options/option.entity';
 import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
 import { Lesson } from '../lessons/lesson.entity';
-import { OptionsService } from '../options/options.service';
+
 @Injectable()
 export class AnswersService {
 	constructor(
@@ -40,18 +40,18 @@ export class AnswersService {
 		return answer;
 	}
 	async createAnswer(answerDto: CreateAnswerDto): Promise<Answer> {
-		const option: Option = await this.optionRepository.findOne({
+		const option: Option = await this.optionRepository.findOneOrFail({
 			where: { id: answerDto.option_id },
-		});
-		const question: Question = await this.questionRepository.findOne({
+		}).catch((e)=>e);
+		const question: Question = await this.questionRepository.findOneOrFail({
 			where: { id: answerDto.question_id },
-		});
-		const group: Group = await this.groupRepository.findOne({
+		}).catch((e)=>e);
+		const group: Group = await this.groupRepository.findOneOrFail({
 			where: { id: answerDto.group_id },
-		});
-		const lesson: Lesson = await this.lessonRepository.findOne({
+		}).catch((e)=>e);
+		const lesson: Lesson = await this.lessonRepository.findOneOrFail({
 			where: { id: answerDto.lesson_id },
-		});
+		}).catch((e)=>e);
 
 		const points: number = option.correct ? question.points : 0;
 		const answer: Answer = await this.answerRepository.create({
@@ -65,18 +65,18 @@ export class AnswersService {
 		return this.answerRepository.save(answer);
 	}
 	async updateAnswer(id: number, answerDto: UpdateAnswerDto): Promise<Answer> {
-		const option: Option = await this.optionRepository.findOne({
+		const option: Option = await this.optionRepository.findOneOrFail({
 			where: { id: answerDto.option_id },
-		});
-		const question: Question = await this.questionRepository.findOne({
+		}).catch((e)=>e);
+		const question: Question = await this.questionRepository.findOneOrFail({
 			where: { id: answerDto.question_id },
-		});
-		const group: Group = await this.groupRepository.findOne({
+		}).catch((e)=>e);
+		const group: Group = await this.groupRepository.findOneOrFail({
 			where: { id: answerDto.group_id },
-		});
-		const lesson: Lesson = await this.lessonRepository.findOne({
+		}).catch((e)=>e);
+		const lesson: Lesson = await this.lessonRepository.findOneOrFail({
 			where: { id: answerDto.lesson_id },
-		});
+		}).catch((e)=>e);
 
 		const answer: Answer = await this.answerRepository.preload({
 			id: id,

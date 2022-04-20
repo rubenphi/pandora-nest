@@ -31,9 +31,9 @@ export class QuestionsService {
 	}
 	async createQuestion(questionDto: CreateQuestionDto): Promise<Question> {
 		const lesson: Lesson =
-			await this.lessonRepository.findOne({
+			await this.lessonRepository.findOneOrFail({
 				where: { id: questionDto.lesson_id },
-			});
+			}).catch((e)=>e);
 		const question: Question = await this.questionRepository.create({
 			title: questionDto.title,
 			sentence: questionDto.sentence,
@@ -51,9 +51,9 @@ export class QuestionsService {
 		questionDto: UpdateQuestionDto,
 	): Promise<Question> {
 		const lesson: Lesson =
-			await this.lessonRepository.findOne({
+			await this.lessonRepository.findOneOrFail({
 				where: { id: questionDto.lesson_id },
-			});
+			}).catch((e)=>e);
 		const imageUrl = await (
 			await this.questionRepository.findOne({ where: { id: id } })
 		).photo;

@@ -49,9 +49,9 @@ export class OptionsService {
 				'Cannot mark two answer options as correct',
 			);
 		}
-		const question: Question = await this.questionRepository.findOne({
+		const question: Question = await this.questionRepository.findOneOrFail({
 			where: { id: optionDto.question_id },
-		});
+		}).catch((e)=>e);
 		const option: Option = await this.optionRepository.create({
 			sentence: optionDto.sentence,
 			correct: optionDto.correct,
@@ -80,9 +80,9 @@ export class OptionsService {
 				'Cannot mark two answer options as correct',
 			);
 		}
-		const question: Question = await this.questionRepository.findOne({
+		const question: Question = await this.questionRepository.findOneOrFail({
 			where: { id: optionDto.question_id },
-		});
+		}).catch((e)=>e);
 		const option: Option = await this.optionRepository.preload({
 			id: id,
 			sentence: optionDto.sentence,
