@@ -30,7 +30,7 @@ export class Answer {
 	@ManyToOne(() => Lesson, (lesson) => lesson.answers, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'lesson_id' })
 	lesson: Lesson;
-	@Column({ nullable: false })
+	@Column({ nullable: false, type: 'decimal' , precision: 50, scale: 2, default: 0.0  })
 	points:  number;
 	@Column({ nullable: false })
 	exist: boolean;

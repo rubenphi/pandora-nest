@@ -38,6 +38,11 @@ export class AnswersController {
 		return this.answerService.getAnswersByQuestion(id);
 	}
 
+	@Get('question/bonus/:id')
+	bonusToAnswer(@Param('id') id: number): Promise<Answer[]> {
+		return this.answerService.bonusToAnswer(id);
+	}
+
 	@Post()
 	createAnswer(@Body() answer: CreateAnswerDto): Promise<Answer> {
 		return this.answerService.createAnswer(answer);

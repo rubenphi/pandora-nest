@@ -41,6 +41,48 @@ export class AnswersService {
 			})
 	}
 
+	async bonusToAnswer(id: number): Promise<any> {
+		const option: Option = await this.optionRepository
+			.findOneOrFail({
+				where: { question: { id: id},
+			correct: true
+			}
+			})
+			.catch(() => {
+				throw new NotFoundException('Option not found');
+			});
+
+			const answer: Answer = await this.answerRepository
+			.findOneOrFail({
+				where: { question: {id :id}, option:{ id: option.id},
+				
+			},
+			order: { id: 'ASC' }
+			})
+			.catch(() => {
+				throw new NotFoundException('Answer not found');
+			});
+
+			
+			const answerUpdated: Answer = await this.answerRepository.preload({
+				id: id,
+				option: answer.option,
+				question: answer.question,
+				group: answer.group,
+				lesson: answer.lesson,
+				points: answer.points * 1.5,
+				exist: answer.exist,
+			});
+			if (!answer) {
+				throw new NotFoundException(
+					'The answer you want to update does not exist',
+				);
+			}
+			return this.answerRepository.save(answerUpdated);
+			
+
+	}
+
 	async getAnswersByLessonSum(id: number): Promise<any> {
 		const answers: Answer[] = await this.answerRepository
 			.find({
@@ -50,8 +92,8 @@ export class AnswersService {
 					'group',
 					'lesson',
 				],
-			})
-			const suma = [];
+			}).catch(() => {throw new NotFoundException('Lesson not found');})
+			const suma = [];	
 			answers.reduce( (res, value) =>  {
 				if (!res[value.group.id]){
 					res[value.group.id] = { group: value.group, points: 0};
@@ -59,8 +101,8 @@ export class AnswersService {
 				}
 				res[value.group.id].points += value.points;
 				return res
-			})
-			return suma
+			},{})
+			return suma.sort(((a,b)=> b.points - a.points))
 	}
 
 	async getAnswersByQuestion(id: number): Promise<Answer[]> {
