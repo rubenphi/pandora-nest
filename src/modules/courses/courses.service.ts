@@ -3,13 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Course } from './course.entity';
-import { CreateCourseDto, UpdateCourseDto } from './dto';
+import { Area } from '../areas/area.entity';
+import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto } from './dto';
 
 @Injectable()
 export class CoursesService {
 	constructor(
 		@InjectRepository(Course)
 		private readonly courseRepository: Repository<Course>,
+		@InjectRepository(Area)
+		private readonly areaRepository: Repository<Area>,
 	) {}
 
 	async getCourses(): Promise<Course[]> {
@@ -19,7 +22,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id: id },
-				relations: ['groups'],
+				relations: ['groups','areas'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -56,5 +59,44 @@ export class CoursesService {
 				);
 			});
 		this.courseRepository.remove(course);
+	}
+
+	async addAreaToCourse(courseArea: AddAreaToCourseDto): Promise<Course> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id: courseArea.courseId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		const area: Area = await this.areaRepository
+			.findOneOrFail({
+				where: { id: courseArea.areaId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Area not found');
+			});
+
+		course.areas = [area];
+
+		return this.courseRepository.save(course);
+	}
+
+	async deleteAreaToCourse(courseArea: DeleteAreaFromCourseDto): Promise<any> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id: courseArea.courseId },
+				relations: ['groups','areas'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		course.areas = course.areas.filter( area => { 
+			return area.id !== courseArea.areaId
+		 });
+
+		return this.courseRepository.save(course);
 	}
 }

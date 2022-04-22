@@ -65,14 +65,17 @@ export class AnswersService {
 
 			
 			const answerUpdated: Answer = await this.answerRepository.preload({
-				id: id,
-				option: answer.option,
-				question: answer.question,
-				group: answer.group,
-				lesson: answer.lesson,
+				id: answer.id,
 				points: answer.points * 1.5,
-				exist: answer.exist,
 			});
+
+			const questionUpdated: Question = await this.questionRepository.preload({
+				id: id,
+				available: false,
+			});
+			this.questionRepository.save(questionUpdated)
+
+			
 			if (!answer) {
 				throw new NotFoundException(
 					'The answer you want to update does not exist',
@@ -171,11 +174,11 @@ export class AnswersService {
 
 		const points: number = option.correct ? question.points : 0;
 		const answer: Answer = await this.answerRepository.create({
-			option: option,
-			question: question,
-			group: group,
-			lesson: lesson,
-			points: points,
+		   	option,
+			question,
+			group,
+			lesson,
+			points,
 			exist: answerDto.exist,
 		});
 		return this.answerRepository.save(answer);
@@ -217,10 +220,10 @@ export class AnswersService {
 
 		const answer: Answer = await this.answerRepository.preload({
 			id: id,
-			option: option,
-			question: question,
-			group: group,
-			lesson: lesson,
+		    option,
+			question,
+			group,
+			lesson,
 			points: answerDto.points,
 			exist: answerDto.exist,
 		});

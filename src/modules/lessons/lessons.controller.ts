@@ -20,6 +20,17 @@ export class LessonsController {
 	getLessons(): Promise<Lesson[]> {
 		return this.lessonService.getLessons();
 	}
+
+	@Get('course/:id')
+	getLessonsByCourse(@Param('id') id: number): Promise<Lesson[]> {
+		return this.lessonService.getLessonsByCourse(id);
+	}
+
+	@Get('course/:course_id/area/:area_id')
+	getLessonsByCourseAndArea(@Param('course_id') courseId: number, @Param('area_id') areaId: number): Promise<Lesson[]> {
+		return this.lessonService.getLessonsByCourseAndArea(courseId, areaId);
+	}
+
 	@Get(':id')
 	getLesson(@Param('id') id: number): Promise<Lesson> {
 		return this.lessonService.getLesson(id);

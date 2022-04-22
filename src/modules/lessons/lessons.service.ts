@@ -18,6 +18,15 @@ export class LessonsService {
 	async getLessons(): Promise<Lesson[]> {
 		return await this.lessonRepository.find({ relations: ['course'] });
 	}
+
+	async getLessonsByCourse(id: number): Promise<Lesson[]> {
+		return await this.lessonRepository.find({ where: {course: {id: id}}, relations: ['course'] });
+	}
+
+	async getLessonsByCourseAndArea(courseId: number, areaId: number): Promise<Lesson[]> {
+		return await this.lessonRepository.find({ where: {course: {id: courseId}, area: {id: areaId}}, relations: ['course'] });
+	}
+
 	async getLesson(id: number): Promise<Lesson> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
@@ -40,7 +49,7 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository.create({
 			theme: lessonDto.theme,
 			date: lessonDto.date,
-			course: course,
+			course,
 			exist: lessonDto.exist,
 		});
 		return this.lessonRepository.save(lesson);
@@ -57,7 +66,7 @@ export class LessonsService {
 			id: id,
 			theme: lessonDto.theme,
 			date: lessonDto.date,
-			course: course,
+			course,
 			exist: lessonDto.exist,
 		});
 		if (!lesson) {

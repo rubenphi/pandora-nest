@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Course } from './course.entity';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto, UpdateCourseDto } from './dto';
+import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto } from './dto';
 
 @Controller('courses')
 export class CoursesController {
@@ -26,6 +26,16 @@ export class CoursesController {
 	@Post()
 	createCourse(@Body() course: CreateCourseDto): Promise<Course> {
 		return this.courseService.createCourse(course);
+	}
+
+	@Post('add/area')
+	addAreaToCourse(@Body() courseArea: AddAreaToCourseDto): Promise<any> {
+		return this.courseService.addAreaToCourse(courseArea);
+	}
+
+	@Post('delete/area')
+	deleteAreaToCourse(@Body() courseArea: DeleteAreaFromCourseDto): Promise<any> {
+		return this.courseService.deleteAreaToCourse(courseArea);
 	}
 
 	@Patch(':id')
