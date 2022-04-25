@@ -86,28 +86,6 @@ export class AnswersService {
 
 	}
 
-	async getAnswersByLessonSum(id: number): Promise<any> {
-		const answers: Answer[] = await this.answerRepository
-			.find({
-				where: { lesson: { id: id} },relations: [
-					'option',
-					'question',
-					'group',
-					'lesson',
-				],
-			}).catch(() => {throw new NotFoundException('Lesson not found');})
-			const suma = [];	
-			answers.reduce( (res, value) =>  {
-				if (!res[value.group.id]){
-					res[value.group.id] = { group: value.group, points: 0};
-					suma.push(res[value.group.id])
-				}
-				res[value.group.id].points += value.points;
-				return res
-			},{})
-			return suma.sort(((a,b)=> b.points - a.points))
-	}
-
 	async getAnswersByQuestion(id: number): Promise<Answer[]> {
 		return await this.answerRepository
 			.find({
