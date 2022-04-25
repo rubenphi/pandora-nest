@@ -29,7 +29,7 @@ export class AnswersController {
 	}
 
 	@Get('lesson/result/:id')
-	getAnswerByLessonSum(@Param('id') id: number): Promise<Answer[]> {
+	getAnswerByLessonSum(@Param('id') id: number): Promise<any[]> {
 		return this.answerService.getAnswersByLessonSum(id);
 	}
 
