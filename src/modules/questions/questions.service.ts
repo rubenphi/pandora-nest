@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { Question } from './question.entity';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
 import { Lesson } from '../lessons/lesson.entity';
+import { Option } from '../options/option.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -22,7 +23,7 @@ export class QuestionsService {
 	async getQuestion(id: number): Promise<Question> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 				relations: ['lesson', 'options'],
 			})
 			.catch(() => {
@@ -33,10 +34,10 @@ export class QuestionsService {
 	async createQuestion(questionDto: CreateQuestionDto): Promise<Question> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id: questionDto.lesson_id },
+				where: { id: questionDto.lessonId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Lesson not found');
+				throw new NotFoundException('Question not found');
 			});
 		const question: Question = await this.questionRepository.create({
 			title: questionDto.title,
@@ -56,13 +57,13 @@ export class QuestionsService {
 	): Promise<Question> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id: questionDto.lesson_id },
+				where: { id: questionDto.lessonId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Lesson not found');
+				throw new NotFoundException('Question not found');
 			});
 		const imageUrl = await (
-			await this.questionRepository.findOneOrFail({ where: { id: id } })
+			await this.questionRepository.findOneOrFail({ where: { id } })
 		).photo;
 		const question: Question = await this.questionRepository.preload({
 			id: id,
@@ -88,7 +89,7 @@ export class QuestionsService {
 	async deleteQuestion(id: number): Promise<void> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException(
@@ -100,4 +101,14 @@ export class QuestionsService {
 		}
 		this.questionRepository.remove(question);
 	}
+
+	async getOptionsByQuestion(id): Promise<Option[]> {
+		const question: Question = await this.questionRepository.findOneOrFail({ relations: ['options'] , where: {id}}).catch(() => {
+			throw new NotFoundException(
+				'Question not found',
+			);
+		});
+		return question.options;
+	}
+
 }

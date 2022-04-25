@@ -18,7 +18,7 @@ export class AreasService {
 	async getArea(id: number): Promise<Area> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 				relations: ['course'],
 			})
 			.catch(() => {
@@ -52,7 +52,7 @@ export class AreasService {
 	async deleteArea(id: number): Promise<void> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException(

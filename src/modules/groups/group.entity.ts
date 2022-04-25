@@ -19,7 +19,7 @@ export class Group {
 	@Column({ nullable: false })
 	name: string;
 	@ManyToOne(() => Course, (course) => course.groups, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'course_id' })
+	@JoinColumn({ name: 'courseId' })
 	course: Course;
 	@OneToMany(() => Answer, (answer) => answer.group)
 	answers: Answer[];

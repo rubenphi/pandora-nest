@@ -25,7 +25,7 @@ export class Option {
 	@ManyToOne(() => Question, (question) => question.options, {
 		onDelete: 'CASCADE',
 	})
-	@JoinColumn({ name: 'question_id' })
+	@JoinColumn({ name: 'questionId' })
 	question: Question;
 	@OneToMany(() => Answer, (answer) => answer.option)
 	answers: Answer[];

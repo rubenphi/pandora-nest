@@ -8,7 +8,7 @@ export class CreateOptionDto {
 	@IsString()
 	readonly identifier: string;
 	@IsInt()
-	readonly question_id: number;
+	readonly questionId: number;
 	@IsBoolean()
 	readonly exist: boolean;
 }

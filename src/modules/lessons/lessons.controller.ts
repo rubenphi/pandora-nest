@@ -2,6 +2,7 @@ import {
 	Controller,
 	Get,
 	Param,
+	Query,
 	Post,
 	Body,
 	Patch,
@@ -9,7 +10,8 @@ import {
 } from '@nestjs/common';
 import { Lesson } from './lesson.entity';
 import { LessonsService } from './lessons.service';
-import { CreateLessonDto, UpdateLessonDto } from './dto';
+import { Answer } from '../answers/answer.entity';
+import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
 
 @Controller('lessons')
 
@@ -17,18 +19,13 @@ import { CreateLessonDto, UpdateLessonDto } from './dto';
 export class LessonsController {
     constructor(private readonly lessonService: LessonsService) {}
 	@Get()
-	getLessons(): Promise<Lesson[]> {
-		return this.lessonService.getLessons();
+	getLessons(@Query() queryLesson: QueryLessonDto ): Promise<Lesson[]> {
+		return this.lessonService.getLessons(queryLesson);
 	}
 
-	@Get('course/:id')
-	getLessonsByCourse(@Param('id') id: number): Promise<Lesson[]> {
-		return this.lessonService.getLessonsByCourse(id);
-	}
-
-	@Get('course/:course_id/area/:area_id')
-	getLessonsByCourseAndArea(@Param('course_id') courseId: number, @Param('area_id') areaId: number): Promise<Lesson[]> {
-		return this.lessonService.getLessonsByCourseAndArea(courseId, areaId);
+	@Get(':id/answers')
+	getAnswersByLesson(@Param('id') id: number): Promise<Answer[]> {
+		return this.lessonService.getAnswersByLesson(id);
 	}
 
 	@Get(':id')

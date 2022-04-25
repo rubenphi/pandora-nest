@@ -19,16 +19,16 @@ export class Answer {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 	@ManyToOne(() => Option, (option) => option.answers, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'option_id' })
+	@JoinColumn({ name: 'optionId' })
 	option: Option;
 	@ManyToOne(() => Question, (question) => question.answers, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'question_id' })
+	@JoinColumn({ name: 'questionId' })
 	question: Question;
 	@ManyToOne(() => Group, (group) => group.answers, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'group_id' })
+	@JoinColumn({ name: 'groupId' })
 	group: Group;
 	@ManyToOne(() => Lesson, (lesson) => lesson.answers, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'lesson_id' })
+	@JoinColumn({ name: 'lessonId' })
 	lesson: Lesson;
 	@Column({ nullable: false, type: 'decimal' , precision: 50, scale: 2, default: 0.0  })
 	points:  number;

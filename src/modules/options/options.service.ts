@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 
 import { Option } from './option.entity';
-import { CreateOptionDto, UpdateOptionDto } from './dto';
+import { CreateOptionDto, UpdateOptionDto, ImportOptionsDto } from './dto';
 import { Question } from '../questions/question.entity';
 
 @Injectable()
@@ -22,10 +22,11 @@ export class OptionsService {
 	async getOptions(): Promise<Option[]> {
 		return await this.optionRepository.find({ relations: ['question'] });
 	}
+
 	async getOption(id: number): Promise<Option> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 				relations: ['question'],
 			})
 			.catch(() => {
@@ -52,7 +53,7 @@ export class OptionsService {
 		}
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: optionDto.question_id },
+				where: { id: optionDto.questionId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
@@ -65,6 +66,10 @@ export class OptionsService {
 			exist: optionDto.exist,
 		});
 		return this.optionRepository.save(option);
+	}
+	async importOptions(importOptionsDto: ImportOptionsDto): Promise<Option[]>{
+		const options = await this.optionRepository.find({ relations: ['question'] , where: {question: { id: importOptionsDto.from_question}}});
+		return
 	}
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
 		if (
@@ -87,7 +92,7 @@ export class OptionsService {
 		}
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: optionDto.question_id },
+				where: { id: optionDto.questionId },
 			})
 			.catch((e) => e);
 		const option: Option = await this.optionRepository
@@ -109,7 +114,7 @@ export class OptionsService {
 
 	async deleteOption(id: number): Promise<void> {
 		const option: Option = await this.optionRepository.findOneOrFail({
-			where: { id: id },
+			where: { id },
 		});
 		if (!option) {
 			throw new NotFoundException(

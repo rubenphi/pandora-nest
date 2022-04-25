@@ -1,8 +1,6 @@
-import { IsInt } from 'class-validator';
+import {  IsArray } from 'class-validator';
 
 export class DeleteAreaFromCourseDto {
-	@IsInt()
-	readonly courseId: number;
-	@IsInt()
-	readonly areaId: number;
+	@IsArray()
+	readonly areasId: number[];
 }

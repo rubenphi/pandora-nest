@@ -18,6 +18,7 @@ export class OptionsController {
 	getOptions(): Promise<Option[]> {
 		return this.optionService.getOptions();
 	}
+
 	@Get(':id')
 	getOption(@Param('id') id: number): Promise<Option> {
 		return this.optionService.getOption(id);

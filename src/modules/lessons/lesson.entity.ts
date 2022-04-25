@@ -24,10 +24,10 @@ export class Lesson {
 	@Column({ nullable: false })
 	date: Date;
 	@ManyToOne(() => Course, (course) => course.lessons, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'course_id' })
+	@JoinColumn({ name: 'courseId' })
 	course: Course;
 	@ManyToOne(() => Area, (area) => area.lessons, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'area_id' })
+	@JoinColumn({ name: 'areaId' })
 	area: Area;
 	@OneToMany(() => Question, (question) => question.lesson)
 	questions: Question[];

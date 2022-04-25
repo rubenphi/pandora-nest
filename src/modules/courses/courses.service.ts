@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 
 import { Course } from './course.entity';
 import { Area } from '../areas/area.entity';
@@ -21,7 +21,7 @@ export class CoursesService {
 	async getCourse(id: number): Promise<Course> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 				relations: ['groups','areas'],
 			})
 			.catch(() => {
@@ -51,7 +51,7 @@ export class CoursesService {
 	async deleteCourse(id: number): Promise<void> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException(
@@ -61,42 +61,41 @@ export class CoursesService {
 		this.courseRepository.remove(course);
 	}
 
-	async addAreaToCourse(courseArea: AddAreaToCourseDto): Promise<Course> {
+	async addAreaToCourse(id: number, courseAreas: AddAreaToCourseDto): Promise<any> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id: courseArea.courseId },
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
 
-		const area: Area = await this.areaRepository
-			.findOneOrFail({
-				where: { id: courseArea.areaId },
+		const areas: Area[] = await this.areaRepository
+			.find({
+				where: { id: In(courseAreas.areasId) },
 			})
-			.catch(() => {
-				throw new NotFoundException('Area not found');
-			});
 
-		course.areas = [area];
+		course.areas = areas;
 
 		return this.courseRepository.save(course);
 	}
 
-	async deleteAreaToCourse(courseArea: DeleteAreaFromCourseDto): Promise<any> {
+	async deleteAreaToCourse(id:number, courseAreas: DeleteAreaFromCourseDto): Promise<any> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id: courseArea.courseId },
+				where: { id },
 				relations: ['groups','areas'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-
-		course.areas = course.areas.filter( area => { 
-			return area.id !== courseArea.areaId
-		 });
-
+		
+		courseAreas.areasId.forEach( areaId => {
+			course.areas = course.areas.filter( area => { 
+				return area.id !== areaId
+			 })
+		});
+		
 		return this.courseRepository.save(course);
 	}
 }

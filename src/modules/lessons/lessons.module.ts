@@ -5,9 +5,10 @@ import { LessonsService } from './lessons.service';
 import { LessonsController } from './lessons.controller';
 import { Lesson } from './lesson.entity';
 import { Course } from '../courses/course.entity';
+import { Area } from '../areas/area.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lesson, Course])],
+  imports: [TypeOrmModule.forFeature([Lesson, Course, Area])],
   providers: [LessonsService],
   controllers: [LessonsController]
 })

@@ -17,6 +17,13 @@ export class GroupsController {
 	getGroups(): Promise<Group[]> {
 		return this.groupService.getGroups();
 	}
+
+	@Get(':id')
+	getGroupByCourse(@Param('id') id: number): Promise<Group[]> {
+		return this.groupService.getGroupsByCourse(id);
+	}
+
+
 	@Get(':id')
 	getGroup(@Param('id') id: number): Promise<Group> {
 		return this.groupService.getGroup(id);

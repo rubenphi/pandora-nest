@@ -19,6 +19,7 @@ import { DeleteFileException } from 'src/Exceptions/deleteFileException';
 import { Question } from './question.entity';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
+import { Option } from '../options/option.entity';
 
 @Controller('questions')
 export class QuestionsController {
@@ -83,5 +84,10 @@ export class QuestionsController {
 	@Delete(':id')
 	deleteQuestion(@Param('id') id: number): Promise<void> {
 		return this.questionService.deleteQuestion(id);
+	}
+
+	@Get(':id/options')
+	getOptionByQuestion(@Param('id') id: number): Promise<Option[]> {
+		return this.questionService.getOptionsByQuestion(id);
 	}
 }

@@ -23,7 +23,7 @@ export class UpdateQuestionDto {
 	readonly available: boolean;
 	@Type(() => Number)
 	@IsInt()
-	readonly lesson_id: number;
+	readonly lessonId: number;
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
 	  })

@@ -6,7 +6,9 @@ export class CreateLessonDto {
 	@IsDateString()
 	readonly date: Date;
 	@IsInt()
-	readonly course_id: number;
+	readonly courseId: number;
+	@IsInt()
+	readonly areaId: number;
 	@IsBoolean()
 	readonly exist: boolean;
 }

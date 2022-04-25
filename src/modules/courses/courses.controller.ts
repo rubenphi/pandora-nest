@@ -28,14 +28,14 @@ export class CoursesController {
 		return this.courseService.createCourse(course);
 	}
 
-	@Post('add/area')
-	addAreaToCourse(@Body() courseArea: AddAreaToCourseDto): Promise<any> {
-		return this.courseService.addAreaToCourse(courseArea);
+	@Post(':id/areas')
+	addAreaToCourse(@Param('id') id: number, @Body() courseAreas: AddAreaToCourseDto): Promise<any> {
+		return this.courseService.addAreaToCourse(id, courseAreas);
 	}
 
-	@Post('delete/area')
-	deleteAreaToCourse(@Body() courseArea: DeleteAreaFromCourseDto): Promise<any> {
-		return this.courseService.deleteAreaToCourse(courseArea);
+	@Delete(':id/areas')
+	deleteAreaToCourse(@Param('id') id: number, @Body() courseAreas: DeleteAreaFromCourseDto): Promise<any> {
+		return this.courseService.deleteAreaToCourse(id, courseAreas);
 	}
 
 	@Patch(':id')

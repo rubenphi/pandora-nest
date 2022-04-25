@@ -3,13 +3,13 @@ import { IsInt, IsBoolean } from 'class-validator';
 export class CreateAnswerDto {
 
 	@IsInt()
-	readonly option_id: number;
+	readonly optionId: number;
 	@IsInt()
-	readonly question_id: number;
+	readonly questionId: number;
 	@IsInt()
-	readonly group_id: number;
+	readonly groupId: number;
 	@IsInt()
-	readonly lesson_id: number;
+	readonly lessonId: number;
 	@IsBoolean()
 	readonly exist: boolean;
 }

@@ -4,7 +4,7 @@ export class UpdateGroupDto {
 	@IsNotEmpty()
 	readonly name: string;
 	@IsInt()
-	readonly course_id: number;
+	readonly courseId: number;
 	@IsBoolean()
 	readonly exist: boolean;
 }

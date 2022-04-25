@@ -41,7 +41,7 @@ export class AnswersService {
 			})
 	}
 
-	async bonusToAnswer(id: number): Promise<any> {
+	async bonusToAnswer(id: number): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { question: { id: id},
@@ -127,7 +127,7 @@ export class AnswersService {
 	async getAnswer(id: number): Promise<Answer> {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 				relations: [
 					'option',
 					'question',
@@ -143,14 +143,14 @@ export class AnswersService {
 	async createAnswer(answerDto: CreateAnswerDto): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
-				where: { id: answerDto.option_id },
+				where: { id: answerDto.optionId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: answerDto.question_id },
+				where: { id: answerDto.questionId },
 			})
 			.catch(() => {
 				throw new NotFoundException(
@@ -159,14 +159,14 @@ export class AnswersService {
 			});
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id: answerDto.group_id },
+				where: { id: answerDto.groupId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id: answerDto.lesson_id },
+				where: { id: answerDto.lessonId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
@@ -189,14 +189,14 @@ export class AnswersService {
 	): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
-				where: { id: answerDto.option_id },
+				where: { id: answerDto.optionId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: answerDto.question_id },
+				where: { id: answerDto.questionId },
 			})
 			.catch(() => {
 				throw new NotFoundException(
@@ -205,14 +205,14 @@ export class AnswersService {
 			});
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id: answerDto.group_id },
+				where: { id: answerDto.groupId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id: answerDto.lesson_id },
+				where: { id: answerDto.lessonId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
@@ -238,7 +238,7 @@ export class AnswersService {
 	async deleteAnswer(id: number): Promise<void> {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException(

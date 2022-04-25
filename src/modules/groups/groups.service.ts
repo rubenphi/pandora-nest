@@ -18,10 +18,16 @@ export class GroupsService {
 	async getGroups(): Promise<Group[]> {
 		return await this.groupRepository.find({ relations: ['course'] });
 	}
+
+	async getGroupsByCourse(id:number): Promise<Group[]> {
+		return await this.groupRepository.find({ relations: ['course'], where: {course: {id: id}} });
+	}
+
+
 	async getGroup(id: number): Promise<Group> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 				relations: ['course'],
 			})
 			.catch(() => {
@@ -32,7 +38,7 @@ export class GroupsService {
 	async createGroup(groupDto: CreateGroupDto): Promise<Group> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id: groupDto.course_id },
+				where: { id: groupDto.courseId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -47,7 +53,7 @@ export class GroupsService {
 	async updateGroup(id: number, groupDto: UpdateGroupDto): Promise<Group> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id: groupDto.course_id },
+				where: { id: groupDto.courseId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -69,7 +75,7 @@ export class GroupsService {
 	async deleteGroup(id: number): Promise<void> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id: id },
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException(
