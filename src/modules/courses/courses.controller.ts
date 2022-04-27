@@ -28,16 +28,6 @@ export class CoursesController {
 		return this.courseService.createCourse(course);
 	}
 
-	@Post(':id/areas')
-	addAreaToCourse(@Param('id') id: number, @Body() courseAreas: AddAreaToCourseDto): Promise<any> {
-		return this.courseService.addAreaToCourse(id, courseAreas);
-	}
-
-	@Delete(':id/areas')
-	deleteAreaToCourse(@Param('id') id: number, @Body() courseAreas: DeleteAreaFromCourseDto): Promise<any> {
-		return this.courseService.deleteAreaToCourse(id, courseAreas);
-	}
-
 	@Patch(':id')
 	updateCourse(
 		@Param('id') id: number,
@@ -48,5 +38,30 @@ export class CoursesController {
 	@Delete(':id')
 	deleteCourse(@Param('id') id: number): Promise<void> {
 		return this.courseService.deleteCourse(id);
+	}
+
+	@Get(':id/areas')
+	getAreasByCourse(@Param('id') id: number): Promise<any> {
+		return this.courseService.getAreasByCourse(id);
+	}
+
+	@Post(':id/areas')
+	addAreaToCourse(@Param('id') id: number, @Body() courseAreas: AddAreaToCourseDto): Promise<any> {
+		return this.courseService.addAreaToCourse(id, courseAreas);
+	}
+
+	@Delete(':id/areas')
+	deleteAreaToCourse(@Param('id') id: number, @Body() courseAreas: DeleteAreaFromCourseDto): Promise<any> {
+		return this.courseService.deleteAreaToCourse(id, courseAreas);
+	}
+
+	@Get(':id/groups')
+	getGroupsByCourse(@Param('id') id: number): Promise<any> {
+		return this.courseService.getGroupsByCourse(id);
+	}
+	
+	@Get(':id/lessons')
+	getLessonsByCourse(@Param('id') id: number): Promise<any> {
+		return this.courseService.getLessonsByCourse(id);
 	}
 }

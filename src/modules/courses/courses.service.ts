@@ -4,6 +4,8 @@ import { Repository, In } from 'typeorm';
 
 import { Course } from './course.entity';
 import { Area } from '../areas/area.entity';
+import { Group } from '../groups/group.entity';
+import { Lesson } from '../lessons/lesson.entity';
 import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto } from './dto';
 
 @Injectable()
@@ -21,8 +23,7 @@ export class CoursesService {
 	async getCourse(id: number): Promise<Course> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id },
-				relations: ['groups','areas'],
+				where: { id }
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -84,7 +85,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['groups','areas'],
+				relations: ['areas'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -97,5 +98,44 @@ export class CoursesService {
 		});
 		
 		return this.courseRepository.save(course);
+	}
+
+	async getAreasByCourse(id: number): Promise<Area[]> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['areas'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		return course.areas;
+	}
+
+	async getLessonsByCourse(id: number): Promise<Lesson[]> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['lessons'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		return course.lessons;
+	}
+
+	async getGroupsByCourse(id: number): Promise<Group[]> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['groups'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		return course.groups;
 	}
 }

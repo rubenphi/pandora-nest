@@ -23,23 +23,8 @@ export class AnswersController {
 		return this.answerService.getAnswer(id);
 	}
 
-	@Get('lesson/:id')
-	getAnswerByLesson(@Param('id') id: number): Promise<Answer[]> {
-		return this.answerService.getAnswersByLesson(id);
-	}
-
-	@Get('lesson/result/:id')
-	getAnswerByLessonSum(@Param('id') id: number): Promise<any[]> {
-		return this.answerService.getAnswersByLessonSum(id);
-	}
-
-	@Get('question/:id')
-	getAnswerByQuestion(@Param('id') id: number): Promise<Answer[]> {
-		return this.answerService.getAnswersByQuestion(id);
-	}
-
 	@Get('question/bonus/:id')
-	bonusToAnswer(@Param('id') id: number): Promise<Answer[]> {
+	bonusToAnswer(@Param('id') id: number): Promise<Answer> {
 		return this.answerService.bonusToAnswer(id);
 	}
 

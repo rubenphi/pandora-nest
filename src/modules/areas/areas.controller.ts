@@ -7,7 +7,9 @@ import {
 	Patch,
 	Delete,
 } from '@nestjs/common';
+
 import { Area } from './area.entity';
+import { Lesson } from '../lessons/lesson.entity';
 import { AreasService } from './areas.service';
 import { CreateAreaDto, UpdateAreaDto } from './dto';
 @Controller('areas')
@@ -37,5 +39,10 @@ export class AreasController {
 	@Delete(':id')
 	deleteArea(@Param('id') id: number): Promise<void> {
 		return this.areaService.deleteArea(id);
+	}
+
+	@Get(':id/Lessons')
+	getLessonsByArea(@Param('id') id: number): Promise<Lesson[]> {
+		return this.areaService.getLessonsByArea(id);
 	}
 }

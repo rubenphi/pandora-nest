@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Group } from './group.entity';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { Course } from '../courses/course.entity';
+import { Answer } from '../answers/answer.entity';
 
 @Injectable()
 export class GroupsService {
@@ -17,10 +18,6 @@ export class GroupsService {
 
 	async getGroups(): Promise<Group[]> {
 		return await this.groupRepository.find({ relations: ['course'] });
-	}
-
-	async getGroupsByCourse(id:number): Promise<Group[]> {
-		return await this.groupRepository.find({ relations: ['course'], where: {course: {id: id}} });
 	}
 
 
@@ -83,5 +80,16 @@ export class GroupsService {
 				);
 			});
 		this.groupRepository.remove(group);
+	}
+	async getAnswersByGroup(id: number): Promise<Answer[]> {
+		const group: Group = await this.groupRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['answers'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Group not found');
+			});
+		return group.answers;
 	}
 }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Area } from './area.entity';
+import { Lesson } from '../lessons/lesson.entity';
 import { CreateAreaDto, UpdateAreaDto } from './dto';
 
 @Injectable()
@@ -18,8 +19,7 @@ export class AreasService {
 	async getArea(id: number): Promise<Area> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
-				where: { id },
-				relations: ['course'],
+				where: { id }
 			})
 			.catch(() => {
 				throw new NotFoundException('Area not found');
@@ -60,5 +60,17 @@ export class AreasService {
 				);
 			});
 		this.areaRepository.remove(area);
+	}
+
+	async getLessonsByArea(id: number): Promise<Lesson[]> {
+		const area: Area = await this.areaRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['lessons'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Area not found');
+			});
+		return area.lessons;
 	}
 }

@@ -11,7 +11,7 @@ import {
 import { Lesson } from './lesson.entity';
 import { LessonsService } from './lessons.service';
 import { Answer } from '../answers/answer.entity';
-import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
+import { CreateLessonDto, UpdateLessonDto, QueryLessonDto, ResultLessonDto } from './dto';
 
 @Controller('lessons')
 
@@ -48,5 +48,10 @@ export class LessonsController {
 	@Delete(':id')
 	deleteLesson(@Param('id') id: number): Promise<void> {
 		return this.lessonService.deleteLesson(id);
+	}
+
+	@Get(':id')
+	getLessonResult(@Param('id') id: number): Promise<ResultLessonDto[]> {
+		return this.lessonService.getResultLesson(id);
 	}
 }

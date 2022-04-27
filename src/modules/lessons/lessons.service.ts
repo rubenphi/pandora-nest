@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
+import { CreateLessonDto, UpdateLessonDto, QueryLessonDto, ResultLessonDto } from './dto';
 import { Lesson } from './lesson.entity';
 import { Course } from '../courses/course.entity';
 import { Answer } from '../answers/answer.entity';
+import { Question } from '../questions/question.entity';
 import { Area } from '../areas/area.entity';
 
 @Injectable()
@@ -108,5 +109,38 @@ export class LessonsService {
 				throw new NotFoundException('Lesson not found');
 			});
 		return lesson.answers;
+	}
+
+	async getQuestionsByLesson(id: number): Promise<Question[]> {
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['questions', 'questions.lesson'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
+		return lesson.questions;
+	}
+
+	async getResultLesson(id: number): Promise<ResultLessonDto[]> {
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['answers', 'answers.option', 'answers.question', 'answers.group', 'answers.option'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
+			const resultLesson = [];	
+			lesson.answers.reduce( (res, value) =>  {
+				if (!res[value.group.id]){
+					res[value.group.id] = { group: value.group, points: 0};
+					resultLesson.push(res[value.group.id])
+				}
+				res[value.group.id].points += value.points;
+				return res
+			},{})
+			return resultLesson.sort(((a,b)=> b.points - a.points))
 	}
 }
