@@ -11,6 +11,7 @@ import {
 import { Lesson } from './lesson.entity';
 import { LessonsService } from './lessons.service';
 import { Answer } from '../answers/answer.entity';
+import { Question } from '../questions/question.entity';
 import { CreateLessonDto, UpdateLessonDto, QueryLessonDto, ResultLessonDto } from './dto';
 
 @Controller('lessons')
@@ -23,10 +24,6 @@ export class LessonsController {
 		return this.lessonService.getLessons(queryLesson);
 	}
 
-	@Get(':id/answers')
-	getAnswersByLesson(@Param('id') id: number): Promise<Answer[]> {
-		return this.lessonService.getAnswersByLesson(id);
-	}
 
 	@Get(':id')
 	getLesson(@Param('id') id: number): Promise<Lesson> {
@@ -53,5 +50,15 @@ export class LessonsController {
 	@Get(':id')
 	getLessonResult(@Param('id') id: number): Promise<ResultLessonDto[]> {
 		return this.lessonService.getResultLesson(id);
+	}
+
+	@Get(':id/answers')
+	getAnswersByLesson(@Param('id') id: number): Promise<Answer[]> {
+		return this.lessonService.getAnswersByLesson(id);
+	}
+
+	@Get(':id/questions')
+	getQuestionsByLesson(@Param('id') id: number): Promise<Question[]> {
+		return this.lessonService.getQuestionsByLesson(id);
 	}
 }
