@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
-import { CreateAreaDto, UpdateAreaDto } from './dto';
+import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 
 @Injectable()
 export class AreasService {
@@ -13,8 +13,11 @@ export class AreasService {
 		private readonly areaRepository: Repository<Area>,
 	) {}
 
-	async getAreas(): Promise<Area[]> {
-		return await this.areaRepository.find();
+	async getAreas(queryArea: QueryAreaDto): Promise<Area[]> {
+		if(queryArea){
+			return await this.areaRepository.find({ where: {name: queryArea.name, exist: queryArea.exist}});
+		} else 
+		{return await this.areaRepository.find();}
 	}
 	async getArea(id: number): Promise<Area> {
 		const area: Area = await this.areaRepository

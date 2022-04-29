@@ -3,6 +3,7 @@ import {
 	Get,
 	Param,
 	Post,
+	Query,
 	Body,
 	Patch,
 	Delete,
@@ -11,13 +12,13 @@ import {
 import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { AreasService } from './areas.service';
-import { CreateAreaDto, UpdateAreaDto } from './dto';
+import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 @Controller('areas')
 export class AreasController {
     constructor(private readonly areaService: AreasService) {}
 	@Get()
-	getAreas(): Promise<Area[]> {
-		return this.areaService.getAreas();
+	getAreas(@Query() queryArea: QueryAreaDto): Promise<Area[]> {
+		return this.areaService.getAreas(queryArea);
 	}
 	@Get(':id')
 	getArea(@Param('id') id: number): Promise<Area> {

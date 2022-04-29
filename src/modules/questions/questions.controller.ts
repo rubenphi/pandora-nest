@@ -5,6 +5,7 @@ import {
 	Post,
 	Body,
 	Patch,
+	Query,
 	Delete,
 	UploadedFile,
 	UseInterceptors,
@@ -18,15 +19,16 @@ import { extname } from 'path';
 import { DeleteFileException } from 'src/Exceptions/deleteFileException';
 import { Question } from './question.entity';
 import { QuestionsService } from './questions.service';
-import { CreateQuestionDto, UpdateQuestionDto } from './dto';
+import { CreateQuestionDto, UpdateQuestionDto, ImportFromQuestionDto, QueryQuestionDto } from './dto';
 import { Option } from '../options/option.entity';
+import { Answer } from '../answers/answer.entity';
 
 @Controller('questions')
 export class QuestionsController {
 	constructor(private readonly questionService: QuestionsService) {}
 	@Get()
-	getQuestions(): Promise<Question[]> {
-		return this.questionService.getQuestions();
+	getQuestions(@Query() queryQuestion: QueryQuestionDto): Promise<Question[]> {
+		return this.questionService.getQuestions(queryQuestion);
 	}
 	@Get(':id')
 	getQuestion(@Param('id') id: number): Promise<Question> {
@@ -81,6 +83,7 @@ export class QuestionsController {
 		}
 		return this.questionService.updateQuestion(id, question);
 	}
+
 	@Delete(':id')
 	deleteQuestion(@Param('id') id: number): Promise<void> {
 		return this.questionService.deleteQuestion(id);
@@ -89,5 +92,26 @@ export class QuestionsController {
 	@Get(':id/options')
 	getOptionByQuestion(@Param('id') id: number): Promise<Option[]> {
 		return this.questionService.getOptionsByQuestion(id);
+	}
+
+	@Get(':id/answers')
+	getAnswersByQuestion(@Param('id') id: number): Promise<Answer[]> {
+		return this.questionService.getAnswersByQuestion(id);
+	}
+
+	@Patch(':id/options/import')
+	importOptionsToQuestion(
+		@Param('id') id: number,
+		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
+	): Promise<Question> {
+		return this.questionService.importOptionsToQuestion(id, ImportFromQuestionDto);
+	}
+
+	@Patch(':id/photo/import')
+	importPhotoToQuestion(
+		@Param('id') id: number,
+		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
+	): Promise<Question> {
+		return this.questionService.importOptionsToQuestion(id, ImportFromQuestionDto);
 	}
 }

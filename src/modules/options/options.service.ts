@@ -7,8 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 
 import { Option } from './option.entity';
-import { CreateOptionDto, UpdateOptionDto, ImportOptionsDto } from './dto';
+import { CreateOptionDto, UpdateOptionDto, QueryOptionDto } from './dto';
 import { Question } from '../questions/question.entity';
+import { Answer } from '../answers/answer.entity';
 
 @Injectable()
 export class OptionsService {
@@ -19,8 +20,11 @@ export class OptionsService {
 		private readonly questionRepository: Repository<Question>,
 	) {}
 
-	async getOptions(): Promise<Option[]> {
-		return await this.optionRepository.find({ relations: ['question'] });
+	async getOptions(queryOption: QueryOptionDto): Promise<Option[]> {
+		if(queryOption){
+			return await this.optionRepository.find({ where: {sentence: queryOption.sentence, correct: queryOption.correct, identifier: queryOption.identifier, question: { id: queryOption.questionId }, exist: queryOption.exist}, relations: ['question'] });
+		}else
+		{return await this.optionRepository.find({ relations: ['question'] })};
 	}
 
 	async getOption(id: number): Promise<Option> {
@@ -67,10 +71,7 @@ export class OptionsService {
 		});
 		return this.optionRepository.save(option);
 	}
-	async importOptions(importOptionsDto: ImportOptionsDto): Promise<Option[]>{
-		const options = await this.optionRepository.find({ relations: ['question'] , where: {question: { id: importOptionsDto.from_question}}});
-		return
-	}
+	
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
 		if (
 			await this.optionRepository.findOneOrFail({
@@ -122,5 +123,17 @@ export class OptionsService {
 			);
 		}
 		this.optionRepository.remove(option);
+	}
+
+	async getAnswersByOption(id: number): Promise<Answer[]> {
+		const option: Option = await this.optionRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['answers'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Option not found');
+			});
+		return option.answers;
 	}
 }

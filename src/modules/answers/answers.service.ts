@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Answer } from './answer.entity';
-import { CreateAnswerDto, UpdateAnswerDto } from './dto';
+import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 import { Option } from '../options/option.entity';
 import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
@@ -24,10 +24,13 @@ export class AnswersService {
 		private readonly lessonRepository: Repository<Lesson>,
 	) {}
 
-	async getAnswers(): Promise<Answer[]> {
-		return await this.answerRepository.find({
+	async getAnswers(queryAnswer: QueryAnswerDto): Promise<Answer[]> {
+		if(queryAnswer){
+			return await this.answerRepository.find({ where: {option: {id: queryAnswer.optionId}, question: {id: queryAnswer.questionId},group: {id: queryAnswer.groupId}, lesson: {id: queryAnswer.lessonId}, exist: queryAnswer.exist }, relations: ['option', 'question', 'group', 'lesson'] });
+		} 
+		else {return await this.answerRepository.find({
 			relations: ['option', 'question', 'group', 'lesson'],
-		});
+		})};
 	}
 
 

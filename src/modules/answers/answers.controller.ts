@@ -3,20 +3,21 @@ import {
 	Get,
 	Param,
 	Post,
+	Query,
 	Body,
 	Patch,
 	Delete,
 } from '@nestjs/common';
 import { Answer } from './answer.entity';
 import { AnswersService } from './answers.service';
-import { CreateAnswerDto, UpdateAnswerDto } from './dto';
+import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 
 @Controller('answers')
 export class AnswersController {
 	constructor(private readonly answerService: AnswersService) {}
 	@Get()
-	getAnswers(): Promise<Answer[]> {
-		return this.answerService.getAnswers();
+	getAnswers(@Query() queryAnswer: QueryAnswerDto): Promise<Answer[]> {
+		return this.answerService.getAnswers(queryAnswer);
 	}
 	@Get(':id')
 	getAnswer(@Param('id') id: number): Promise<Answer> {

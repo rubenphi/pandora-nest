@@ -3,20 +3,22 @@ import {
 	Get,
 	Param,
 	Post,
+	Query,
 	Body,
 	Patch,
 	Delete,
 } from '@nestjs/common';
 import { Option } from './option.entity';
 import { OptionsService } from './options.service';
-import { CreateOptionDto, UpdateOptionDto } from './dto';
+import { CreateOptionDto, UpdateOptionDto, QueryOptionDto } from './dto';
+import { Answer } from '../answers/answer.entity';
 
 @Controller('options')
 export class OptionsController {
     constructor(private readonly optionService: OptionsService) {}
 	@Get()
-	getOptions(): Promise<Option[]> {
-		return this.optionService.getOptions();
+	getOptions(@Query() queryOption: QueryOptionDto): Promise<Option[]> {
+		return this.optionService.getOptions(queryOption);
 	}
 
 	@Get(':id')
@@ -39,5 +41,10 @@ export class OptionsController {
 	@Delete(':id')
 	deleteOption(@Param('id') id: number): Promise<void> {
 		return this.optionService.deleteOption(id);
+	}
+
+	@Get(':id/answers')
+	getAnswersByOption(@Param('id') id: number): Promise<Answer[]> {
+		return this.optionService.getAnswersByOption(id);
 	}
 }

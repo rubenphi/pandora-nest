@@ -3,20 +3,21 @@ import {
 	Get,
 	Param,
 	Post,
+	Query,
 	Body,
 	Patch,
 	Delete,
 } from '@nestjs/common';
 import { Course } from './course.entity';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto } from './dto';
+import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto, QueryCourseDto } from './dto';
 
 @Controller('courses')
 export class CoursesController {
 	constructor(private readonly courseService: CoursesService) {}
 	@Get()
-	getCourses(): Promise<Course[]> {
-		return this.courseService.getCourses();
+	getCourses(@Query() queryCourse: QueryCourseDto): Promise<Course[]> {
+		return this.courseService.getCourses(queryCourse);
 	}
 	@Get(':id')
 	getCourse(@Param('id') id: number): Promise<Course> {

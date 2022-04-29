@@ -6,7 +6,7 @@ import { Course } from './course.entity';
 import { Area } from '../areas/area.entity';
 import { Group } from '../groups/group.entity';
 import { Lesson } from '../lessons/lesson.entity';
-import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto } from './dto';
+import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto, QueryCourseDto } from './dto';
 
 @Injectable()
 export class CoursesService {
@@ -17,8 +17,11 @@ export class CoursesService {
 		private readonly areaRepository: Repository<Area>,
 	) {}
 
-	async getCourses(): Promise<Course[]> {
-		return await this.courseRepository.find();
+	async getCourses(queryCourse: QueryCourseDto): Promise<Course[]> {
+		if(queryCourse){
+			return await this.courseRepository.find({ where: {name: queryCourse.name, exist: queryCourse.exist}});
+		} else 
+		{return await this.courseRepository.find()};
 	}
 	async getCourse(id: number): Promise<Course> {
 		const course: Course = await this.courseRepository
