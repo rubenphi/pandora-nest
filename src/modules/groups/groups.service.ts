@@ -20,7 +20,6 @@ export class GroupsService {
 		return await this.groupRepository.find({ relations: ['course'] });
 	}
 
-
 	async getGroup(id: number): Promise<Group> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({

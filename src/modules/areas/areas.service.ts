@@ -8,21 +8,24 @@ import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 
 @Injectable()
 export class AreasService {
-    constructor(
+	constructor(
 		@InjectRepository(Area)
 		private readonly areaRepository: Repository<Area>,
 	) {}
 
 	async getAreas(queryArea: QueryAreaDto): Promise<Area[]> {
-		if(queryArea){
-			return await this.areaRepository.find({ where: {name: queryArea.name, exist: queryArea.exist}});
-		} else 
-		{return await this.areaRepository.find();}
+		if (queryArea) {
+			return await this.areaRepository.find({
+				where: { name: queryArea.name, exist: queryArea.exist },
+			});
+		} else {
+			return await this.areaRepository.find();
+		}
 	}
 	async getArea(id: number): Promise<Area> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
-				where: { id }
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException('Area not found');
@@ -30,7 +33,6 @@ export class AreasService {
 		return area;
 	}
 	async createArea(areaDto: CreateAreaDto): Promise<Area> {
-
 		const area: Area = await this.areaRepository.create({
 			name: areaDto.name,
 			exist: areaDto.exist,
@@ -38,16 +40,13 @@ export class AreasService {
 		return this.areaRepository.save(area);
 	}
 	async updateArea(id: number, areaDto: UpdateAreaDto): Promise<Area> {
-
 		const area: Area = await this.areaRepository.preload({
 			id: id,
 			name: areaDto.name,
 			exist: areaDto.exist,
 		});
 		if (!area) {
-			throw new NotFoundException(
-				'The area you want to update does not exist',
-			);
+			throw new NotFoundException('The area you want to update does not exist');
 		}
 		return this.areaRepository.save(area);
 	}

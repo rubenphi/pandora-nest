@@ -2,7 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreateLessonDto, UpdateLessonDto, QueryLessonDto, ResultLessonDto } from './dto';
+import {
+	CreateLessonDto,
+	UpdateLessonDto,
+	QueryLessonDto,
+	ResultLessonDto,
+} from './dto';
 import { Lesson } from './lesson.entity';
 import { Course } from '../courses/course.entity';
 import { Answer } from '../answers/answer.entity';
@@ -20,12 +25,23 @@ export class LessonsService {
 		private readonly areaRepository: Repository<Area>,
 	) {}
 
-	async getLessons(queryLesson: QueryLessonDto ): Promise<Lesson[]> {
-		if(queryLesson){
-			return await this.lessonRepository.find({ where: {course: {id: queryLesson.courseId}, area: {id: queryLesson.areaId}, theme: queryLesson.theme, date: queryLesson.date, exist: queryLesson.exist }, relations: ['course','area'] });
-		}  
-		else {return await this.lessonRepository.find({ relations: ['course','area'] });}
-	
+	async getLessons(queryLesson: QueryLessonDto): Promise<Lesson[]> {
+		if (queryLesson) {
+			return await this.lessonRepository.find({
+				where: {
+					course: { id: queryLesson.courseId },
+					area: { id: queryLesson.areaId },
+					theme: queryLesson.theme,
+					date: queryLesson.date,
+					exist: queryLesson.exist,
+				},
+				relations: ['course', 'area'],
+			});
+		} else {
+			return await this.lessonRepository.find({
+				relations: ['course', 'area'],
+			});
+		}
 	}
 
 	async getLesson(id: number): Promise<Lesson> {
@@ -47,7 +63,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-			const area: Area = await this.areaRepository
+		const area: Area = await this.areaRepository
 			.findOneOrFail({
 				where: { id: lessonDto.areaId },
 			})
@@ -103,7 +119,13 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['answers', 'answers.option', 'answers.question', 'answers.group', 'answers.option'],
+				relations: [
+					'answers',
+					'answers.option',
+					'answers.question',
+					'answers.group',
+					'answers.option',
+				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
@@ -127,20 +149,26 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['answers', 'answers.option', 'answers.question', 'answers.group', 'answers.option'],
+				relations: [
+					'answers',
+					'answers.option',
+					'answers.question',
+					'answers.group',
+					'answers.option',
+				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
-			const resultLesson = [];	
-			lesson.answers.reduce( (res, value) =>  {
-				if (!res[value.group.id]){
-					res[value.group.id] = { group: value.group, points: 0};
-					resultLesson.push(res[value.group.id])
-				}
-				res[value.group.id].points += value.points;
-				return res
-			},{})
-			return resultLesson.sort(((a,b)=> b.points - a.points))
+		const resultLesson = [];
+		lesson.answers.reduce((res, value) => {
+			if (!res[value.group.id]) {
+				res[value.group.id] = { group: value.group, points: 0 };
+				resultLesson.push(res[value.group.id]);
+			}
+			res[value.group.id].points += value.points;
+			return res;
+		}, {});
+		return resultLesson.sort((a, b) => b.points - a.points);
 	}
 }

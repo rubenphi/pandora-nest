@@ -6,7 +6,13 @@ import { Course } from './course.entity';
 import { Area } from '../areas/area.entity';
 import { Group } from '../groups/group.entity';
 import { Lesson } from '../lessons/lesson.entity';
-import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto, QueryCourseDto } from './dto';
+import {
+	CreateCourseDto,
+	UpdateCourseDto,
+	AddAreaToCourseDto,
+	DeleteAreaFromCourseDto,
+	QueryCourseDto,
+} from './dto';
 
 @Injectable()
 export class CoursesService {
@@ -18,15 +24,18 @@ export class CoursesService {
 	) {}
 
 	async getCourses(queryCourse: QueryCourseDto): Promise<Course[]> {
-		if(queryCourse){
-			return await this.courseRepository.find({ where: {name: queryCourse.name, exist: queryCourse.exist}});
-		} else 
-		{return await this.courseRepository.find()};
+		if (queryCourse) {
+			return await this.courseRepository.find({
+				where: { name: queryCourse.name, exist: queryCourse.exist },
+			});
+		} else {
+			return await this.courseRepository.find();
+		}
 	}
 	async getCourse(id: number): Promise<Course> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
-				where: { id }
+				where: { id },
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -65,7 +74,10 @@ export class CoursesService {
 		this.courseRepository.remove(course);
 	}
 
-	async addAreaToCourse(id: number, courseAreas: AddAreaToCourseDto): Promise<any> {
+	async addAreaToCourse(
+		id: number,
+		courseAreas: AddAreaToCourseDto,
+	): Promise<any> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -74,17 +86,19 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 
-		const areas: Area[] = await this.areaRepository
-			.find({
-				where: { id: In(courseAreas.areasId) },
-			})
+		const areas: Area[] = await this.areaRepository.find({
+			where: { id: In(courseAreas.areasId) },
+		});
 
 		course.areas = areas;
 
 		return this.courseRepository.save(course);
 	}
 
-	async deleteAreaToCourse(id:number, courseAreas: DeleteAreaFromCourseDto): Promise<any> {
+	async deleteAreaToCourse(
+		id: number,
+		courseAreas: DeleteAreaFromCourseDto,
+	): Promise<any> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -93,13 +107,13 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		
-		courseAreas.areasId.forEach( areaId => {
-			course.areas = course.areas.filter( area => { 
-				return area.id !== areaId
-			 })
+
+		courseAreas.areasId.forEach((areaId) => {
+			course.areas = course.areas.filter((area) => {
+				return area.id !== areaId;
+			});
 		});
-		
+
 		return this.courseRepository.save(course);
 	}
 

@@ -25,25 +25,29 @@ export class AnswersService {
 	) {}
 
 	async getAnswers(queryAnswer: QueryAnswerDto): Promise<Answer[]> {
-		if(queryAnswer){
-			return await this.answerRepository.find({ where: {option: {id: queryAnswer.optionId}, question: {id: queryAnswer.questionId},group: {id: queryAnswer.groupId}, lesson: {id: queryAnswer.lessonId}, exist: queryAnswer.exist }, relations: ['option', 'question', 'group', 'lesson'] });
-		} 
-		else {return await this.answerRepository.find({
-			relations: ['option', 'question', 'group', 'lesson'],
-		})};
+		if (queryAnswer) {
+			return await this.answerRepository.find({
+				where: {
+					option: { id: queryAnswer.optionId },
+					question: { id: queryAnswer.questionId },
+					group: { id: queryAnswer.groupId },
+					lesson: { id: queryAnswer.lessonId },
+					exist: queryAnswer.exist,
+				},
+				relations: ['option', 'question', 'group', 'lesson'],
+			});
+		} else {
+			return await this.answerRepository.find({
+				relations: ['option', 'question', 'group', 'lesson'],
+			});
+		}
 	}
-
 
 	async getAnswer(id: number): Promise<Answer> {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { id },
-				relations: [
-					'option',
-					'question',
-					'group',
-					'lesson',
-				],
+				relations: ['option', 'question', 'group', 'lesson'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
@@ -63,9 +67,7 @@ export class AnswersService {
 				where: { id: answerDto.questionId },
 			})
 			.catch(() => {
-				throw new NotFoundException(
-					'Question not found',
-				);
+				throw new NotFoundException('Question not found');
 			});
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
@@ -84,7 +86,7 @@ export class AnswersService {
 
 		const points: number = option.correct ? question.points : 0;
 		const answer: Answer = await this.answerRepository.create({
-		   	option,
+			option,
 			question,
 			group,
 			lesson,
@@ -93,10 +95,7 @@ export class AnswersService {
 		});
 		return this.answerRepository.save(answer);
 	}
-	async updateAnswer(
-		id: number,
-		answerDto: UpdateAnswerDto,
-	): Promise<Answer> {
+	async updateAnswer(id: number, answerDto: UpdateAnswerDto): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.optionId },
@@ -109,9 +108,7 @@ export class AnswersService {
 				where: { id: answerDto.questionId },
 			})
 			.catch(() => {
-				throw new NotFoundException(
-					'Question not found',
-				);
+				throw new NotFoundException('Question not found');
 			});
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
@@ -130,7 +127,7 @@ export class AnswersService {
 
 		const answer: Answer = await this.answerRepository.preload({
 			id: id,
-		    option,
+			option,
 			question,
 			group,
 			lesson,
@@ -161,45 +158,37 @@ export class AnswersService {
 	async bonusToAnswer(id: number): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
-				where: { question: { id: id},
-			correct: true
-			}
+				where: { question: { id: id }, correct: true },
 			})
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
 
-			const answer: Answer = await this.answerRepository
+		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
-				where: { question: {id :id}, option:{ id: option.id},
-				
-			},
-			order: { id: 'ASC' }
+				where: { question: { id: id }, option: { id: option.id } },
+				order: { id: 'ASC' },
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
 
-			
-			const answerUpdated: Answer = await this.answerRepository.preload({
-				id: answer.id,
-				points: answer.points * 1.5,
-			});
+		const answerUpdated: Answer = await this.answerRepository.preload({
+			id: answer.id,
+			points: answer.points * 1.5,
+		});
 
-			const questionUpdated: Question = await this.questionRepository.preload({
-				id: id,
-				available: false,
-			});
-			this.questionRepository.save(questionUpdated)
+		const questionUpdated: Question = await this.questionRepository.preload({
+			id: id,
+			available: false,
+		});
+		this.questionRepository.save(questionUpdated);
 
-			
-			if (!answer) {
-				throw new NotFoundException(
-					'The answer you want to update does not exist',
-				);
-			}
-			return this.answerRepository.save(answerUpdated);
-			
-
+		if (!answer) {
+			throw new NotFoundException(
+				'The answer you want to update does not exist',
+			);
+		}
+		return this.answerRepository.save(answerUpdated);
 	}
 }
