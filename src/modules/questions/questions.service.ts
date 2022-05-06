@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException,  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import * as fs from 'fs';
@@ -16,6 +16,8 @@ export class QuestionsService {
 		private readonly questionRepository: Repository<Question>,
 		@InjectRepository(Lesson)
 		private readonly lessonRepository: Repository<Lesson>,
+		@InjectRepository(Option)
+		private readonly optionRepository: Repository<Option>,
 	) {}
 
 	async getQuestions(queryQuestion: QueryQuestionDto): Promise<Question[]> {
@@ -67,7 +69,7 @@ export class QuestionsService {
 				throw new NotFoundException('Question not found');
 			});
 		const imageUrl = await (
-			await this.questionRepository.findOneOrFail({ where: { id } })
+			await this.questionRepository.findOne({ where: { id } })
 		).photo;
 		const question: Question = await this.questionRepository.preload({
 		    id,
@@ -84,10 +86,12 @@ export class QuestionsService {
 			throw new NotFoundException(
 				'The question you want to update does not exist',
 			);
-		} else if ((question && !question.photo && imageUrl) && !(await this.questionRepository.findOneOrFail({
+		} else if ((question && !question.photo && imageUrl && fs.existsSync(imageUrl)) && !(await this.questionRepository.findOne({
 			where: { id: Not(id),  photo: question.photo },
 		}))) {
-			fs.unlinkSync(imageUrl);
+			
+				fs.unlinkSync(imageUrl);
+			
 		}
 		return this.questionRepository.save(question);
 	}
@@ -128,23 +132,37 @@ export class QuestionsService {
 		return question.answers;
 	}
 
-	async importOptionsToQuestion(id: number, ImportFromQuestionDto: ImportFromQuestionDto): Promise<Question> {
+	async importOptionsToQuestion(id: number, ImportFromQuestionDto: ImportFromQuestionDto):  Promise<Option[]> {
 		const fromQuestion: Question = await this.questionRepository.findOneOrFail({ relations: ['options'] , where: {id: ImportFromQuestionDto.fromQuestionId}}).catch(() => {
 			throw new NotFoundException(
 				'Question origin not found',
 			);
 		});
 
-		const toQuestion: Question = await this.questionRepository.preload({
-			id,
-			options: fromQuestion.options
-		}).catch(() => {
+		const toQuestion: Question = await this.questionRepository.findOneOrFail({ relations: ['options'] , where: {id}}).catch(() => {
 			throw new NotFoundException(
-				'The question you want to update does not exist',
+				'Question destiny not found',
 			);
 		});
 
-		return this.questionRepository.save(toQuestion)
+		if(toQuestion.options.length) {
+		throw new BadRequestException(
+			`You can only import options to a question that doesn't have them`
+		);
+	} else {
+		 for (const option of fromQuestion.options) {
+			 const optionToSave: Option = this.optionRepository.create({
+				sentence: option.sentence,
+				correct: option.correct,
+				identifier: option.identifier,
+				question: toQuestion,
+				exist: option.exist,
+			})
+			 await this.optionRepository.save(optionToSave) 
+		}
+
+		return (await this.questionRepository.findOneOrFail({ relations: ['options.question'] , where: {id}})).options
+	}
 	}
 
 	async importPhotoToQuestion(id: number, ImportFromQuestionDto: ImportFromQuestionDto): Promise<Question> {

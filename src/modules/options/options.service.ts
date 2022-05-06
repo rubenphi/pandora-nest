@@ -74,7 +74,7 @@ export class OptionsService {
 	
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
 		if (
-			await this.optionRepository.findOneOrFail({
+			await this.optionRepository.findOne({
 				where: { identifier: optionDto.identifier, id: Not(id) },
 			})
 		) {
@@ -83,7 +83,7 @@ export class OptionsService {
 			);
 		} else if (
 			optionDto.correct &&
-			(await this.optionRepository.findOneOrFail({
+			(await this.optionRepository.findOne({
 				where: { correct: true, id: Not(id) },
 			}))
 		) {
@@ -95,7 +95,9 @@ export class OptionsService {
 			.findOneOrFail({
 				where: { id: optionDto.questionId },
 			})
-			.catch((e) => e);
+			.catch(() => {
+				throw new NotFoundException('Question not found');
+			});
 		const option: Option = await this.optionRepository
 			.preload({
 				id: id,
@@ -114,7 +116,7 @@ export class OptionsService {
 	}
 
 	async deleteOption(id: number): Promise<void> {
-		const option: Option = await this.optionRepository.findOneOrFail({
+		const option: Option = await this.optionRepository.findOne({
 			where: { id },
 		});
 		if (!option) {

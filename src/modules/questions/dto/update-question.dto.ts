@@ -10,7 +10,7 @@ export class UpdateQuestionDto {
 	@IsInt()
 	readonly points: number;
 	@IsOptional()
-	photo?: string;
+	photo?: string | null;
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
 	  })

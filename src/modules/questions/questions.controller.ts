@@ -78,9 +78,7 @@ export class QuestionsController {
 	): Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
-		} else {
-			question.photo = null;
-		}
+		} 
 		return this.questionService.updateQuestion(id, question);
 	}
 
@@ -103,7 +101,7 @@ export class QuestionsController {
 	importOptionsToQuestion(
 		@Param('id') id: number,
 		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
-	): Promise<Question> {
+	): Promise<Option[]> {
 		return this.questionService.importOptionsToQuestion(id, ImportFromQuestionDto);
 	}
 
@@ -112,6 +110,6 @@ export class QuestionsController {
 		@Param('id') id: number,
 		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
 	): Promise<Question> {
-		return this.questionService.importOptionsToQuestion(id, ImportFromQuestionDto);
+		return this.questionService.importPhotoToQuestion(id, ImportFromQuestionDto);
 	}
 }
