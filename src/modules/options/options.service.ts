@@ -21,10 +21,20 @@ export class OptionsService {
 	) {}
 
 	async getOptions(queryOption: QueryOptionDto): Promise<Option[]> {
-		if(queryOption){
-			return await this.optionRepository.find({ where: {sentence: queryOption.sentence, correct: queryOption.correct, identifier: queryOption.identifier, question: { id: queryOption.questionId }, exist: queryOption.exist}, relations: ['question'] });
-		}else
-		{return await this.optionRepository.find({ relations: ['question'] })};
+		if (queryOption) {
+			return await this.optionRepository.find({
+				where: {
+					sentence: queryOption.sentence,
+					correct: queryOption.correct,
+					identifier: queryOption.identifier,
+					question: { id: queryOption.questionId },
+					exist: queryOption.exist,
+				},
+				relations: ['question'],
+			});
+		} else {
+			return await this.optionRepository.find({ relations: ['question'] });
+		}
 	}
 
 	async getOption(id: number): Promise<Option> {
@@ -71,7 +81,7 @@ export class OptionsService {
 		});
 		return this.optionRepository.save(option);
 	}
-	
+
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
 		if (
 			await this.optionRepository.findOne({
