@@ -8,7 +8,6 @@ import {
 	JoinColumn,
 } from 'typeorm';
 
-
 import { Option } from 'src/modules/options/option.entity';
 import { Question } from 'src/modules/questions/question.entity';
 import { Group } from 'src/modules/groups/group.entity';
@@ -21,7 +20,9 @@ export class Answer {
 	@ManyToOne(() => Option, (option) => option.answers, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'optionId' })
 	option: Option;
-	@ManyToOne(() => Question, (question) => question.answers, { onDelete: 'CASCADE' })
+	@ManyToOne(() => Question, (question) => question.answers, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'questionId' })
 	question: Question;
 	@ManyToOne(() => Group, (group) => group.answers, { onDelete: 'CASCADE' })
@@ -30,8 +31,14 @@ export class Answer {
 	@ManyToOne(() => Lesson, (lesson) => lesson.answers, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'lessonId' })
 	lesson: Lesson;
-	@Column({ nullable: false, type: 'decimal' , precision: 50, scale: 2, default: 0.0  })
-	points:  number;
+	@Column({
+		nullable: false,
+		type: 'decimal',
+		precision: 50,
+		scale: 2,
+		default: 0.0,
+	})
+	points: number;
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

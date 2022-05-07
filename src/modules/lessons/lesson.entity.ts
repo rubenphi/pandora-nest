@@ -14,7 +14,6 @@ import { Question } from 'src/modules/questions/question.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { Area } from 'src/modules/areas/area.entity';
 
-
 @Entity()
 export class Lesson {
 	@PrimaryGeneratedColumn('increment')

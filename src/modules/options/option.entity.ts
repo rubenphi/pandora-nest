@@ -6,7 +6,7 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinColumn,
-	OneToMany
+	OneToMany,
 } from 'typeorm';
 
 import { Question } from 'src/modules/questions/question.entity';

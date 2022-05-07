@@ -16,7 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
 
-import { DeleteFileException } from 'src/Exceptions/deleteFileException';
+import { DeleteFileException } from 'src/exceptions/deleteFileException';
 import { Question } from './question.entity';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto, UpdateQuestionDto, ImportFromQuestionDto, QueryQuestionDto } from './dto';
