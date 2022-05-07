@@ -1,16 +1,26 @@
-import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions"
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as dotenv from 'dotenv';
+import { join } from 'path';
 
-const config: PostgresConnectionOptions = {
-	type: "postgres",
-	host: "127.0.0.1",
-	username: "ruben",
-	password: "japon93",
-	port: 5432,
-	database: "pandora",
-	entities: ["dist/src/**/**/*.entity{.ts,.js}"],
-	synchronize: true,
-	migrations: ["dist/src/database/migrations/*{.ts,.js}"],
-	migrationsTableName: "custom_migration_table"
-}
+dotenv.config();
 
-export default config;
+export = 
+  {
+    type: process.env.DB_TYPE,
+    host: process.env.DB_HOST,
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    options: {
+      instanceName: process.env.DEFAULT_DB_INSTANCE,
+      enableArithAbort: false,
+    },
+    dropSchema: false,
+    synchronize: false,
+    migrations: [join(__dirname, '..', 'database/migrations/*.{ts,js}')],
+    cli: {
+      migrationsDir: 'src/database/migrations',
+    },
+    autoLoadEntities: true,
+  } as TypeOrmModuleOptions
+; 
