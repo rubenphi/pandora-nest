@@ -1,26 +1,21 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
 dotenv.config();
 
-export = 
-  {
-    type: process.env.DB_TYPE,
+const source = new DataSource({
+    type: process.env.DB_TYPE as any,
     host: process.env.DB_HOST,
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    options: {
-      instanceName: process.env.DEFAULT_DB_INSTANCE,
-      enableArithAbort: false,
-    },
     dropSchema: false,
-    synchronize: false,
-    migrations: [join(__dirname, '..', 'database/migrations/*.{ts,js}')],
-    cli: {
-      migrationsDir: 'src/database/migrations',
-    },
-    autoLoadEntities: true,
-  } as TypeOrmModuleOptions
-; 
+    synchronize: true,
+    entities: ["dist/**/**/*.entity{.js,.ts}"],
+    migrations: ["dist/database/migrations/*{.js,.ts}"],
+    subscribers: ["dist/subscribers/**/*{.js,.ts}"],
+  })
+
+export default source;
+console.log(join(__dirname, 'dist/src/**/**/*.entity.{ts,js}'))

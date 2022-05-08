@@ -12,7 +12,7 @@ import { AreasModule } from './modules/areas/areas.module';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { Configuration } from './config/config.keys';
-import ormconfig = require('../ormconfig'); //path mapping doesn't work here
+import  source  from 'ormconfig' //path mapping doesn't work here
 
 
 const dotenv = require('dotenv');
@@ -20,7 +20,8 @@ dotenv.config()
 
 @Module({
 	imports: [
-		TypeOrmModule.forRoot(ormconfig),
+		TypeOrmModule.forRoot({...source,
+			autoLoadEntities: true}),
 		CoursesModule,
 		GroupsModule,
 		LessonsModule,
