@@ -1,3 +1,4 @@
+import {TypeOrmModuleOptions} from '@nestjs/typeorm'
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
@@ -12,10 +13,8 @@ const source = new DataSource({
     database: process.env.DB_NAME,
     dropSchema: false,
     synchronize: true,
-    entities: ["dist/**/**/*.entity{.js,.ts}"],
-    migrations: ["dist/database/migrations/*{.js,.ts}"],
-    subscribers: ["dist/subscribers/**/*{.js,.ts}"],
+    entities: [join(__dirname, "**","**", "*.entity.{ts,js}")],
+    migrations: [join(__dirname, "database","migrations", "*.{ts,js}")]
   })
 
 export default source;
-console.log(join(__dirname, 'dist/src/**/**/*.entity.{ts,js}'))
