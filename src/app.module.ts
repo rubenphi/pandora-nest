@@ -12,6 +12,7 @@ import { AreasModule } from './modules/areas/areas.module';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { Configuration } from './config/config.keys';
+import { UsersModule } from './modules/users/users.module';
 
 
 
@@ -38,6 +39,7 @@ dotenv.config()
 		AnswersModule,
 		AreasModule,
 		ConfigModule,
+		UsersModule,
 	],
 })
 export class AppModule {
