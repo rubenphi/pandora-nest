@@ -11,6 +11,7 @@ import {
 
 import { Course } from 'src/modules/courses/course.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
+import { UserToGroup } from '../users/userToGroup.entity';
 
 @Entity()
 export class Group {
@@ -25,6 +26,8 @@ export class Group {
 	answers: Answer[];
 	@Column({ nullable: false })
 	exist: boolean;
+	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.group)
+	userToGroups: UserToGroup[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

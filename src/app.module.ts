@@ -13,6 +13,7 @@ import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { Configuration } from './config/config.keys';
 import { UsersModule } from './modules/users/users.module';
+import { PeriodsModule } from './modules/periods/periods.module';
 
 
 
@@ -40,6 +41,7 @@ dotenv.config()
 		AreasModule,
 		ConfigModule,
 		UsersModule,
+		PeriodsModule
 	],
 })
 export class AppModule {
