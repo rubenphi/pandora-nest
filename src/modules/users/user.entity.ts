@@ -4,11 +4,14 @@ import {
 	Column,
 	CreateDateColumn,
 	UpdateDateColumn,
-	OneToMany
+	OneToMany,
+	BeforeInsert,
+	BeforeUpdate,
 } from 'typeorm';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
+import { hash } from 'bcryptjs';
 
 @Entity()
 export class User {
@@ -36,4 +39,12 @@ export class User {
 	createdAt: Date;
 	@UpdateDateColumn()
 	updatedAt: Date;
+	@BeforeInsert()
+	@BeforeUpdate()
+	async hashPassword() {
+		if (!this.password) {
+			return;
+		}
+		this.password = await hash(this.password, 10);
+	}
 }

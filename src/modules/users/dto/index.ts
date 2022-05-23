@@ -1,4 +1,3 @@
-export { CreateAreaDto } from './create-users.dto';
-export { QueryAreaDto } from './query-users.dto';
-export { UpdateAreaDto } from './update-users.dto';
-
+export { CreateUserDto } from './create-users.dto';
+export { QueryUserDto } from './query-users.dto';
+export { UpdateUserDto } from './update-users.dto';

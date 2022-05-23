@@ -1,6 +1,6 @@
 import { IsString, IsBoolean } from 'class-validator';
 
-export class CreateAreaDto {
+export class CreateUserDto {
 	@IsString()
 	readonly name: string;
 	@IsBoolean()
