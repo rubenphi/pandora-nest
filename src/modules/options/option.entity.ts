@@ -27,6 +27,10 @@ export class Option {
 	})
 	@JoinColumn({ name: 'questionId' })
 	question: Question;
+	@Column({ nullable: false })
+	questionIdentifier: string;
+	@Column({ nullable: false })
+	questionCorrect: string;
 	@OneToMany(() => Answer, (answer) => answer.option)
 	answers: Answer[];
 	@Column({ nullable: false })

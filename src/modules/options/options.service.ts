@@ -51,7 +51,9 @@ export class OptionsService {
 	async createOption(optionDto: CreateOptionDto): Promise<Option> {
 		if (
 			await this.optionRepository.findOneOrFail({
-				where: { identifier: optionDto.identifier },
+				where: {
+					questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
+				},
 			})
 		) {
 			throw new BadRequestException(
@@ -59,7 +61,9 @@ export class OptionsService {
 			);
 		} else if (
 			optionDto.correct &&
-			(await this.optionRepository.findOneOrFail({ where: { correct: true } }))
+			(await this.optionRepository.findOneOrFail({
+				where: { questionCorrect: optionDto.questionId + '-' + true },
+			}))
 		) {
 			throw new BadRequestException(
 				'Cannot mark two answer options as correct',
@@ -77,6 +81,8 @@ export class OptionsService {
 			correct: optionDto.correct,
 			identifier: optionDto.identifier,
 			question: question,
+			questionCorrect: optionDto.questionId + '-' + optionDto.correct,
+			questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
 			exist: optionDto.exist,
 		});
 		return this.optionRepository.save(option);
@@ -85,7 +91,10 @@ export class OptionsService {
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
 		if (
 			await this.optionRepository.findOne({
-				where: { identifier: optionDto.identifier, id: Not(id) },
+				where: {
+					questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
+					id: Not(id),
+				},
 			})
 		) {
 			throw new BadRequestException(
@@ -94,7 +103,10 @@ export class OptionsService {
 		} else if (
 			optionDto.correct &&
 			(await this.optionRepository.findOne({
-				where: { correct: true, id: Not(id) },
+				where: {
+					questionCorrect: optionDto.questionId + '-' + true,
+					id: Not(id),
+				},
 			}))
 		) {
 			throw new BadRequestException(
@@ -115,6 +127,8 @@ export class OptionsService {
 				correct: optionDto.correct,
 				identifier: optionDto.identifier,
 				question: question,
+				questionCorrect: optionDto.questionId + '-' + optionDto.correct,
+				questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
 				exist: optionDto.exist,
 			})
 			.catch(() => {

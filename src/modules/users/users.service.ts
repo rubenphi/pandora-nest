@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	Injectable,
+	NotFoundException,
+	BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
@@ -15,7 +19,13 @@ export class UsersService {
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
 		if (queryUser) {
 			return await this.userRepository.find({
-				where: { name: queryUser.name, exist: queryUser.exist },
+				where: {
+					name: queryUser.name,
+					lastName: queryUser.lastName,
+					code: queryUser.code,
+					email: queryUser.email,
+					exist: queryUser.exist,
+				},
 			});
 		} else {
 			return await this.userRepository.find();
@@ -32,22 +42,66 @@ export class UsersService {
 		return user;
 	}
 	async createUser(userDto: CreateUserDto): Promise<User> {
+		const sameEmail = await this.userRepository.findOne({
+			where: { email: userDto.email },
+		});
+		const sameCode = await this.userRepository.findOne({
+			where: { code: userDto.code },
+		});
+
+		if (sameEmail && userDto.email) {
+			throw new BadRequestException(
+				'You cannot create two users with the same email',
+			);
+		} else if (sameCode) {
+			throw new BadRequestException(
+				'You cannot create two users with the same code',
+			);
+		}
 		const user: User = await this.userRepository.create({
 			name: userDto.name,
+			lastName: userDto.lastName,
+			email: userDto.email,
+			code: userDto.code,
+			password: userDto.password,
 			exist: userDto.exist,
 		});
-		return this.userRepository.save(user);
+		const returnUser = await this.userRepository.save(user);
+		delete returnUser.password;
+		return returnUser;
 	}
 	async updateUser(id: number, userDto: UpdateUserDto): Promise<User> {
+		const sameEmail = await this.userRepository.findOne({
+			where: { email: userDto.email, id: Not(id) },
+		});
+		const sameCode = await this.userRepository.findOne({
+			where: { code: userDto.code, id: Not(id) },
+		});
+
+		if (sameEmail && userDto.email) {
+			throw new BadRequestException(
+				'You cannot create two users with the same email',
+			);
+		} else if (sameCode) {
+			throw new BadRequestException(
+				'You cannot create two users with the same code',
+			);
+		}
 		const user: User = await this.userRepository.preload({
 			id: id,
 			name: userDto.name,
+			lastName: userDto.lastName,
+			email: userDto.email,
+			code: userDto.code,
+			password: userDto.password,
 			exist: userDto.exist,
 		});
 		if (!user) {
 			throw new NotFoundException('The user you want to update does not exist');
 		}
-		return this.userRepository.save(user);
+		const returnUser = await this.userRepository.save(user);
+		delete returnUser.password;
+		return returnUser;
 	}
 
 	async deleteUser(id: number): Promise<void> {

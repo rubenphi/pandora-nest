@@ -18,7 +18,7 @@ import { UserToCourse } from '../users/userToCourse.entity';
 export class Course {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
-	@Column({ nullable: false, unique: true })
+	@Column({ nullable: false })
 	name: string;
 	@ManyToMany(() => Area)
 	@JoinTable()

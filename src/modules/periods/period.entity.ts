@@ -14,7 +14,7 @@ import { UserToGroup } from '../users/userToGroup.entity';
 export class Period {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
-	@Column({ nullable: false, unique: true })
+	@Column({ nullable: false })
 	name: string;
 	@Column({ nullable: false })
 	exist: boolean;

@@ -1,11 +1,18 @@
-import { IsString, IsBoolean, IsEmail, IsOptional } from 'class-validator';
+import {
+	IsString,
+	IsBoolean,
+	IsEmail,
+	IsOptional,
+	IsEmpty,
+} from 'class-validator';
 
-export class CreateUserDto {
+export class UpdateUserDto {
 	@IsString()
 	readonly name: string;
 	@IsString()
 	readonly lastName: string;
 	@IsOptional()
+	@IsEmpty()
 	@IsEmail()
 	readonly email: string;
 	@IsString()
