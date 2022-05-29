@@ -31,6 +31,14 @@ export class UsersService {
 			return await this.userRepository.find();
 		}
 	}
+
+	async getUserByCode(code: string) {
+		return await this.userRepository
+			.createQueryBuilder('user')
+			.where({ code })
+			.addSelect('user.password')
+			.getOne();
+	}
 	async getUser(id: number): Promise<User> {
 		const user: User = await this.userRepository
 			.findOneOrFail({

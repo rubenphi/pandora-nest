@@ -13,9 +13,12 @@ import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { AreasService } from './areas.service';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Areas Routes')
 @Controller('areas')
 export class AreasController {
-    constructor(private readonly areaService: AreasService) {}
+	constructor(private readonly areaService: AreasService) {}
 	@Get()
 	getAreas(@Query() queryArea: QueryAreaDto): Promise<Area[]> {
 		return this.areaService.getAreas(queryArea);

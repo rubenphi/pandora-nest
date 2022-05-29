@@ -5,5 +5,6 @@ export enum Configuration {
 	DB_PASSWORD = 'DB_PASSWORD',
 	DB_NAME = 'DB_NAME',
 	DB_PORT = 'DB_PORT',
-	DB_TYPE = 'DB_TYPE'
+	DB_TYPE = 'DB_TYPE',
+	HASH_KEY = 'HASH_KEY',
 }

@@ -8,10 +8,18 @@ import {
 	Patch,
 	Delete,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Course } from './course.entity';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto, UpdateCourseDto, AddAreaToCourseDto, DeleteAreaFromCourseDto, QueryCourseDto } from './dto';
+import {
+	CreateCourseDto,
+	UpdateCourseDto,
+	AddAreaToCourseDto,
+	DeleteAreaFromCourseDto,
+	QueryCourseDto,
+} from './dto';
 
+@ApiTags('Courses Routes')
 @Controller('courses')
 export class CoursesController {
 	constructor(private readonly courseService: CoursesService) {}
@@ -47,12 +55,18 @@ export class CoursesController {
 	}
 
 	@Post(':id/areas')
-	addAreaToCourse(@Param('id') id: number, @Body() courseAreas: AddAreaToCourseDto): Promise<any> {
+	addAreaToCourse(
+		@Param('id') id: number,
+		@Body() courseAreas: AddAreaToCourseDto,
+	): Promise<any> {
 		return this.courseService.addAreaToCourse(id, courseAreas);
 	}
 
 	@Delete(':id/areas')
-	deleteAreaToCourse(@Param('id') id: number, @Body() courseAreas: DeleteAreaFromCourseDto): Promise<any> {
+	deleteAreaToCourse(
+		@Param('id') id: number,
+		@Body() courseAreas: DeleteAreaFromCourseDto,
+	): Promise<any> {
 		return this.courseService.deleteAreaToCourse(id, courseAreas);
 	}
 
@@ -60,7 +74,7 @@ export class CoursesController {
 	getGroupsByCourse(@Param('id') id: number): Promise<any> {
 		return this.courseService.getGroupsByCourse(id);
 	}
-	
+
 	@Get(':id/lessons')
 	getLessonsByCourse(@Param('id') id: number): Promise<any> {
 		return this.courseService.getLessonsByCourse(id);

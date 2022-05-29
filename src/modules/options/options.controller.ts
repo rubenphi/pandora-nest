@@ -12,10 +12,12 @@ import { Option } from './option.entity';
 import { OptionsService } from './options.service';
 import { CreateOptionDto, UpdateOptionDto, QueryOptionDto } from './dto';
 import { Answer } from '../answers/answer.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Options Routes')
 @Controller('options')
 export class OptionsController {
-    constructor(private readonly optionService: OptionsService) {}
+	constructor(private readonly optionService: OptionsService) {}
 	@Get()
 	getOptions(@Query() queryOption: QueryOptionDto): Promise<Option[]> {
 		return this.optionService.getOptions(queryOption);

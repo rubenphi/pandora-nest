@@ -7,8 +7,10 @@ import {
 } from 'class-validator';
 
 export class UpdateUserDto {
+	@IsOptional()
 	@IsString()
 	readonly name: string;
+	@IsOptional()
 	@IsString()
 	readonly lastName: string;
 	@IsOptional()
@@ -17,8 +19,10 @@ export class UpdateUserDto {
 	readonly email: string;
 	@IsString()
 	readonly code: string;
+	@IsOptional()
 	@IsBoolean()
 	readonly exist: boolean;
+	@IsOptional()
 	@IsString()
 	readonly password: string;
 }

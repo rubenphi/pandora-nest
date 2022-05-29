@@ -12,7 +12,9 @@ import { Group } from './group.entity';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { Answer } from 'src/modules/answers/answer.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Groups Routes')
 @Controller('groups')
 export class GroupsController {
 	constructor(private readonly groupService: GroupsService) {}

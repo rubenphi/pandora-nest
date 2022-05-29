@@ -19,10 +19,17 @@ import { extname } from 'path';
 import { DeleteFileException } from 'src/exceptions/deleteFileException';
 import { Question } from './question.entity';
 import { QuestionsService } from './questions.service';
-import { CreateQuestionDto, UpdateQuestionDto, ImportFromQuestionDto, QueryQuestionDto } from './dto';
+import {
+	CreateQuestionDto,
+	UpdateQuestionDto,
+	ImportFromQuestionDto,
+	QueryQuestionDto,
+} from './dto';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Questions Routes')
 @Controller('questions')
 export class QuestionsController {
 	constructor(private readonly questionService: QuestionsService) {}
@@ -78,7 +85,7 @@ export class QuestionsController {
 	): Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
-		} 
+		}
 		return this.questionService.updateQuestion(id, question);
 	}
 
@@ -102,7 +109,10 @@ export class QuestionsController {
 		@Param('id') id: number,
 		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
 	): Promise<Option[]> {
-		return this.questionService.importOptionsToQuestion(id, ImportFromQuestionDto);
+		return this.questionService.importOptionsToQuestion(
+			id,
+			ImportFromQuestionDto,
+		);
 	}
 
 	@Patch(':id/photo/import')
@@ -110,6 +120,9 @@ export class QuestionsController {
 		@Param('id') id: number,
 		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
 	): Promise<Question> {
-		return this.questionService.importPhotoToQuestion(id, ImportFromQuestionDto);
+		return this.questionService.importPhotoToQuestion(
+			id,
+			ImportFromQuestionDto,
+		);
 	}
 }

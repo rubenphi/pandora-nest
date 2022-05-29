@@ -11,7 +11,9 @@ import {
 import { Period } from './period.entity';
 import { PeriodsService } from './periods.service';
 import { CreatePeriodDto, UpdatePeriodDto, QueryPeriodDto } from './dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Periods Routes')
 @Controller('periods')
 export class PeriodsController {
 	constructor(private readonly periodService: PeriodsService) {}
@@ -40,7 +42,7 @@ export class PeriodsController {
 	deletePeriod(@Param('id') id: number): Promise<void> {
 		return this.periodService.deletePeriod(id);
 	}
-	
+
 	@Get(':id/lessons')
 	getLessonsByPeriod(@Param('id') id: number): Promise<any> {
 		return this.periodService.getLessonsByPeriod(id);

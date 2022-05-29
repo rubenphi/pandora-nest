@@ -12,18 +12,22 @@ import { Lesson } from './lesson.entity';
 import { LessonsService } from './lessons.service';
 import { Answer } from '../answers/answer.entity';
 import { Question } from '../questions/question.entity';
-import { CreateLessonDto, UpdateLessonDto, QueryLessonDto, ResultLessonDto } from './dto';
+import {
+	CreateLessonDto,
+	UpdateLessonDto,
+	QueryLessonDto,
+	ResultLessonDto,
+} from './dto';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('lessons')
-
+@ApiTags('Lessons Routes')
 @Controller('lessons')
 export class LessonsController {
-    constructor(private readonly lessonService: LessonsService) {}
+	constructor(private readonly lessonService: LessonsService) {}
 	@Get()
-	getLessons(@Query() queryLesson: QueryLessonDto ): Promise<Lesson[]> {
+	getLessons(@Query() queryLesson: QueryLessonDto): Promise<Lesson[]> {
 		return this.lessonService.getLessons(queryLesson);
 	}
-
 
 	@Get(':id')
 	getLesson(@Param('id') id: number): Promise<Lesson> {

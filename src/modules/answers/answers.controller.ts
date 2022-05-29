@@ -8,10 +8,12 @@ import {
 	Patch,
 	Delete,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Answer } from './answer.entity';
 import { AnswersService } from './answers.service';
 import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 
+@ApiTags('Answers Routes')
 @Controller('answers')
 export class AnswersController {
 	constructor(private readonly answerService: AnswersService) {}
