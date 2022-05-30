@@ -7,9 +7,9 @@ dotenv.config();
 const source = new DataSource({
 	type: process.env.DB_TYPE as any,
 	host: process.env.DB_HOST,
+	database: process.env.PGDATABASE,
 	username: process.env.PGUSER,
 	password: process.env.DB_PASSWORD,
-	database: process.env.PGDATABASE,
 	dropSchema: false,
 	synchronize: true,
 	entities: [join(__dirname, '**', '**', '*.entity.{ts,js}')],

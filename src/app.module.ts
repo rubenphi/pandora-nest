@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import {TypeOrmModule} from '@nestjs/typeorm'
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CoursesModule } from './modules/courses/courses.module';
 import { GroupsModule } from './modules/groups/groups.module';
@@ -16,22 +16,22 @@ import { UsersModule } from './modules/users/users.module';
 import { PeriodsModule } from './modules/periods/periods.module';
 import { AuthModule } from './modules/auth/auth.module';
 
-
-
 const dotenv = require('dotenv');
-dotenv.config()
+dotenv.config();
 
 @Module({
 	imports: [
-		TypeOrmModule.forRoot({    type: process.env.DB_TYPE as any,
+		TypeOrmModule.forRoot({
+			type: process.env.DB_TYPE as any,
 			host: process.env.DB_HOST,
-			username: process.env.DB_USERNAME,
+			database: process.env.PGDATABASE,
+			username: process.env.PGUSER,
 			password: process.env.DB_PASSWORD,
-			database: process.env.DB_NAME,
 			dropSchema: false,
 			synchronize: true,
-			entities: ["dist/**/**/*.entity{.js,.ts}"],
-			migrations: ["dist/database/migrations/*{.js,.ts}"]}),
+			entities: ['dist/**/**/*.entity{.js,.ts}'],
+			migrations: ['dist/database/migrations/*{.js,.ts}'],
+		}),
 		CoursesModule,
 		GroupsModule,
 		LessonsModule,
@@ -43,7 +43,7 @@ dotenv.config()
 		ConfigModule,
 		UsersModule,
 		PeriodsModule,
-		AuthModule
+		AuthModule,
 	],
 })
 export class AppModule {
