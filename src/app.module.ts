@@ -15,6 +15,7 @@ import { Configuration } from './config/config.keys';
 import { UsersModule } from './modules/users/users.module';
 import { PeriodsModule } from './modules/periods/periods.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { roles } from './modules/users/app.roles';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -24,8 +25,8 @@ dotenv.config();
 		TypeOrmModule.forRoot({
 			type: process.env.DB_TYPE as any,
 			host: process.env.DB_HOST,
-			database: process.env.PGDATABASE,
-			username: process.env.PGUSER,
+			database: process.env.DB_NAME,
+			username: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			dropSchema: false,
 			synchronize: true,

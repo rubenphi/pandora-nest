@@ -9,6 +9,7 @@ import {
 	Delete,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/common/decorators';
 import { Answer } from './answer.entity';
 import { AnswersService } from './answers.service';
 import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
@@ -17,25 +18,27 @@ import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 @Controller('answers')
 export class AnswersController {
 	constructor(private readonly answerService: AnswersService) {}
+	@Auth()
 	@Get()
 	getAnswers(@Query() queryAnswer: QueryAnswerDto): Promise<Answer[]> {
 		return this.answerService.getAnswers(queryAnswer);
 	}
+	@Auth()
 	@Get(':id')
 	getAnswer(@Param('id') id: number): Promise<Answer> {
 		return this.answerService.getAnswer(id);
 	}
-
+	@Auth()
 	@Get('question/bonus/:id')
 	bonusToAnswer(@Param('id') id: number): Promise<Answer> {
 		return this.answerService.bonusToAnswer(id);
 	}
-
+	@Auth()
 	@Post()
 	createAnswer(@Body() answer: CreateAnswerDto): Promise<Answer> {
 		return this.answerService.createAnswer(answer);
 	}
-
+	@Auth()
 	@Patch(':id')
 	updateAnswer(
 		@Param('id') id: number,
@@ -43,6 +46,7 @@ export class AnswersController {
 	): Promise<Answer> {
 		return this.answerService.updateAnswer(id, answer);
 	}
+	@Auth()
 	@Delete(':id')
 	deleteAnswer(@Param('id') id: number): Promise<void> {
 		return this.answerService.deleteAnswer(id);

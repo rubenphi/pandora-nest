@@ -19,26 +19,28 @@ import {
 	ResultLessonDto,
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/common/decorators';
 
 @ApiTags('Lessons Routes')
 @Controller('lessons')
 export class LessonsController {
 	constructor(private readonly lessonService: LessonsService) {}
+	@Auth()
 	@Get()
 	getLessons(@Query() queryLesson: QueryLessonDto): Promise<Lesson[]> {
 		return this.lessonService.getLessons(queryLesson);
 	}
-
+	@Auth()
 	@Get(':id')
 	getLesson(@Param('id') id: number): Promise<Lesson> {
 		return this.lessonService.getLesson(id);
 	}
-
+	@Auth()
 	@Post()
 	createLesson(@Body() lesson: CreateLessonDto): Promise<Lesson> {
 		return this.lessonService.createLesson(lesson);
 	}
-
+	@Auth()
 	@Patch(':id')
 	updateLesson(
 		@Param('id') id: number,
@@ -46,6 +48,7 @@ export class LessonsController {
 	): Promise<Lesson> {
 		return this.lessonService.updateLesson(id, lesson);
 	}
+	@Auth()
 	@Delete(':id')
 	deleteLesson(@Param('id') id: number): Promise<void> {
 		return this.lessonService.deleteLesson(id);

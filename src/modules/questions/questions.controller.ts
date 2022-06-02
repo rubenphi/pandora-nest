@@ -28,20 +28,23 @@ import {
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/common/decorators';
 
 @ApiTags('Questions Routes')
 @Controller('questions')
 export class QuestionsController {
 	constructor(private readonly questionService: QuestionsService) {}
+	@Auth()
 	@Get()
 	getQuestions(@Query() queryQuestion: QueryQuestionDto): Promise<Question[]> {
 		return this.questionService.getQuestions(queryQuestion);
 	}
+	@Auth()
 	@Get(':id')
 	getQuestion(@Param('id') id: number): Promise<Question> {
 		return this.questionService.getQuestion(id);
 	}
-
+	@Auth()
 	@Post()
 	@UseFilters(DeleteFileException)
 	@UseInterceptors(
@@ -65,7 +68,7 @@ export class QuestionsController {
 		}
 		return this.questionService.createQuestion(question);
 	}
-
+	@Auth()
 	@Patch(':id')
 	@UseFilters(DeleteFileException)
 	@UseInterceptors(
@@ -88,22 +91,22 @@ export class QuestionsController {
 		}
 		return this.questionService.updateQuestion(id, question);
 	}
-
+	@Auth()
 	@Delete(':id')
 	deleteQuestion(@Param('id') id: number): Promise<void> {
 		return this.questionService.deleteQuestion(id);
 	}
-
+	@Auth()
 	@Get(':id/options')
 	getOptionByQuestion(@Param('id') id: number): Promise<Option[]> {
 		return this.questionService.getOptionsByQuestion(id);
 	}
-
+	@Auth()
 	@Get(':id/answers')
 	getAnswersByQuestion(@Param('id') id: number): Promise<Answer[]> {
 		return this.questionService.getAnswersByQuestion(id);
 	}
-
+	@Auth()
 	@Patch(':id/options/import')
 	importOptionsToQuestion(
 		@Param('id') id: number,
@@ -114,7 +117,7 @@ export class QuestionsController {
 			ImportFromQuestionDto,
 		);
 	}
-
+	@Auth()
 	@Patch(':id/photo/import')
 	importPhotoToQuestion(
 		@Param('id') id: number,
