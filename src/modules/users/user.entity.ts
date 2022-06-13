@@ -27,6 +27,8 @@ export class User {
 	code: string;
 	@Column({ nullable: false })
 	exist: boolean;
+	@Column({ nullable: false, default: 'user' })
+	rol: string;
 	@Column({ nullable: false, select: false })
 	password: string;
 	@OneToMany(() => Lesson, (lesson) => lesson.author)

@@ -15,7 +15,7 @@ import { Configuration } from './config/config.keys';
 import { UsersModule } from './modules/users/users.module';
 import { PeriodsModule } from './modules/periods/periods.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { roles } from './modules/users/app.roles';
+import { AbilityModule } from './modules/ability/ability.module';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -45,6 +45,7 @@ dotenv.config();
 		UsersModule,
 		PeriodsModule,
 		AuthModule,
+		AbilityModule,
 	],
 })
 export class AppModule {
