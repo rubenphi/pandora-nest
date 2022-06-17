@@ -1,6 +1,11 @@
-import { IsInt, IsArray } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt } from 'class-validator';
 
 export class AddAreaToCourseDto {
-	@IsArray()
+	@ApiProperty({
+		type: [Number],
+		description: 'Areas to add Id'
+	})
+	@IsInt({each:true})
 	readonly areasId: number[];
 }
