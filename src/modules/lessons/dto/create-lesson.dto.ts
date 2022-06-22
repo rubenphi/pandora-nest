@@ -23,7 +23,7 @@ export class CreateLessonDto {
 	@IsInt()
 	readonly areaId: number;
 	@ApiProperty({
-		description: 'Indicates if the group is active or "deleted"',
+		description: 'Indicates if the lesson is active or "deleted"',
 	})
 	@IsBoolean()
 	readonly exist: boolean;

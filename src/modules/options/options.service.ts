@@ -4,7 +4,7 @@ import {
 	BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, ILike } from 'typeorm';
 
 import { Option } from './option.entity';
 import { CreateOptionDto, UpdateOptionDto, QueryOptionDto } from './dto';
@@ -24,7 +24,7 @@ export class OptionsService {
 		if (queryOption) {
 			return await this.optionRepository.find({
 				where: {
-					sentence: queryOption.sentence,
+					sentence: ILike(`%${queryOption.sentence}%`),
 					correct: queryOption.correct,
 					identifier: queryOption.identifier,
 					question: { id: queryOption.questionId },
@@ -50,7 +50,7 @@ export class OptionsService {
 	}
 	async createOption(optionDto: CreateOptionDto): Promise<Option> {
 		if (
-			await this.optionRepository.findOneOrFail({
+			await this.optionRepository.findOne({
 				where: {
 					questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
 				},
@@ -61,7 +61,7 @@ export class OptionsService {
 			);
 		} else if (
 			optionDto.correct &&
-			(await this.optionRepository.findOneOrFail({
+			(await this.optionRepository.findOne({
 				where: { questionCorrect: optionDto.questionId + '-' + true },
 			}))
 		) {

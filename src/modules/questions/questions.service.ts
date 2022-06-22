@@ -134,7 +134,7 @@ export class QuestionsService {
 			});
 		if (
 			question.photo &&
-			!(await this.questionRepository.findOneOrFail({
+			!(await this.questionRepository.findOne({
 				where: { id: Not(id), photo: question.photo },
 			}))
 		) {
@@ -197,7 +197,7 @@ export class QuestionsService {
 			}
 
 			return (
-				await this.questionRepository.findOneOrFail({
+				await this.questionRepository.findOne({
 					relations: ['options.question'],
 					where: { id },
 				})

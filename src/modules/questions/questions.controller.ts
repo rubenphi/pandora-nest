@@ -27,7 +27,7 @@ import {
 } from './dto';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
 
 @ApiTags('Questions Routes')
@@ -47,6 +47,7 @@ export class QuestionsController {
 	@Auth()
 	@Post()
 	@UseFilters(DeleteFileException)
+	@ApiConsumes('multipart/form-data')
 	@UseInterceptors(
 		FileInterceptor('photo', {
 			storage: diskStorage({
@@ -63,7 +64,7 @@ export class QuestionsController {
 	): Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
-		} else {
+		} else if (question.photo == "") {
 			question.photo = null;
 		}
 		return this.questionService.createQuestion(question);

@@ -68,7 +68,7 @@ export class LessonsService {
 				where: { id: lessonDto.areaId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Course not found');
+				throw new NotFoundException('Area not found');
 			});
 		const lesson: Lesson = await this.lessonRepository.create({
 			topic: lessonDto.topic,
