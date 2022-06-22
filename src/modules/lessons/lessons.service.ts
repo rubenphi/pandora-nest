@@ -31,7 +31,7 @@ export class LessonsService {
 				where: {
 					course: { id: queryLesson.courseId },
 					area: { id: queryLesson.areaId },
-					theme: queryLesson.theme,
+					topic: queryLesson.topic,
 					date: queryLesson.date,
 					exist: queryLesson.exist,
 				},
@@ -71,7 +71,7 @@ export class LessonsService {
 				throw new NotFoundException('Course not found');
 			});
 		const lesson: Lesson = await this.lessonRepository.create({
-			theme: lessonDto.theme,
+			topic: lessonDto.topic,
 			date: lessonDto.date,
 			course,
 			area,
@@ -89,7 +89,7 @@ export class LessonsService {
 			});
 		const lesson: Lesson = await this.lessonRepository.preload({
 			id: id,
-			theme: lessonDto.theme,
+			topic: lessonDto.topic,
 			date: lessonDto.date,
 			course,
 			exist: lessonDto.exist,

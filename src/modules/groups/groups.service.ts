@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Group } from './group.entity';
-import { CreateGroupDto, UpdateGroupDto } from './dto';
+import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Course } from '../courses/course.entity';
 import { Answer } from '../answers/answer.entity';
 
@@ -16,8 +16,15 @@ export class GroupsService {
 		private readonly courseRepository: Repository<Course>,
 	) {}
 
-	async getGroups(): Promise<Group[]> {
-		return await this.groupRepository.find({ relations: ['course'] });
+	async getGroups(queryGroup: QueryGroupDto): Promise<Group[]> {
+		if (queryGroup) {
+			return await this.groupRepository.find({
+				where: { name: queryGroup.name, course: { id: queryGroup.courseId },exist: queryGroup.exist },
+			});
+		} else {
+			return await this.groupRepository.find({ relations: ['course'] });
+		}
+		
 	}
 
 	async getGroup(id: number): Promise<Group> {

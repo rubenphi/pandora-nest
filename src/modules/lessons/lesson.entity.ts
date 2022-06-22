@@ -21,7 +21,7 @@ export class Lesson {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 	@Column({ nullable: false })
-	theme: string;
+	topic: string;
 	@Column({ nullable: false })
 	date: Date;
 	@ManyToOne(() => Course, (course) => course.lessons, { onDelete: 'CASCADE' })

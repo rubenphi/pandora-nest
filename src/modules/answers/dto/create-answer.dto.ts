@@ -28,7 +28,7 @@ export class CreateAnswerDto {
 	@IsNumber()
 	readonly points: number;
 	@ApiProperty({
-		description: 'Indicates if the course is active or "deleted"',
+		description: 'Indicates if the answer is active or "deleted"',
 	})
 	@IsBoolean()
 	readonly exist: boolean;

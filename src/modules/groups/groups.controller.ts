@@ -6,11 +6,12 @@ import {
 	Body,
 	Patch,
 	Delete,
+	Query,
 } from '@nestjs/common';
 
 import { Group } from './group.entity';
 import { GroupsService } from './groups.service';
-import { CreateGroupDto, UpdateGroupDto } from './dto';
+import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
@@ -21,8 +22,8 @@ export class GroupsController {
 	constructor(private readonly groupService: GroupsService) {}
 	@Auth()
 	@Get()
-	getGroups(): Promise<Group[]> {
-		return this.groupService.getGroups();
+	getGroups(@Query() queryGroupDto: QueryGroupDto): Promise<Group[]> {
+		return this.groupService.getGroups(queryGroupDto);
 	}
 	@Auth()
 	@Get(':id')
