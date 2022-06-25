@@ -6,15 +6,15 @@ import {
 	UpdateDateColumn,
 	OneToMany,
 } from 'typeorm';
-import { Lesson } from 'src/modules/lessons/lesson.entity';
+import { Course } from '../courses/course.entity';
 
 @Entity()
-export class Area {
+export class Institute {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 	@Column({ nullable: false })
 	name: string;
-	@OneToMany(() => Course, (Course) => Course.area)
+	@OneToMany(() => Course, (Course) => Course.institute)
 	courses: Course[];
 	@Column({ nullable: false })
 	exist: boolean;

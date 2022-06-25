@@ -7,12 +7,14 @@ import {
 	OneToMany,
 	ManyToMany,
 	JoinTable,
+	ManyToOne,
 } from 'typeorm';
 
 import { Group } from 'src/modules/groups/group.entity';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Area } from 'src/modules/areas/area.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
+import { Institute } from '../intitutes/institute.entity';
 
 @Entity()
 export class Course {
@@ -20,6 +22,9 @@ export class Course {
 	id: number;
 	@Column({ nullable: false })
 	name: string;
+	@ManyToOne(() => Institute)
+	institute: Institute;
+	@JoinTable({ name: 'instituteId' })
 	@ManyToMany(() => Area)
 	@JoinTable()
 	areas: Area[];
