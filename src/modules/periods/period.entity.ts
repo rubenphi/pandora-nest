@@ -20,10 +20,10 @@ export class Period {
 	exist: boolean;
 	@OneToMany(() => Lesson, (lesson) => lesson.period)
 	lessons: Lesson[];
-	@CreateDateColumn()
-	createdAt: Date;
 	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.period)
 	userToGroups: UserToGroup[];
+	@CreateDateColumn()
+	createdAt: Date;
 	@UpdateDateColumn()
 	updatedAt: Date;
 }

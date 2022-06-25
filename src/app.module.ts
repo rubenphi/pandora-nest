@@ -16,6 +16,7 @@ import { UsersModule } from './modules/users/users.module';
 import { PeriodsModule } from './modules/periods/periods.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AbilityModule } from './modules/ability/ability.module';
+import { IntitutesModule } from './modules/intitutes/intitutes.module';
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -46,6 +47,7 @@ dotenv.config();
 		PeriodsModule,
 		AuthModule,
 		AbilityModule,
+		IntitutesModule,
 	],
 })
 export class AppModule {

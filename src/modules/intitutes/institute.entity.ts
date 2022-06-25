@@ -1,0 +1,25 @@
+import {
+	Entity,
+	PrimaryGeneratedColumn,
+	Column,
+	CreateDateColumn,
+	UpdateDateColumn,
+	OneToMany,
+} from 'typeorm';
+import { Lesson } from 'src/modules/lessons/lesson.entity';
+
+@Entity()
+export class Area {
+	@PrimaryGeneratedColumn('increment')
+	id: number;
+	@Column({ nullable: false })
+	name: string;
+	@OneToMany(() => Course, (Course) => Course.area)
+	courses: Course[];
+	@Column({ nullable: false })
+	exist: boolean;
+	@CreateDateColumn()
+	createdAt: Date;
+	@UpdateDateColumn()
+	updatedAt: Date;
+}
