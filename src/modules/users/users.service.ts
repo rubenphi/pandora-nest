@@ -4,7 +4,7 @@ import {
 	BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, ILike } from 'typeorm';
 
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
@@ -20,8 +20,8 @@ export class UsersService {
 		if (queryUser) {
 			return await this.userRepository.find({
 				where: {
-					name: queryUser.name,
-					lastName: queryUser.lastName,
+					name: ILike(`%${queryUser.name}%`),
+					lastName: ILike(`%${queryUser.lastName}%`),
 					code: queryUser.code,
 					email: queryUser.email,
 					exist: queryUser.exist,
