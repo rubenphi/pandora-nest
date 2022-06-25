@@ -6,7 +6,14 @@ import {
 	InferSubjects,
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
+import { Answer } from '../answers/answer.entity';
 import { Area } from '../areas/area.entity';
+import { Course } from '../courses/course.entity';
+import { Group } from '../groups/group.entity';
+import { Lesson } from '../lessons/lesson.entity';
+import { Option } from '../options/option.entity';
+import { Period } from '../periods/period.entity';
+import { Question } from '../questions/question.entity';
 import { User } from '../users/user.entity';
 
 export enum Action {
@@ -25,7 +32,15 @@ export enum Rol {
 	User = 'user',
 }
 
-export type Subjects = InferSubjects<typeof User> | InferSubjects<typeof Area>;
+export type Subjects = InferSubjects<
+	| typeof User
+	| typeof Answer
+	| typeof Area
+	| typeof Group
+	| typeof Lesson
+	| typeof Option
+	| typeof Question
+> | 'all';
 export type AppAbility = Ability<[Action, Subjects]>;
 
 @Injectable()
@@ -36,8 +51,7 @@ export class AbilityFactory {
 		);
 
 		if (user.rol == Rol.Superadmin) {
-			can(Action.Manage, Area);
-			can(Action.Manage, User);
+			can(Action.Manage, 'all');
 		} else if (user.rol == Rol.User) {
 			can(Action.Read, Area);
 		}
