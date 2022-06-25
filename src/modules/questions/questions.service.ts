@@ -4,7 +4,7 @@ import {
 	BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, ILike } from 'typeorm';
 import * as fs from 'fs';
 
 import { Question } from './question.entity';
@@ -33,8 +33,8 @@ export class QuestionsService {
 		if (queryQuestion) {
 			return await this.questionRepository.find({
 				where: {
-					title: queryQuestion.title,
-					sentence: queryQuestion.sentence,
+					title: ILike(`%${queryQuestion.title}%`),
+					sentence: ILike(`%${queryQuestion.sentence}%`),
 					points: queryQuestion.points,
 					photo: queryQuestion.photo,
 					visible: queryQuestion.visible,

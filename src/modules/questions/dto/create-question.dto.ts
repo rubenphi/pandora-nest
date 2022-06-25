@@ -1,12 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
-import {
-	IsString,
-	IsInt,
-	IsBoolean,
-	IsOptional,
-} from 'class-validator';
-
+import { IsString, IsInt, IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateQuestionDto {
 	@ApiProperty({
@@ -27,8 +21,8 @@ export class CreateQuestionDto {
 	readonly points: number;
 	@ApiProperty({
 		description: 'Photo of question',
-		//format: 'binary',
-		required: false
+		format: 'binary',
+		required: false,
 	})
 	@IsOptional()
 	photo?: string;
@@ -37,7 +31,7 @@ export class CreateQuestionDto {
 	})
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly visible: boolean;
 	@ApiProperty({
@@ -45,7 +39,7 @@ export class CreateQuestionDto {
 	})
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly available: boolean;
 	@ApiProperty({
@@ -59,7 +53,7 @@ export class CreateQuestionDto {
 	})
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly exist: boolean;
 }
