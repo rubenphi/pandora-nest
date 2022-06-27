@@ -17,16 +17,19 @@ export class UsersService {
 	) {}
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
-		if (queryUser) {
+		
+	
+		if (Object.entries(queryUser).length != 0) {
 			return await this.userRepository.find({
 				where: {
-					name: ILike(`%${queryUser.name}%`),
-					lastName: ILike(`%${queryUser.lastName}%`),
+					name: queryUser.name ? ILike(`%${queryUser.name}%`): null,
+					lastName: queryUser.lastName ? ILike(`%${queryUser.lastName}%`): null,
 					code: queryUser.code,
 					email: queryUser.email,
 					exist: queryUser.exist,
-				},
-			});
+				
+			}});
+		
 		} else {
 			return await this.userRepository.find();
 		}

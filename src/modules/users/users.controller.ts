@@ -7,19 +7,29 @@ import {
 	Body,
 	Patch,
 	Delete,
+	Req,
+	ForbiddenException,
 } from '@nestjs/common';
 
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags,  } from '@nestjs/swagger';
+import { AbilityFactory, Action } from '../ability/ability.factory';
+import { Auth } from 'src/common/decorators';
 
 @ApiTags('Users Routes')
 @Controller('users')
 export class UsersController {
-	constructor(private readonly userService: UsersService) {}
+	constructor(private readonly userService: UsersService,private abilityFactory: AbilityFactory) {}
+	@Auth()
 	@Get()
-	getUsers(@Query() queryUser: QueryUserDto): Promise<User[]> {
+	getUsers(@Req() req, @Query()queryUser: QueryUserDto): Promise<User[]> {
+		const ability = this.abilityFactory.defineAbility(req.user);
+		const isAllowed = ability.can(Action.Read, User);
+		if(!isAllowed){
+			throw new ForbiddenException("only admin");
+		}
 		return this.userService.getUsers(queryUser);
 	}
 	@Get(':id')
