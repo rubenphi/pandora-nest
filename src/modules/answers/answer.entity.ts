@@ -12,7 +12,7 @@ import { Option } from 'src/modules/options/option.entity';
 import { Question } from 'src/modules/questions/question.entity';
 import { Group } from 'src/modules/groups/group.entity';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
-import { Institute } from '../intitutes/institute.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Answer {

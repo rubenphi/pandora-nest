@@ -13,7 +13,7 @@ import {
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Option } from 'src/modules/options/option.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
-import { Institute } from '../intitutes/institute.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Question {

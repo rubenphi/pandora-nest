@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsBoolean } from 'class-validator';
 
-export class UpdateAreaDto {
+export class UpdateInstituteDto {
 	@ApiProperty({
-		description: 'Area´s name',
+		description: 'Institute´s name',
 	})
 	@IsNotEmpty()
 	readonly name: string;
 	@ApiProperty({
-		description: 'Indicates if the area is active or "deleted"',
+		description: 'Indicates if the institute is active or "deleted"',
 	})
 	@IsBoolean()
 	readonly exist: boolean;

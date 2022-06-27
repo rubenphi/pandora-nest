@@ -14,7 +14,7 @@ import { Group } from 'src/modules/groups/group.entity';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Area } from 'src/modules/areas/area.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
-import { Institute } from '../intitutes/institute.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Course {

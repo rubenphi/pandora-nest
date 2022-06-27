@@ -14,7 +14,7 @@ import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
 import { hash } from 'bcryptjs';
-import { Institute } from '../intitutes/institute.entity';
+import { Institute } from '../institutes/institute.entity';
 //estamos en autenticacion
 @Entity()
 export class User {

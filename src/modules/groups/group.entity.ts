@@ -13,7 +13,7 @@ import {
 import { Course } from 'src/modules/courses/course.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
-import { Institute } from '../intitutes/institute.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Group {

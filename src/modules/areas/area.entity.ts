@@ -9,7 +9,7 @@ import {
 	JoinTable,
 } from 'typeorm';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
-import { Institute } from '../intitutes/institute.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Area {

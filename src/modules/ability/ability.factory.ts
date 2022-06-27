@@ -5,12 +5,12 @@ import {
 	ExtractSubjectType,
 	InferSubjects,
 } from '@casl/ability';
-import { Injectable } from '@nestjs/common';
-import { Not } from 'typeorm';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { Answer } from '../answers/answer.entity';
 import { Area } from '../areas/area.entity';
 import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
+import { Institute } from '../institutes/institute.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { Option } from '../options/option.entity';
 import { Period } from '../periods/period.entity';
@@ -33,15 +33,19 @@ export enum Rol {
 	User = 'user',
 }
 
-export type Subjects = InferSubjects<
-	| typeof User
-	| typeof Answer
-	| typeof Area
-	| typeof Group
-	| typeof Lesson
-	| typeof Option
-	| typeof Question
-> | 'all';
+export type Subjects =
+	| InferSubjects<
+			| typeof Answer
+			| typeof Area
+			| typeof Group
+			| typeof Institute
+			| typeof Lesson
+			| typeof Option
+			| typeof Period
+			| typeof Question
+			| typeof User
+	  >
+	| 'all';
 export type AppAbility = Ability<[Action, Subjects]>;
 
 @Injectable()
@@ -55,10 +59,16 @@ export class AbilityFactory {
 			can(Action.Manage, 'all');
 		} else if (user.rol == Rol.Admin) {
 			can(Action.Manage, 'all');
-			cannot(Action.Manage, Course, { institute: { id: user.id   }});
-			
+			cannot(Action.Manage, Answer, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Area, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Course, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Group, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Lesson, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Option, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Period, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, Question, { institute: { $ne: user.institute } });
+			cannot(Action.Manage, User, { institute: { $ne: user.institute } });
 		}
-		
 		return build({
 			detectSubjectType: (item) =>
 				item.constructor as ExtractSubjectType<Subjects>,

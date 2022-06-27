@@ -41,7 +41,7 @@ export class Institute {
 	@OneToMany(() => User, (user) => user.institute)
 	users: User[];
 	@Column({ nullable: false })
-	exists: boolean;
+	exist: boolean;
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()
