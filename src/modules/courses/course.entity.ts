@@ -23,8 +23,8 @@ export class Course {
 	@Column({ nullable: false })
 	name: string;
 	@ManyToOne(() => Institute)
-	institute: Institute;
 	@JoinTable({ name: 'instituteId' })
+	institute: Institute;
 	@ManyToMany(() => Area)
 	@JoinTable()
 	areas: Area[];

@@ -7,11 +7,13 @@ import {
 	ManyToOne,
 	OneToMany,
 	JoinColumn,
+	JoinTable,
 } from 'typeorm';
 
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Option } from 'src/modules/options/option.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
+import { Institute } from '../intitutes/institute.entity';
 
 @Entity()
 export class Question {
@@ -26,6 +28,9 @@ export class Question {
 	})
 	@JoinColumn({ name: 'lessonId' })
 	lesson: Lesson;
+	@ManyToOne(() => Institute)
+	@JoinTable({ name: 'instituteId' })
+	institute: Institute;
 	@OneToMany(() => Answer, (answer) => answer.question)
 	answers: Answer[];
 	@OneToMany(() => Option, (option) => option.question)

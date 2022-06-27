@@ -5,8 +5,11 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	OneToMany,
+	ManyToOne,
+	JoinTable,
 } from 'typeorm';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
+import { Institute } from '../intitutes/institute.entity';
 
 @Entity()
 export class Area {
@@ -14,6 +17,9 @@ export class Area {
 	id: number;
 	@Column({ nullable: false })
 	name: string;
+	@ManyToOne(() => Institute)
+	@JoinTable({ name: 'instituteId' })
+	institute: Institute;
 	@OneToMany(() => Lesson, (lesson) => lesson.area)
 	lessons: Lesson[];
 	@Column({ nullable: false }) 

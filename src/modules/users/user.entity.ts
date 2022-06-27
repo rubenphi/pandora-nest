@@ -7,11 +7,14 @@ import {
 	OneToMany,
 	BeforeInsert,
 	BeforeUpdate,
+	JoinTable,
+	ManyToOne,
 } from 'typeorm';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
 import { hash } from 'bcryptjs';
+import { Institute } from '../intitutes/institute.entity';
 //estamos en autenticacion
 @Entity()
 export class User {
@@ -25,6 +28,9 @@ export class User {
 	email: string;
 	@Column({ nullable: false })
 	code: string;
+	@ManyToOne(() => Institute)
+	@JoinTable({ name: 'instituteId' })
+	institute: Institute;
 	@Column({ nullable: false })
 	exist: boolean;
 	@Column({ nullable: false, default: 'user' })

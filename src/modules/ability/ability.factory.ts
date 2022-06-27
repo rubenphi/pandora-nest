@@ -6,6 +6,7 @@ import {
 	InferSubjects,
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
+import { Not } from 'typeorm';
 import { Answer } from '../answers/answer.entity';
 import { Area } from '../areas/area.entity';
 import { Course } from '../courses/course.entity';
@@ -52,10 +53,12 @@ export class AbilityFactory {
 
 		if (user.rol == Rol.Superadmin) {
 			can(Action.Manage, 'all');
-		} else if (user.rol == Rol.User) {
-			can(Action.Read, Area);
+		} else if (user.rol == Rol.Admin) {
+			can(Action.Manage, 'all');
+			cannot(Action.Manage, Course, { institute: { id: user.id   }});
+			
 		}
-
+		
 		return build({
 			detectSubjectType: (item) =>
 				item.constructor as ExtractSubjectType<Subjects>,
