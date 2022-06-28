@@ -17,19 +17,18 @@ export class UsersService {
 	) {}
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
-		
-	
 		if (Object.entries(queryUser).length != 0) {
 			return await this.userRepository.find({
 				where: {
-					name: queryUser.name ? ILike(`%${queryUser.name}%`): null,
-					lastName: queryUser.lastName ? ILike(`%${queryUser.lastName}%`): null,
+					name: queryUser.name ? ILike(`%${queryUser.name}%`) : null,
+					lastName: queryUser.lastName
+						? ILike(`%${queryUser.lastName}%`)
+						: null,
 					code: queryUser.code,
 					email: queryUser.email,
 					exist: queryUser.exist,
-				
-			}});
-		
+				},
+			});
 		} else {
 			return await this.userRepository.find();
 		}
@@ -75,6 +74,7 @@ export class UsersService {
 			email: userDto.email,
 			code: userDto.code,
 			password: userDto.password,
+			rol: 'user',
 			exist: userDto.exist,
 		});
 		const returnUser = await this.userRepository.save(user);
@@ -104,6 +104,7 @@ export class UsersService {
 			lastName: userDto.lastName,
 			email: userDto.email,
 			code: userDto.code,
+			rol: userDto.rol,
 			password: userDto.password,
 			exist: userDto.exist,
 		});

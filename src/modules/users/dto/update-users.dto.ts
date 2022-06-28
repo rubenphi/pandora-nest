@@ -24,7 +24,6 @@ export class UpdateUserDto {
 		description: 'Email of user',
 	})
 	@IsOptional()
-	@IsEmpty()
 	@IsEmail()
 	readonly email: string;
 	@ApiProperty({
@@ -33,6 +32,12 @@ export class UpdateUserDto {
 	@IsOptional()
 	@IsString()
 	readonly code: string;
+	@ApiProperty({
+		description: 'Rol of user',
+	})
+	@IsOptional()
+	@IsString()
+	readonly rol: string;
 	@ApiProperty({
 		description: 'Password of user',
 	})
@@ -45,5 +50,4 @@ export class UpdateUserDto {
 	@IsOptional()
 	@IsBoolean()
 	readonly exist: boolean;
-	
 }
