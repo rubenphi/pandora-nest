@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsString, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsInt } from 'class-validator';
 
 export class QueryPeriodDto {
 	@ApiProperty({
@@ -10,6 +10,13 @@ export class QueryPeriodDto {
 	@IsOptional()
 	@IsString()
 	readonly name?: string;
+	@ApiProperty({
+		description: 'Institute id of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search period if exist or not',
 		required: false,

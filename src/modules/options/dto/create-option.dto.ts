@@ -23,6 +23,11 @@ export class CreateOptionDto {
 	@IsInt()
 	readonly questionId: number;
 	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Indicates if the option is active or "deleted"',
 	})
 	@IsBoolean()

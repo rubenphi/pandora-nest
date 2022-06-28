@@ -35,6 +35,13 @@ export class QueryLessonDto {
 	@IsInt()
 	readonly areaId?: number;
 	@ApiProperty({
+		description: 'Institute id of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Search group if exist or not',
 		required: false
 	})

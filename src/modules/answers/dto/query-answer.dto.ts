@@ -36,6 +36,13 @@ export class QueryAnswerDto {
 	@IsInt()
 	readonly lessonId?: number;
 	@ApiProperty({
+		description: 'Institute id of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Search answer if exist or not',
 		required: false
 	})

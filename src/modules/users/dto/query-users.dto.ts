@@ -6,6 +6,7 @@ import {
 	IsBoolean,
 	IsOptional,
 	ValidateIf,
+	IsInt,
 } from 'class-validator';
 
 export class QueryUserDto {
@@ -28,7 +29,6 @@ export class QueryUserDto {
 		required: false,
 	})
 	@IsOptional()
-	@ValidateIf((o) => o.email != '')
 	@IsEmail()
 	readonly email?: string;
 	@ApiProperty({
@@ -38,6 +38,13 @@ export class QueryUserDto {
 	@IsOptional()
 	@IsString()
 	readonly code?: string;
+	@ApiProperty({
+		description: 'Institute id of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search the user if exist or not',
 		required: false,

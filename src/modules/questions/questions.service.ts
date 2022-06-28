@@ -33,8 +33,8 @@ export class QuestionsService {
 		if (queryQuestion) {
 			return await this.questionRepository.find({
 				where: {
-					title: ILike(`%${queryQuestion.title}%`),
-					sentence: ILike(`%${queryQuestion.sentence}%`),
+					title: queryQuestion.title ? ILike(`%${queryQuestion.title}%`): null,
+					sentence: queryQuestion.title ? ILike(`%${queryQuestion.sentence}%`): null,
 					points: queryQuestion.points,
 					photo: queryQuestion.photo,
 					visible: queryQuestion.visible,

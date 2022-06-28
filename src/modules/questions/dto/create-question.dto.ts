@@ -49,6 +49,11 @@ export class CreateQuestionDto {
 	@IsInt()
 	readonly lessonId: number;
 	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Indicates if the question is active or "deleted"',
 	})
 	@Transform(({ value }) => {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsBoolean } from 'class-validator';
+import { IsString, IsBoolean, IsInt } from 'class-validator';
 
 export class CreateAreaDto {
 	@ApiProperty({
@@ -7,6 +7,11 @@ export class CreateAreaDto {
 	})
 	@IsString()
 	readonly name: string;
+	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Indicates if the area is active or "deleted"',
 	})

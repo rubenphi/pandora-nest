@@ -24,7 +24,7 @@ export class OptionsService {
 		if (queryOption) {
 			return await this.optionRepository.find({
 				where: {
-					sentence: ILike(`%${queryOption.sentence}%`),
+					sentence:queryOption.sentence ? ILike(`%${queryOption.sentence}%`): null,
 					correct: queryOption.correct,
 					identifier: queryOption.identifier,
 					question: { id: queryOption.questionId },

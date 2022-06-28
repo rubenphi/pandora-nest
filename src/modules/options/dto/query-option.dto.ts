@@ -36,6 +36,13 @@ export class QueryOptionDto {
 	@IsInt()
 	readonly questionId?: number;
 	@ApiProperty({
+		description: 'Institute id of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Search option if exist or not',
 		required: false
 	})

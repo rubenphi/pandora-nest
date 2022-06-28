@@ -5,6 +5,9 @@ import {
 	IsEmail,
 	IsOptional,
 	ValidateIf,
+	isNotEmpty,
+	IsNotEmpty,
+	IsInt
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -22,6 +25,7 @@ export class CreateUserDto {
 		description: 'Email of user',
 	})
 	@IsOptional()
+	@IsNotEmpty()
 	@ValidateIf((o) => o.email != '')
 	@IsEmail()
 	readonly email: string;
@@ -30,6 +34,11 @@ export class CreateUserDto {
 	})
 	@IsString()
 	readonly code: string;
+	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Password of user',
 	})

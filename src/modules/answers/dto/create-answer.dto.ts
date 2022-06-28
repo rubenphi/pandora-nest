@@ -23,6 +23,11 @@ export class CreateAnswerDto {
 	@IsInt()
 	readonly lessonId: number;
 	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Points of answer',
 	})
 	@IsNumber()

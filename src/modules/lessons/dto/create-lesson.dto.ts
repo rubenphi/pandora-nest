@@ -17,11 +17,17 @@ export class CreateLessonDto {
 	})
 	@IsInt()
 	readonly courseId: number;
+	
 	@ApiProperty({
 		description: 'Area id of lesson',
 	})
 	@IsInt()
 	readonly areaId: number;
+	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Indicates if the lesson is active or "deleted"',
 	})

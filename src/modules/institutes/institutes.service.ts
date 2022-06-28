@@ -21,7 +21,7 @@ export class InstitutesService {
 		if (queryInstitute) {
 			return await this.instituteRepository.find({
 				where: {
-					name: ILike(`%${queryInstitute.name}%`),
+					name: queryInstitute.name ? ILike(`%${queryInstitute.name}%`): null,
 					exist: queryInstitute.exist,
 				},
 			});

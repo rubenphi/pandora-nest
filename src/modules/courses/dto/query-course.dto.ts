@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
-import { IsString, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsInt } from 'class-validator';
 
 export class QueryCourseDto {
 	@ApiProperty({
@@ -10,6 +10,13 @@ export class QueryCourseDto {
 	@IsOptional()
 	@IsString()
 	readonly name?: string;
+	@ApiProperty({
+		description: 'Institute id of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search course if exist or not',
 		required: false

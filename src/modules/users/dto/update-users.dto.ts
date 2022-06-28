@@ -4,7 +4,7 @@ import {
 	IsBoolean,
 	IsEmail,
 	IsOptional,
-	IsEmpty,
+	IsInt
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -38,6 +38,12 @@ export class UpdateUserDto {
 	@IsOptional()
 	@IsString()
 	readonly rol: string;
+	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsOptional()
+	@IsInt()
+	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Password of user',
 	})
