@@ -32,16 +32,20 @@ export class UsersController {
 		}
 		return this.userService.getUsers(queryUser);
 	}
+
+	@Auth()
 	@Get(':id')
 	getUser(@Param('id') id: number): Promise<User> {
 		return this.userService.getUser(id);
 	}
 
+	@Auth()
 	@Post()
 	createUser(@Body() user: CreateUserDto): Promise<User> {
 		return this.userService.createUser(user);
 	}
 
+	@Auth()
 	@Patch(':id')
 	updateUser(
 		@Param('id') id: number,
@@ -49,6 +53,8 @@ export class UsersController {
 	): Promise<User> {
 		return this.userService.updateUser(id, user);
 	}
+
+	@Auth()
 	@Delete(':id')
 	deleteUser(@Param('id') id: number): Promise<void> {
 		return this.userService.deleteUser(id);

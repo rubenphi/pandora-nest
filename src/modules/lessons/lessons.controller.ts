@@ -30,16 +30,19 @@ export class LessonsController {
 	getLessons(@Query() queryLesson: QueryLessonDto): Promise<Lesson[]> {
 		return this.lessonService.getLessons(queryLesson);
 	}
+	
 	@Auth()
 	@Get(':id')
 	getLesson(@Param('id') id: number): Promise<Lesson> {
 		return this.lessonService.getLesson(id);
 	}
+
 	@Auth()
 	@Post()
 	createLesson(@Body() lesson: CreateLessonDto): Promise<Lesson> {
 		return this.lessonService.createLesson(lesson);
 	}
+
 	@Auth()
 	@Patch(':id')
 	updateLesson(
@@ -48,22 +51,26 @@ export class LessonsController {
 	): Promise<Lesson> {
 		return this.lessonService.updateLesson(id, lesson);
 	}
+
 	@Auth()
 	@Delete(':id')
 	deleteLesson(@Param('id') id: number): Promise<void> {
 		return this.lessonService.deleteLesson(id);
 	}
 
+	@Auth()
 	@Get(':id')
 	getLessonResult(@Param('id') id: number): Promise<ResultLessonDto[]> {
 		return this.lessonService.getResultLesson(id);
 	}
 
+	@Auth()
 	@Get(':id/answers')
 	getAnswersByLesson(@Param('id') id: number): Promise<Answer[]> {
 		return this.lessonService.getAnswersByLesson(id);
 	}
 
+	@Auth()
 	@Get(':id/questions')
 	getQuestionsByLesson(@Param('id') id: number): Promise<Question[]> {
 		return this.lessonService.getQuestionsByLesson(id);

@@ -1,0 +1,3045 @@
+{
+    "openapi": "3.0.0",
+    "paths": {
+      "/answers": {
+        "get": {
+          "operationId": "AnswersController_getAnswers",
+          "parameters": [
+            {
+              "name": "optionId",
+              "required": false,
+              "in": "query",
+              "description": "Search answer using option id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "questionId",
+              "required": false,
+              "in": "query",
+              "description": "Search answer using question id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "groupId",
+              "required": false,
+              "in": "query",
+              "description": "Search answer using group id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "lessonId",
+              "required": false,
+              "in": "query",
+              "description": "Search answer using lesson id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search answer if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Answers Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "AnswersController_createAnswer",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAnswerDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Answers Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/answers/{id}": {
+        "get": {
+          "operationId": "AnswersController_getAnswer",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Answers Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "AnswersController_updateAnswer",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAnswerDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Answers Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "AnswersController_deleteAnswer",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Answers Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/answers/question/{id}/bonus": {
+        "get": {
+          "operationId": "AnswersController_bonusToAnswer",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Answers Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/areas": {
+        "get": {
+          "operationId": "AreasController_getAreas",
+          "parameters": [
+            {
+              "name": "name",
+              "required": false,
+              "in": "query",
+              "description": "Search area using name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search area if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Areas Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "AreasController_createArea",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAreaDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Areas Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/areas/{id}": {
+        "get": {
+          "operationId": "AreasController_getArea",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Areas Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "AreasController_updateArea",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAreaDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Areas Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "AreasController_deleteArea",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Areas Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/areas/{id}/Lessons": {
+        "get": {
+          "operationId": "AreasController_getLessonsByArea",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Areas Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/auth/login": {
+        "post": {
+          "operationId": "AuthController_login",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth Routes"
+          ]
+        }
+      },
+      "/auth/profile": {
+        "get": {
+          "operationId": "AuthController_profile",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Auth Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/courses": {
+        "get": {
+          "operationId": "CoursesController_getCourses",
+          "parameters": [
+            {
+              "name": "name",
+              "required": false,
+              "in": "query",
+              "description": "Search curse using name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search course if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "CoursesController_createCourse",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCourseDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/courses/{id}": {
+        "get": {
+          "operationId": "CoursesController_getCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "CoursesController_updateCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCourseDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "CoursesController_deleteCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/courses/{id}/areas": {
+        "get": {
+          "operationId": "CoursesController_getAreasByCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "CoursesController_addAreaToCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddAreaToCourseDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "CoursesController_deleteAreaToCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteAreaFromCourseDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/courses/{id}/groups": {
+        "get": {
+          "operationId": "CoursesController_getGroupsByCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/courses/{id}/lessons": {
+        "get": {
+          "operationId": "CoursesController_getLessonsByCourse",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Courses Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/groups": {
+        "get": {
+          "operationId": "GroupsController_getGroups",
+          "parameters": [
+            {
+              "name": "name",
+              "required": false,
+              "in": "query",
+              "description": "Search group using name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "courseId",
+              "required": false,
+              "in": "query",
+              "description": "Search group using course id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search group if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Groups Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "GroupsController_createGroup",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateGroupDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Groups Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/groups/{id}": {
+        "get": {
+          "operationId": "GroupsController_getAnswersByGroup",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Groups Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "GroupsController_updateGroup",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateGroupDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Groups Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "GroupsController_deleteGroup",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Groups Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/institutes": {
+        "get": {
+          "operationId": "InstitutesController_getInstitutes",
+          "parameters": [
+            {
+              "name": "name",
+              "required": false,
+              "in": "query",
+              "description": "Search institute using a word or phrase in name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search institute if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Institutes Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "InstitutesController_createInstitute",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInstituteDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Institutes Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/institutes/{id}": {
+        "get": {
+          "operationId": "InstitutesController_getInstitute",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Institutes Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "InstitutesController_updateInstitute",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateInstituteDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Institutes Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "InstitutesController_deleteInstitute",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Institutes Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/institutes/{id}/Lessons": {
+        "get": {
+          "operationId": "InstitutesController_getLessonsByInstitute",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Institutes Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/lessons": {
+        "get": {
+          "operationId": "LessonsController_getLessons",
+          "parameters": [
+            {
+              "name": "topic",
+              "required": false,
+              "in": "query",
+              "description": "Search lesson using topic",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "date",
+              "required": false,
+              "in": "query",
+              "description": "Search lesson using date",
+              "schema": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            {
+              "name": "courseId",
+              "required": false,
+              "in": "query",
+              "description": "Search lesson using curse id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "areaId",
+              "required": false,
+              "in": "query",
+              "description": "Search lesson using area id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search group if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "LessonsController_createLesson",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateLessonDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/lessons/{id}": {
+        "get": {
+          "operationId": "LessonsController_getLessonResult",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ]
+        },
+        "patch": {
+          "operationId": "LessonsController_updateLesson",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLessonDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "LessonsController_deleteLesson",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/lessons/{id}/answers": {
+        "get": {
+          "operationId": "LessonsController_getAnswersByLesson",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ]
+        }
+      },
+      "/lessons/{id}/questions": {
+        "get": {
+          "operationId": "LessonsController_getQuestionsByLesson",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Lessons Routes"
+          ]
+        }
+      },
+      "/options": {
+        "get": {
+          "operationId": "OptionsController_getOptions",
+          "parameters": [
+            {
+              "name": "sentence",
+              "required": false,
+              "in": "query",
+              "description": "Search option using a word or phrase in the sentence",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "correct",
+              "required": false,
+              "in": "query",
+              "description": "Search option if it is correct or not.",
+              "schema": {
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "identifier",
+              "required": false,
+              "in": "query",
+              "description": "Search option using a identifier",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "questionId",
+              "required": false,
+              "in": "query",
+              "description": "Search option using a question id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search option if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Options Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "OptionsController_createOption",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOptionDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Options Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/options/{id}": {
+        "get": {
+          "operationId": "OptionsController_getOption",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Options Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "OptionsController_updateOption",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateOptionDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Options Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "OptionsController_deleteOption",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Options Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/options/{id}/answers": {
+        "get": {
+          "operationId": "OptionsController_getAnswersByOption",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Options Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/periods": {
+        "get": {
+          "operationId": "PeriodsController_getPeriods",
+          "parameters": [
+            {
+              "name": "name",
+              "required": false,
+              "in": "query",
+              "description": "Search period using a identifier",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search period if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Periods Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "PeriodsController_createPeriod",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePeriodDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Periods Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/periods/{id}": {
+        "get": {
+          "operationId": "PeriodsController_getPeriod",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Periods Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "PeriodsController_updatePeriod",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdatePeriodDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Periods Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "PeriodsController_deletePeriod",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Periods Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/periods/{id}/lessons": {
+        "get": {
+          "operationId": "PeriodsController_getLessonsByPeriod",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Periods Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/questions": {
+        "get": {
+          "operationId": "QuestionsController_getQuestions",
+          "parameters": [
+            {
+              "name": "title",
+              "required": false,
+              "in": "query",
+              "description": "Search question using a word or phrase in the title",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sentence",
+              "required": false,
+              "in": "query",
+              "description": "Search question using a word or phrase in the sentence",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "points",
+              "required": false,
+              "in": "query",
+              "description": "Search question using the points in score",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "photo",
+              "required": false,
+              "in": "query",
+              "description": "Search question using the photo´s url",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "visible",
+              "required": false,
+              "in": "query",
+              "description": "Search the questions that are visible or not",
+              "schema": {
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "available",
+              "required": false,
+              "in": "query",
+              "description": "Search the questions that are available or not",
+              "schema": {
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "lessonId",
+              "required": false,
+              "in": "query",
+              "description": "Search the questions using the lesson´s id",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search the questions if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "QuestionsController_createQuestion",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateQuestionDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/questions/{id}": {
+        "get": {
+          "operationId": "QuestionsController_getQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "QuestionsController_updateQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateQuestionDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "QuestionsController_deleteQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/questions/{id}/answers": {
+        "get": {
+          "operationId": "QuestionsController_getAnswersByQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/questions/{id}/options": {
+        "get": {
+          "operationId": "QuestionsController_getOptionByQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/questions/{id}/options/import": {
+        "patch": {
+          "operationId": "QuestionsController_importOptionsToQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportFromQuestionDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/questions/{id}/photo/import": {
+        "patch": {
+          "operationId": "QuestionsController_importPhotoToQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportFromQuestionDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Questions Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/users": {
+        "get": {
+          "operationId": "UsersController_getUsers",
+          "parameters": [
+            {
+              "name": "name",
+              "required": false,
+              "in": "query",
+              "description": "Search user user by name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "lastName",
+              "required": false,
+              "in": "query",
+              "description": "Search user user by last name",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "email",
+              "required": false,
+              "in": "query",
+              "description": "Search user user by email",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "code",
+              "required": false,
+              "in": "query",
+              "description": "Search user user by code",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "instituteId",
+              "required": false,
+              "in": "query",
+              "description": "Institute id of user",
+              "schema": {
+                "type": "number"
+              }
+            },
+            {
+              "name": "exist",
+              "required": false,
+              "in": "query",
+              "description": "Search the user if exist or not",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Users Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "post": {
+          "operationId": "UsersController_createUser",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Users Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/users/{id}": {
+        "get": {
+          "operationId": "UsersController_getUser",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Users Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "patch": {
+          "operationId": "UsersController_updateUser",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Users Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "UsersController_deleteUser",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Users Routes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      }
+    },
+    "info": {
+      "title": "Pandora",
+      "description": "Api to make lessons more fun",
+      "version": "2.0",
+      "contact": {}
+    },
+    "tags": [],
+    "servers": [],
+    "components": {
+      "securitySchemes": {
+        "bearer": {
+          "scheme": "bearer",
+          "bearerFormat": "JWT",
+          "type": "http"
+        }
+      },
+      "schemas": {
+        "CreateCourseDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of course"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the course is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdateCourseDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of course"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the course is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "AddAreaToCourseDto": {
+          "type": "object",
+          "properties": {
+            "areasId": {
+              "description": "Areas to add Id",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "required": [
+            "areasId"
+          ]
+        },
+        "DeleteAreaFromCourseDto": {
+          "type": "object",
+          "properties": {
+            "areasId": {
+              "description": "Areas to delete Id",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "required": [
+            "areasId"
+          ]
+        },
+        "CreateGroupDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Group´s name"
+            },
+            "courseId": {
+              "type": "number",
+              "description": "Course id"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the group is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "courseId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdateGroupDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Group´s name"
+            },
+            "courseId": {
+              "type": "number",
+              "description": "Course id"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the group is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "courseId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "CreateLessonDto": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Topic of lesson"
+            },
+            "date": {
+              "format": "date-time",
+              "type": "string",
+              "description": "Date of lesson"
+            },
+            "courseId": {
+              "type": "number",
+              "description": "Course id of lesson"
+            },
+            "areaId": {
+              "type": "number",
+              "description": "Area id of lesson"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the lesson is active or \"deleted\""
+            }
+          },
+          "required": [
+            "topic",
+            "date",
+            "courseId",
+            "areaId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdateLessonDto": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Topic of lesson"
+            },
+            "date": {
+              "format": "date-time",
+              "type": "string",
+              "description": "Date of lesson"
+            },
+            "courseId": {
+              "type": "number",
+              "description": "Course id of lesson"
+            },
+            "areaId": {
+              "type": "number",
+              "description": "Area id of lesson"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the lesson is active or \"deleted\""
+            }
+          },
+          "required": [
+            "topic",
+            "date",
+            "courseId",
+            "areaId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "CreateQuestionDto": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Title of question"
+            },
+            "sentence": {
+              "type": "string",
+              "description": "Sentence of question"
+            },
+            "points": {
+              "type": "number",
+              "description": "Score obtained for answering correctly"
+            },
+            "photo": {
+              "type": "string",
+              "description": "Photo of question",
+              "format": "binary"
+            },
+            "visible": {
+              "type": "boolean",
+              "description": "Indicates if the question is visible or not"
+            },
+            "available": {
+              "type": "boolean",
+              "description": "Indicates if the question is available to answer or not"
+            },
+            "lessonId": {
+              "type": "number",
+              "description": "Lesson id of question"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the question is active or \"deleted\""
+            }
+          },
+          "required": [
+            "title",
+            "sentence",
+            "points",
+            "visible",
+            "available",
+            "lessonId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdateQuestionDto": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Title of question"
+            },
+            "sentence": {
+              "type": "string",
+              "description": "Sentence of question"
+            },
+            "points": {
+              "type": "number",
+              "description": "Score obtained for answering correctly"
+            },
+            "photo": {
+              "type": "string",
+              "description": "Photo of question",
+              "format": "binary"
+            },
+            "visible": {
+              "type": "boolean",
+              "description": "Indicates if the question is visible or not"
+            },
+            "available": {
+              "type": "boolean",
+              "description": "Indicates if the question is available to answer or not"
+            },
+            "lessonId": {
+              "type": "number",
+              "description": "Lesson id of question"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the question is active or \"deleted\""
+            }
+          },
+          "required": [
+            "title",
+            "sentence",
+            "points",
+            "visible",
+            "available",
+            "lessonId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "ImportFromQuestionDto": {
+          "type": "object",
+          "properties": {
+            "fromQuestionId": {
+              "type": "number",
+              "description": "Indicate the id of the question from which you are going to import the options"
+            }
+          },
+          "required": [
+            "fromQuestionId"
+          ]
+        },
+        "CreateOptionDto": {
+          "type": "object",
+          "properties": {
+            "sentence": {
+              "type": "string",
+              "description": "Sentence of option"
+            },
+            "correct": {
+              "type": "boolean",
+              "description": "Defines if the option is correct [true] or wrong [false]"
+            },
+            "identifier": {
+              "type": "string",
+              "description": "Use an identifier for the option, it can be a letter [For example for multiple choice questions: A,B,C,D...] [Also for example true or false questions: F, V] or it can be a number [1,2,3,4...]"
+            },
+            "questionId": {
+              "type": "number",
+              "description": "Question id of option"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the option is active or \"deleted\""
+            }
+          },
+          "required": [
+            "sentence",
+            "correct",
+            "identifier",
+            "questionId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdateOptionDto": {
+          "type": "object",
+          "properties": {
+            "sentence": {
+              "type": "string",
+              "description": "Sentence of option"
+            },
+            "correct": {
+              "type": "boolean",
+              "description": "Defines if the option is correct [true] or wrong [false]"
+            },
+            "identifier": {
+              "type": "string",
+              "description": "Use an identifier for the option, it can be a letter [For example for multiple choice questions: A,B,C,D...] [Also for example true or false questions: F, V] or it can be a number [1,2,3,4...]"
+            },
+            "questionId": {
+              "type": "number",
+              "description": "Question id of option"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the option is active or \"deleted\""
+            }
+          },
+          "required": [
+            "sentence",
+            "correct",
+            "identifier",
+            "questionId",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "CreateAnswerDto": {
+          "type": "object",
+          "properties": {
+            "optionId": {
+              "type": "number",
+              "description": "Option´s id of answer"
+            },
+            "questionId": {
+              "type": "number",
+              "description": "Question´s id of answer"
+            },
+            "groupId": {
+              "type": "number",
+              "description": "Group´s id of answer"
+            },
+            "lessonId": {
+              "type": "number",
+              "description": "Lesson´s id of answer"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "points": {
+              "type": "number",
+              "description": "Points of answer"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the answer is active or \"deleted\""
+            }
+          },
+          "required": [
+            "optionId",
+            "questionId",
+            "groupId",
+            "lessonId",
+            "instituteId",
+            "points",
+            "exist"
+          ]
+        },
+        "UpdateAnswerDto": {
+          "type": "object",
+          "properties": {
+            "optionId": {
+              "type": "number",
+              "description": "Option´s id of answer"
+            },
+            "questionId": {
+              "type": "number",
+              "description": "Question´s id of answer"
+            },
+            "groupId": {
+              "type": "number",
+              "description": "Group´s id of answer"
+            },
+            "lessonId": {
+              "type": "number",
+              "description": "Lesson´s id of answer"
+            },
+            "points": {
+              "type": "number",
+              "description": "Points of answer"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the course is active or \"deleted\""
+            }
+          },
+          "required": [
+            "optionId",
+            "questionId",
+            "groupId",
+            "lessonId",
+            "points",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "CreateAreaDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Area´s name"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the area is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdateAreaDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Area´s name"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the area is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "CreateUserDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of user"
+            },
+            "lastName": {
+              "type": "string",
+              "description": "Last name of user"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email of user"
+            },
+            "code": {
+              "type": "string",
+              "description": "Unique user code"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the question is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "lastName",
+            "email",
+            "code",
+            "instituteId",
+            "password",
+            "exist"
+          ]
+        },
+        "UpdateUserDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of user"
+            },
+            "lastName": {
+              "type": "string",
+              "description": "Last name of user"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email of user"
+            },
+            "code": {
+              "type": "string",
+              "description": "Unique user code"
+            },
+            "rol": {
+              "type": "string",
+              "description": "Rol of user"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the question is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "lastName",
+            "email",
+            "code",
+            "rol",
+            "instituteId",
+            "password",
+            "exist"
+          ]
+        },
+        "CreatePeriodDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of period"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the period is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "UpdatePeriodDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of period"
+            },
+            "instituteId": {
+              "type": "number",
+              "description": "Institute id of user"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the period is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "instituteId",
+            "exist"
+          ]
+        },
+        "LoginDto": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Insert Code user"
+            },
+            "password": {
+              "type": "string",
+              "description": "Insert Password"
+            }
+          },
+          "required": [
+            "code",
+            "password"
+          ]
+        },
+        "CreateInstituteDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Institute´s name"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the institute is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "exist"
+          ]
+        },
+        "UpdateInstituteDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Institute´s name"
+            },
+            "exist": {
+              "type": "boolean",
+              "description": "Indicates if the institute is active or \"deleted\""
+            }
+          },
+          "required": [
+            "name",
+            "exist"
+          ]
+        }
+      }
+    }
+  }
