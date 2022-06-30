@@ -39,13 +39,13 @@ export class AreasController {
 			if(error instanceof ForbiddenError) {
 				throw new ForbiddenException(error.message)
 			}
-		}
+		}}
 		
 		
 	
 	@Auth()
 	@Get(':id')
-	getArea(@Param('id') id: number): Promise<Area> {
+	getArea(@Req() req,@Param('id') id: number): Promise<Area> {
 		const ability = this.abilityFactory.defineAbility(req.user);
 		try{
 			ForbiddenError.from(ability).throwUnlessCan(Action.Read, Area);
