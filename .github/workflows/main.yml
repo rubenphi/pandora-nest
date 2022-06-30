@@ -1,11 +1,13 @@
 name: GitlabSync
 on:
   push:
-    - main
-    - autenticacion
+    branches:
+      - master
+      - autenticacion
   delete:
-    - main
-    - autenticacion
+    branches:
+      - master
+      - autenticacion
 
 
 jobs:
