@@ -1,13 +1,9 @@
 name: GitlabSync
 on:
   push:
-    branches:
-      - main
-      - autorizacion
+    branches: ['main','auntenticacion']
   delete:
-    branches:
-      - main
-      - autorizacion
+    branches: ['main','auntenticacion']
 
 jobs:
   sync:
