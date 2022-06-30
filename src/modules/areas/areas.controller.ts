@@ -46,7 +46,15 @@ export class AreasController {
 	@Auth()
 	@Get(':id')
 	getArea(@Param('id') id: number): Promise<Area> {
-		return this.areaService.getArea(id);
+		const ability = this.abilityFactory.defineAbility(req.user);
+		try{
+			ForbiddenError.from(ability).throwUnlessCan(Action.Read, Area);
+			return this.areaService.getArea(id);
+		} catch(error) {
+			if(error instanceof ForbiddenError) {
+				throw new ForbiddenException(error.message)
+			}
+		}
 	}
 	@Auth()
 	@Post()
