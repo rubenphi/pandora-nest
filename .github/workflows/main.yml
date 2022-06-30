@@ -1,7 +1,11 @@
 name: GitlabSync
 on:
-  - push
-  - delete
+  push:
+    - main
+    - autenticacion
+  delete:
+    - main
+    - autenticacion
 
 
 jobs:
