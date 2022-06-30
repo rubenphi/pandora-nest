@@ -9,6 +9,7 @@ import {
 	Delete,
 	Req,
 	ForbiddenException,
+	ForbiddenError
 } from '@nestjs/common';
 
 import { Area } from './area.entity';
@@ -31,12 +32,17 @@ export class AreasController {
 	@Get()
 	getAreas(@Req() req, @Query() queryArea: QueryAreaDto): Promise<Area[]> {
 		const ability = this.abilityFactory.defineAbility(req.user);
-		const isAllowed = ability.can(Action.Read, Area);
-		if(!isAllowed){
-			throw new ForbiddenException("only admin");
+		try{
+			ForbiddenError.from(ability).throwUnlessCan(Action.Read, Area);
+			return this.areaService.getAreas(queryArea);
+		} catch(error) {
+			if(error instanceof ForbiddenError) {
+				throw new ForbiddenException(error.message)
+			}
 		}
-		return this.areaService.getAreas(queryArea);
-	}
+		
+		
+	
 	@Auth()
 	@Get(':id')
 	getArea(@Param('id') id: number): Promise<Area> {
