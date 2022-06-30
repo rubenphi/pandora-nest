@@ -27,7 +27,7 @@ export class AreasController {
 	constructor(
 		private readonly areaService: AreasService,
 		private abilityFactory: AbilityFactory,
-	) {}
+	) { }
 	@Auth()
 	@Get()
 	getAreas(@Req() req, @Query() queryArea: QueryAreaDto): Promise<Area[]> {
