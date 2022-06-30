@@ -5,9 +5,10 @@ import { GroupsService } from './groups.service';
 import { GroupsController } from './groups.controller';
 import { Group } from './group.entity';
 import { Course } from '../courses/course.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Group, Course])],
+	imports: [TypeOrmModule.forFeature([Group, Course, Institute])],
 	providers: [GroupsService],
 	controllers: [GroupsController],
 })

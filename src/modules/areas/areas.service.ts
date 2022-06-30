@@ -5,27 +5,32 @@ import { Repository } from 'typeorm';
 import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class AreasService {
 	constructor(
 		@InjectRepository(Area)
 		private readonly areaRepository: Repository<Area>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
 	async getAreas(queryArea: QueryAreaDto): Promise<Area[]> {
 		if (queryArea) {
 			return await this.areaRepository.find({
 				where: { name: queryArea.name, exist: queryArea.exist },
+				relations: ['institute'],
 			});
 		} else {
-			return await this.areaRepository.find();
+			return await this.areaRepository.find({ relations: ['institute'] });
 		}
 	}
 	async getArea(id: number): Promise<Area> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
-				where: { id },relations: ['institute']
+				where: { id },
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Area not found');
@@ -33,16 +38,32 @@ export class AreasService {
 		return area;
 	}
 	async createArea(areaDto: CreateAreaDto): Promise<Area> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: areaDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const area: Area = await this.areaRepository.create({
 			name: areaDto.name,
+			institute,
 			exist: areaDto.exist,
 		});
 		return this.areaRepository.save(area);
 	}
 	async updateArea(id: number, areaDto: UpdateAreaDto): Promise<Area> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: areaDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const area: Area = await this.areaRepository.preload({
 			id: id,
 			name: areaDto.name,
+			institute,
 			exist: areaDto.exist,
 		});
 		if (!area) {

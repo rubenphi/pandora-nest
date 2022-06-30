@@ -4,32 +4,33 @@ import { Repository, In } from 'typeorm';
 
 import { Period } from './period.entity';
 import { Lesson } from '../lessons/lesson.entity';
-import {
-	CreatePeriodDto,
-	UpdatePeriodDto,
-	QueryPeriodDto,
-} from './dto';
+import { CreatePeriodDto, UpdatePeriodDto, QueryPeriodDto } from './dto';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class PeriodsService {
 	constructor(
 		@InjectRepository(Period)
 		private readonly periodRepository: Repository<Period>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
 	async getPeriods(queryPeriod: QueryPeriodDto): Promise<Period[]> {
 		if (queryPeriod) {
 			return await this.periodRepository.find({
 				where: { name: queryPeriod.name, exist: queryPeriod.exist },
+				relations: ['institute'],
 			});
 		} else {
-			return await this.periodRepository.find();
+			return await this.periodRepository.find({ relations: ['institute'] });
 		}
 	}
 	async getPeriod(id: number): Promise<Period> {
 		const period: Period = await this.periodRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Period not found');
@@ -38,12 +39,31 @@ export class PeriodsService {
 		return period;
 	}
 	async createPeriod(periodDto: CreatePeriodDto): Promise<Period> {
-		const period: Period = await this.periodRepository.create(periodDto);
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: periodDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+		const period: Period = await this.periodRepository.create({
+			name: periodDto.name,
+			institute,
+			exist: periodDto.exist,
+		});
 		return this.periodRepository.save(period);
 	}
 	async updatePeriod(id: number, periodDto: UpdatePeriodDto): Promise<Period> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: periodDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const period: Period = await this.periodRepository.preload({
 			id: id,
+			institute,
 			name: periodDto.name,
 			exist: periodDto.exist,
 		});
@@ -80,5 +100,4 @@ export class PeriodsService {
 
 		return period.lessons;
 	}
-
 }

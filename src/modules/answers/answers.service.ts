@@ -8,6 +8,7 @@ import { Option } from '../options/option.entity';
 import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
 import { Lesson } from '../lessons/lesson.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class AnswersService {
@@ -22,6 +23,8 @@ export class AnswersService {
 		private readonly groupRepository: Repository<Group>,
 		@InjectRepository(Lesson)
 		private readonly lessonRepository: Repository<Lesson>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
 	async getAnswers(queryAnswer: QueryAnswerDto): Promise<Answer[]> {
@@ -34,11 +37,11 @@ export class AnswersService {
 					lesson: { id: queryAnswer.lessonId },
 					exist: queryAnswer.exist,
 				},
-				relations: ['option', 'question', 'group', 'lesson'],
+				relations: ['option', 'question', 'group', 'lesson', 'institute'],
 			});
 		} else {
 			return await this.answerRepository.find({
-				relations: ['option', 'question', 'group', 'lesson'],
+				relations: ['option', 'question', 'group', 'lesson', 'institute'],
 			});
 		}
 	}
@@ -47,7 +50,7 @@ export class AnswersService {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['option', 'question', 'group', 'lesson'],
+				relations: ['option', 'question', 'group', 'lesson', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
@@ -84,6 +87,14 @@ export class AnswersService {
 				throw new NotFoundException('Lesson not found');
 			});
 
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: answerDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+
 		const points: number = option.correct ? question.points : 0;
 		const answer: Answer = await this.answerRepository.create({
 			option,
@@ -91,6 +102,7 @@ export class AnswersService {
 			group,
 			lesson,
 			points,
+			institute,
 			exist: answerDto.exist,
 		});
 		return this.answerRepository.save(answer);
@@ -124,6 +136,13 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: answerDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 
 		const answer: Answer = await this.answerRepository.preload({
 			id: id,
@@ -131,6 +150,7 @@ export class AnswersService {
 			question,
 			group,
 			lesson,
+			institute,
 			points: answerDto.points,
 			exist: answerDto.exist,
 		});
