@@ -8,8 +8,7 @@ import {
 	Patch,
 	Delete,
 	Req,
-	ForbiddenException,
-	ForbiddenError
+	ForbiddenException
 } from '@nestjs/common';
 
 import { Area } from './area.entity';
@@ -19,6 +18,7 @@ import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
 import { AbilityFactory, Action } from '../ability/ability.factory';
+import { ForbiddenError } from '@casl/ability';
 
 
 @ApiTags('Areas Routes')
