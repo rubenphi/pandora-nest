@@ -6,7 +6,7 @@ import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
-import { abilities } from '../ability/ability.system';
+import { abilities, belongToSameInstitute } from '../ability/ability.system';
 import { User } from '../users/user.entity';
 
 @Injectable()
@@ -37,9 +37,10 @@ export class AreasService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
-		abilities(user, area)
+		abilities(user,new belongToSameInstitute(area))
 		return area;
 	}
+	
 	async createArea(areaDto: CreateAreaDto): Promise<Area> {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
