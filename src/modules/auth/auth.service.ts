@@ -12,7 +12,7 @@ export class AuthService {
 		private readonly jwtservice: JwtService,
 	) {}
 	async validateUser(code: string, password: string): Promise<User | null> {
-		const user = await this.userService.getUserByCode(code);
+		const user: User = await this.userService.getUserByCode(code);
 		if (user && (await compare(password, user.password))) {
 			return user;
 		}

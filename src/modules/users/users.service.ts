@@ -27,10 +27,10 @@ export class UsersService {
 					code: queryUser.code,
 					email: queryUser.email,
 					exist: queryUser.exist,
-				},
+				},relations: ['institute'],
 			});
 		} else {
-			return await this.userRepository.find();
+			return await this.userRepository.find({relations: ['institute']});
 		}
 	}
 
@@ -44,7 +44,7 @@ export class UsersService {
 	async getUser(id: number): Promise<User> {
 		const user: User = await this.userRepository
 			.findOneOrFail({
-				where: { id },
+				where: { id },relations: ['institute']
 			})
 			.catch(() => {
 				throw new NotFoundException('User not found');
@@ -58,7 +58,6 @@ export class UsersService {
 		const sameCode = await this.userRepository.findOne({
 			where: { code: userDto.code },
 		});
-
 		if (sameEmail && userDto.email) {
 			throw new BadRequestException(
 				'You cannot create two users with the same email',
@@ -76,6 +75,7 @@ export class UsersService {
 			password: userDto.password,
 			rol: 'user',
 			exist: userDto.exist,
+			
 		});
 		const returnUser = await this.userRepository.save(user);
 		delete returnUser.password;
