@@ -6,6 +6,8 @@ import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
+import { abilities } from '../ability/ability.system';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AreasService {
@@ -26,7 +28,7 @@ export class AreasService {
 			return await this.areaRepository.find({ relations: ['institute'] });
 		}
 	}
-	async getArea(id: number): Promise<Area> {
+	async getArea(user:User, id: number): Promise<Area> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
 				where: { id },
@@ -35,6 +37,7 @@ export class AreasService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
+		abilities(user, area)
 		return area;
 	}
 	async createArea(areaDto: CreateAreaDto): Promise<Area> {
