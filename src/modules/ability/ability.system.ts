@@ -19,22 +19,44 @@ export enum Rol {
 }
 
 
-export type Entidades = Area | Answer | User | Group | Institute | Lesson | Period | Question
 
-export function abilities(user: User, object: Entidades){
+export type Entidades = Area | Answer | User | Group | Lesson | Period | Question
+
+
+export interface ValidateInterface {
+	validate(user:User):boolean
+}
+
+export class belongToSameInstitute implements ValidateInterface { 
+	entity: Entidades
+	constructor(entity: Entidades){
+		this.entity = entity
+	}
+	validate(user){ return validateEquality(user.institute.id,this.entity,"institute.id") }
+ }
+	
+export class InstituteValidator implements ValidateInterface { 
+	entity: Institute
+	constructor(entity: Institute){
+		this.entity = entity
+	}
+	validate(user: User ){ return validateEquality(user.institute.id,this.entity,"id") } }
+
+
+
+
+
+
+
+
+
+
+export function abilities(user: User, validator:ValidateInterface  ){
     if(user.rol == Rol.Superadmin){
 		return true
 	}
 	else if(user.rol == Rol.Admin){ 
-		var sameInstitute = {
-			course: validateEquality(user.institute.id, object,'institute.id'),  
-			user: validateEquality(user.institute.id, object,'institute.id'),
-			answer: validateEquality(user.institute.id, object,'institute.id'),
-			area: validateEquality(user.institute.id, object,'institute.id'),
-			question: validateEquality(user.institute.id, object,'institute.id'),
-			institute: validateEquality(user.institute.id, object,'id')
-		   }
-		const result = sameInstitute[object.constructor.name.toLowerCase()]
+		const result = validator.validate(user)
 		if(result == false){
 			throw new HttpException({
 				status: HttpStatus.FORBIDDEN,
