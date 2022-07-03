@@ -17,12 +17,25 @@ export enum Rol {
 	User = 'user',
 }
 
+
+
+export type Validation = boolean | {error: string}
+
+export interface EntitiesOfRule {
+	course?: Validation ,
+	user?: Validation,
+	answer?: Validation,
+	area?: Validation,
+	question?: Validation,
+	institute?: Validation
+}
+
 export interface Rule {
-	manage?: {};
-	create?: {};
-	read?: {};
-	update?: {};
-	delete?: {};
+	manage?: EntitiesOfRule;
+	create?: EntitiesOfRule;
+	read?: EntitiesOfRule;
+	update?: EntitiesOfRule;
+	delete?: EntitiesOfRule;
 }
 
 export type Actions = 'manage' | 'create' | 'read' | 'update' | 'delete';
@@ -63,23 +76,23 @@ export function abilities(user: User, object: Entidades, action: Actions) {
 					? true
 					: { error: 'You cannot modify elements of another institution' },
 			},
-			create: rules.manage,
-			read: rules.manage,
-			update: rules.manage,
-			delete: rules.manage,
-		};
+		}
+		
 	} else if (user.rol == Rol.Student) {
 		rules = {};
 	}
 
-	const result = rules[action][object.constructor.name.toLowerCase()];
-	console.log(result);
+	console.log(rules.manage[object.constructor.name.toLowerCase()]);
+
+
+	const result = rules.manage[object.constructor.name.toLowerCase()] != undefined ? rules.manage[object.constructor.name.toLowerCase()] :  rules[action] != undefined ? rules[action][object.constructor.name.toLowerCase()] != undefined ? rules[action][object.constructor.name.toLowerCase()]  : false : false
+	
 
 	if (result != true) {
 		throw new HttpException(
 			{
 				status: HttpStatus.FORBIDDEN,
-				error: result.error,
+				error: result.error ? result.error : 'No tiene permisos para realizar esta acción',
 			},
 			HttpStatus.FORBIDDEN,
 		);
