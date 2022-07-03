@@ -63,6 +63,10 @@ export function abilities(user: User, object: Entidades, action: Actions) {
 					? true
 					: { error: 'You cannot modify elements of another institution' },
 			},
+			create: rules.manage,
+			read: rules.manage,
+			update: rules.manage,
+			delete: rules.manage,
 		};
 	} else if (user.rol == Rol.Student) {
 		rules = {};
