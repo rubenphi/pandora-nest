@@ -37,7 +37,7 @@ export class AreasService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
-		abilities(user, area);
+		abilities(user, area, 'manage');
 		return area;
 	}
 	async createArea(areaDto: CreateAreaDto): Promise<Area> {

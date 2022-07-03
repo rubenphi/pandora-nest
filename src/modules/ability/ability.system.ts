@@ -17,6 +17,16 @@ export enum Rol {
 	User = 'user',
 }
 
+export interface Rule {
+	manage?: {};
+	create?: {};
+	read?: {};
+	update?: {};
+	delete?: {};
+}
+
+export type Actions = 'manage' | 'create' | 'read' | 'update' | 'delete';
+
 export type Entidades =
 	| Area
 	| Answer
@@ -27,27 +37,47 @@ export type Entidades =
 	| Period
 	| Question;
 
-export function abilities(user: User, object: Entidades) {
+export function abilities(user: User, object: Entidades, action: Actions) {
+	let rules: Rule;
 	if (user.rol == Rol.Superadmin) {
 		return true;
 	} else if (user.rol == Rol.Admin) {
-		var sameInstitute = {
-			course: validateEquality(user.institute.id, object, 'institute.id'),
-			user: validateEquality(user.institute.id, object, 'institute.id'),
-			answer: validateEquality(user.institute.id, object, 'institute.id'),
-			area: validateEquality(user.institute.id, object, 'institute.id'),
-			question: validateEquality(user.institute.id, object, 'institute.id'),
-			institute: validateEquality(user.institute.id, object, 'id'),
+		rules = {
+			manage: {
+				course: validateEquality(user.institute.id, object, 'institute.id')
+					? true
+					: { error: 'You cannot modify elements of another institution' },
+				user: validateEquality(user.institute.id, object, 'institute.id')
+					? true
+					: { error: 'You cannot modify elements of another institution' },
+				answer: validateEquality(user.institute.id, object, 'institute.id')
+					? true
+					: { error: 'You cannot modify elements of another institution' },
+				area: validateEquality(user.institute.id, object, 'institute.id')
+					? true
+					: { error: 'You cannot modify elements of another institution' },
+				question: validateEquality(user.institute.id, object, 'institute.id')
+					? true
+					: { error: 'You cannot modify elements of another institution' },
+				institute: validateEquality(user.institute.id, object, 'id')
+					? true
+					: { error: 'You cannot modify elements of another institution' },
+			},
 		};
-		const result = sameInstitute[object.constructor.name.toLowerCase()];
-		if (result == false) {
-			throw new HttpException(
-				{
-					status: HttpStatus.FORBIDDEN,
-					error: 'You cannot modify elements of another institution',
-				},
-				HttpStatus.FORBIDDEN,
-			);
-		}
+	} else if (user.rol == Rol.Student) {
+		rules = {};
+	}
+
+	const result = rules[action][object.constructor.name.toLowerCase()];
+	console.log(result);
+
+	if (result != true) {
+		throw new HttpException(
+			{
+				status: HttpStatus.FORBIDDEN,
+				error: result.error,
+			},
+			HttpStatus.FORBIDDEN,
+		);
 	}
 }
