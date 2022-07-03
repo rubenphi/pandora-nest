@@ -13,7 +13,7 @@ export enum Rol {
 	Admin = 'admin',
 	Superadmin = 'superadmin',
 	Teacher = 'teacher',
-	Student = 'Student',
+	Student = 'student',
 	User = 'user',
 }
 
@@ -82,17 +82,15 @@ export function abilities(user: User, object: Entidades, action: Actions) {
 		rules = {};
 	}
 
-	console.log(rules.manage[object.constructor.name.toLowerCase()]);
 
-
-	const result = rules.manage[object.constructor.name.toLowerCase()] != undefined ? rules.manage[object.constructor.name.toLowerCase()] :  rules[action] != undefined ? rules[action][object.constructor.name.toLowerCase()] != undefined ? rules[action][object.constructor.name.toLowerCase()]  : false : false
+	const result = rules.manage != undefined ? rules.manage[object.constructor.name.toLowerCase()] != undefined ? rules.manage[object.constructor.name.toLowerCase()] :  rules[action] != undefined ? rules[action][object.constructor.name.toLowerCase()] != undefined ? rules[action][object.constructor.name.toLowerCase()]  : false : false : false
 	
 
 	if (result != true) {
 		throw new HttpException(
 			{
 				status: HttpStatus.FORBIDDEN,
-				error: result.error ? result.error : 'No tiene permisos para realizar esta acción',
+				error: result.error ? result.error : 'You don´t have permissions to do this',
 			},
 			HttpStatus.FORBIDDEN,
 		);
