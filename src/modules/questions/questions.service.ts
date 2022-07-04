@@ -18,6 +18,8 @@ import { Lesson } from '../lessons/lesson.entity';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
+import { abilities } from '../ability/ability.system';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -32,7 +34,8 @@ export class QuestionsService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getQuestions(queryQuestion: QueryQuestionDto): Promise<Question[]> {
+	async getQuestions(user: User, queryQuestion: QueryQuestionDto): Promise<Question[]> {
+		abilities(user, 'all', 'read')
 		if (queryQuestion) {
 			return await this.questionRepository.find({
 				where: {
@@ -47,26 +50,27 @@ export class QuestionsService {
 					lesson: { id: queryQuestion.lessonId },
 					exist: queryQuestion.exist,
 				},
-				relations: ['lesson', 'institute'],
+				relations: ['lesson', 'lesson.author', 'institute'],
 			});
 		} else {
 			return await this.questionRepository.find({
-				relations: ['lesson', 'institute'],
+				relations: ['lesson','lesson.author', 'institute'],
 			});
 		}
 	}
-	async getQuestion(id: number): Promise<Question> {
+	async getQuestion(user: User, id: number): Promise<Question> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['lesson', 'institute'],
+				relations: ['lesson','lesson.author', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+		abilities(user, question, 'read')
 		return question;
 	}
-	async createQuestion(questionDto: CreateQuestionDto): Promise<Question> {
+	async createQuestion(user:User, questionDto: CreateQuestionDto): Promise<Question> {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: questionDto.instituteId },
@@ -92,9 +96,11 @@ export class QuestionsService {
 			available: questionDto.available,
 			exist: questionDto.exist,
 		});
+		abilities(user, question, 'read')
 		return this.questionRepository.save(question);
 	}
 	async updateQuestion(
+		user: User,
 		id: number,
 		questionDto: UpdateQuestionDto,
 	): Promise<Question> {
@@ -142,10 +148,11 @@ export class QuestionsService {
 		) {
 			fs.unlinkSync(imageUrl);
 		}
+		abilities(user,question,'update')
 		return this.questionRepository.save(question);
 	}
 
-	async deleteQuestion(id: number): Promise<void> {
+	async deleteQuestion(user:User, id: number): Promise<void> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id },
@@ -163,15 +170,17 @@ export class QuestionsService {
 		) {
 			fs.unlinkSync(question.photo);
 		}
+		abilities(user,question,'update')
 		this.questionRepository.remove(question);
 	}
 
-	async getOptionsByQuestion(id): Promise<Option[]> {
+	async getOptionsByQuestion(user: User, id:number): Promise<Option[]> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({ relations: ['options'], where: { id } })
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+		abilities(user, question, 'read')
 		return question.options;
 	}
 

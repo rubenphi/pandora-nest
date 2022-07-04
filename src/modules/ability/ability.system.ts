@@ -48,14 +48,15 @@ export type Entidades =
 	| Institute
 	| Lesson
 	| Period
-	| Question;
+	| Question
+	| 'all';
 
 export function abilities(user: User, object: Entidades, action: Actions) {
-	let rules: Rule;
+	let permissions: Rule;
 	if (user.rol == Rol.Superadmin) {
 		return true;
-	} else if (user.rol == Rol.Admin) {
-		rules = {
+	} else if (user.rol == Rol.Admin && object != 'all') {
+		permissions = {
 			manage: {
 				course: validateEquality(user.institute.id, object, 'institute.id')
 					? true
@@ -75,15 +76,36 @@ export function abilities(user: User, object: Entidades, action: Actions) {
 				institute: validateEquality(user.institute.id, object, 'id')
 					? true
 					: { error: 'You cannot modify elements of another institution' },
-			},
+			}
 		}
 		
-	} else if (user.rol == Rol.Student) {
-		rules = {};
+	} else if (user.rol == Rol.Teacher && object != 'all' ) {
+		permissions = {
+			read: {
+				course: validateEquality(user.institute.id, object, 'institute.id')
+					? true
+					: { error: 'You cannot read elements of another institution' },
+				user: validateEquality(user.institute.id, object, 'institute.id')
+				? true
+				: { error: 'You cannot read elements of another institution' },
+				question: validateEquality(user.id, object, 'lesson.author.id')
+				? true
+				: { error: 'You cannot read elements of anothers author' },
+			},
+			create: {
+				question: validateEquality(user.id, object, 'lesson.author.id')
+				? true
+				: { error: 'You cannot creat elements for another author' },
+			}
+
+		};
+	}
+	else
+	{
+		permissions = {}
 	}
 
-
-	const result = rules.manage != undefined ? rules.manage[object.constructor.name.toLowerCase()] != undefined ? rules.manage[object.constructor.name.toLowerCase()] :  rules[action] != undefined ? rules[action][object.constructor.name.toLowerCase()] != undefined ? rules[action][object.constructor.name.toLowerCase()]  : false : false : false
+	const result = permissions.manage == undefined ? permissions[action] == undefined ?  false: permissions[action][object.constructor.name.toLowerCase()]  == undefined? false: permissions[action][object.constructor.name.toLowerCase()]: permissions.manage[object.constructor.name.toLowerCase()] == undefined  ?false:permissions.manage[object.constructor.name.toLowerCase()]
 	
 
 	if (result != true) {

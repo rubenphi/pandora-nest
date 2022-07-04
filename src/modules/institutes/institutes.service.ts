@@ -9,6 +9,7 @@ import {
 	UpdateInstituteDto,
 	QueryInstituteDto,
 } from './dto';
+import { abilities } from '../ability/ability.system';
 
 @Injectable()
 export class InstitutesService {
@@ -29,7 +30,7 @@ export class InstitutesService {
 			return await this.instituteRepository.find();
 		}
 	}
-	async getInstitute(id: number): Promise<Institute> {
+	async getInstitute(user, id: number): Promise<Institute> {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id },
@@ -37,6 +38,7 @@ export class InstitutesService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
+			abilities(user, institute, 'read');
 		return institute;
 	}
 	async createInstitute(instituteDto: CreateInstituteDto): Promise<Institute> {

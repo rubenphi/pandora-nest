@@ -46,7 +46,7 @@ export class InstitutesController {
 	@Auth()
 	@Get(':id')
 	getInstitute(@Req() req, @Param('id') id: number): Promise<Institute> {
-		return this.instituteService.getInstitute(id);
+		return this.instituteService.getInstitute(req.user, id);
 	}
 	@Auth()
 	@Post()
