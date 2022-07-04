@@ -10,6 +10,7 @@ import {
 	UploadedFile,
 	UseInterceptors,
 	UseFilters,
+	Req,
 } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -36,13 +37,13 @@ export class QuestionsController {
 	constructor(private readonly questionService: QuestionsService) {}
 	@Auth()
 	@Get()
-	getQuestions(@Query() queryQuestion: QueryQuestionDto): Promise<Question[]> {
-		return this.questionService.getQuestions(queryQuestion);
+	getQuestions(@Req() req, @Query() queryQuestion: QueryQuestionDto): Promise<Question[]> {
+		return this.questionService.getQuestions(req.user, queryQuestion);
 	}
 	@Auth()
 	@Get(':id')
-	getQuestion(@Param('id') id: number): Promise<Question> {
-		return this.questionService.getQuestion(id);
+	getQuestion(@Req() req , @Param('id') id: number): Promise<Question> {
+		return this.questionService.getQuestion(req.user,id);
 	}
 	@Auth()
 	@Post()
@@ -59,6 +60,7 @@ export class QuestionsController {
 		}),
 	)
 	createQuestion(
+		@Req() req,
 		@Body() question: CreateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
 	): Promise<Question> {
@@ -67,7 +69,7 @@ export class QuestionsController {
 		} else if (question.photo == "") {
 			question.photo = null;
 		}
-		return this.questionService.createQuestion(question);
+		return this.questionService.createQuestion(req.user, question);
 	}
 	@Auth()
 	@Patch(':id')
@@ -83,6 +85,7 @@ export class QuestionsController {
 		}),
 	)
 	updateQuestion(
+		@Req() req,
 		@Param('id') id: number,
 		@Body() question: UpdateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
@@ -90,17 +93,17 @@ export class QuestionsController {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
 		}
-		return this.questionService.updateQuestion(id, question);
+		return this.questionService.updateQuestion(req.user, id, question);
 	}
 	@Auth()
 	@Delete(':id')
-	deleteQuestion(@Param('id') id: number): Promise<void> {
-		return this.questionService.deleteQuestion(id);
+	deleteQuestion(@Req() req, @Param('id') id: number): Promise<void> {
+		return this.questionService.deleteQuestion(req.user, id);
 	}
 	@Auth()
 	@Get(':id/options')
-	getOptionByQuestion(@Param('id') id: number): Promise<Option[]> {
-		return this.questionService.getOptionsByQuestion(id);
+	getOptionByQuestion(@Req() req, @Param('id') id: number): Promise<Option[]> {
+		return this.questionService.getOptionsByQuestion(req.user, id);
 	}
 	@Auth()
 	@Get(':id/answers')
