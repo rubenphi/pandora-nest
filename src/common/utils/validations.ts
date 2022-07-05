@@ -1,6 +1,7 @@
-import { Entidades } from "src/modules/ability/ability.system";
+import { Entity } from "../types";
 
-export function validateEquality(id: number, object: any, field: string){
+
+export function validateEquality(id: number, object: Entity, field: string){
    
    //esta función permite buscar indices escritos en formato string que es recibido a través
    //de la variable field
