@@ -71,3 +71,8 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+PANDORA, AHORA EN NEST
+
+Con el fin de aprender nuevas tecnologías, pandora ha sido escrita nuevamente en TS sobre el framework NestJS y se le han añadido algunas funcionalidades.
