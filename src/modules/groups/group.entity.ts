@@ -7,11 +7,13 @@ import {
 	ManyToOne,
 	JoinColumn,
 	OneToMany,
+	JoinTable,
 } from 'typeorm';
 
 import { Course } from 'src/modules/courses/course.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Group {
@@ -19,6 +21,9 @@ export class Group {
 	id: number;
 	@Column({ nullable: false })
 	name: string;
+	@ManyToOne(() => Institute)
+	@JoinTable({ name: 'instituteId' })
+	institute: Institute;
 	@ManyToOne(() => Course, (course) => course.groups, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'courseId' })
 	course: Course;

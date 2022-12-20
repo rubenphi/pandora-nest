@@ -13,6 +13,7 @@ import { Course } from '../courses/course.entity';
 import { Answer } from '../answers/answer.entity';
 import { Question } from '../questions/question.entity';
 import { Area } from '../areas/area.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class LessonsService {
@@ -23,6 +24,8 @@ export class LessonsService {
 		private readonly courseRepository: Repository<Course>,
 		@InjectRepository(Area)
 		private readonly areaRepository: Repository<Area>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
 	async getLessons(queryLesson: QueryLessonDto): Promise<Lesson[]> {
@@ -31,11 +34,11 @@ export class LessonsService {
 				where: {
 					course: { id: queryLesson.courseId },
 					area: { id: queryLesson.areaId },
-					theme: queryLesson.theme,
+					topic: queryLesson.topic,
 					date: queryLesson.date,
 					exist: queryLesson.exist,
 				},
-				relations: ['course', 'area'],
+				relations: ['course', 'area', 'institute'],
 			});
 		} else {
 			return await this.lessonRepository.find({
@@ -56,6 +59,13 @@ export class LessonsService {
 		return lesson;
 	}
 	async createLesson(lessonDto: CreateLessonDto): Promise<Lesson> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: lessonDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id: lessonDto.courseId },
@@ -68,11 +78,13 @@ export class LessonsService {
 				where: { id: lessonDto.areaId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Course not found');
+				throw new NotFoundException('Area not found');
 			});
+
 		const lesson: Lesson = await this.lessonRepository.create({
-			theme: lessonDto.theme,
+			topic: lessonDto.topic,
 			date: lessonDto.date,
+			institute,
 			course,
 			area,
 			exist: lessonDto.exist,
@@ -80,6 +92,13 @@ export class LessonsService {
 		return this.lessonRepository.save(lesson);
 	}
 	async updateLesson(id: number, lessonDto: UpdateLessonDto): Promise<Lesson> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: lessonDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id: lessonDto.courseId },
@@ -89,8 +108,9 @@ export class LessonsService {
 			});
 		const lesson: Lesson = await this.lessonRepository.preload({
 			id: id,
-			theme: lessonDto.theme,
+			topic: lessonDto.topic,
 			date: lessonDto.date,
+			institute,
 			course,
 			exist: lessonDto.exist,
 		});

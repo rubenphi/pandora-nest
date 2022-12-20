@@ -9,4 +9,4 @@ export class DeleteAreaFromCourseDto {
 	@IsInt({each:true})
 	readonly areasId: number[];
 }
-
+}

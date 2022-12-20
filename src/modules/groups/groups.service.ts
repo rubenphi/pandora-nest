@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Group } from './group.entity';
-import { CreateGroupDto, UpdateGroupDto } from './dto';
+import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Course } from '../courses/course.entity';
 import { Answer } from '../answers/answer.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class GroupsService {
@@ -14,17 +15,32 @@ export class GroupsService {
 		private readonly groupRepository: Repository<Group>,
 		@InjectRepository(Course)
 		private readonly courseRepository: Repository<Course>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getGroups(): Promise<Group[]> {
-		return await this.groupRepository.find({ relations: ['course'] });
+	async getGroups(queryGroup: QueryGroupDto): Promise<Group[]> {
+		if (queryGroup) {
+			return await this.groupRepository.find({
+				where: {
+					name: queryGroup.name,
+					course: { id: queryGroup.courseId },
+					exist: queryGroup.exist,
+				},
+				relations: ['course', 'institute'],
+			});
+		} else {
+			return await this.groupRepository.find({
+				relations: ['course', 'institute'],
+			});
+		}
 	}
 
 	async getGroup(id: number): Promise<Group> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course'],
+				relations: ['course', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -39,8 +55,16 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: groupDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const group: Group = await this.groupRepository.create({
 			name: groupDto.name,
+			institute,
 			course: course,
 			exist: groupDto.exist,
 		});
@@ -54,9 +78,17 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: groupDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const group: Group = await this.groupRepository.preload({
 			id: id,
 			name: groupDto.name,
+			institute,
 			course: course,
 			exist: groupDto.exist,
 		});

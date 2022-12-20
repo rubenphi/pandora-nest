@@ -4,7 +4,7 @@ import {
 	BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, ILike } from 'typeorm';
 
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
@@ -17,11 +17,13 @@ export class UsersService {
 	) {}
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
-		if (queryUser) {
+		if (Object.entries(queryUser).length != 0) {
 			return await this.userRepository.find({
 				where: {
-					name: queryUser.name,
-					lastName: queryUser.lastName,
+					name: queryUser.name ? ILike(`%${queryUser.name}%`) : null,
+					lastName: queryUser.lastName
+						? ILike(`%${queryUser.lastName}%`)
+						: null,
 					code: queryUser.code,
 					email: queryUser.email,
 					exist: queryUser.exist,
@@ -72,6 +74,7 @@ export class UsersService {
 			email: userDto.email,
 			code: userDto.code,
 			password: userDto.password,
+			rol: 'user',
 			exist: userDto.exist,
 		});
 		const returnUser = await this.userRepository.save(user);
@@ -101,6 +104,7 @@ export class UsersService {
 			lastName: userDto.lastName,
 			email: userDto.email,
 			code: userDto.code,
+			rol: userDto.rol,
 			password: userDto.password,
 			exist: userDto.exist,
 		});

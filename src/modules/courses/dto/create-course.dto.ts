@@ -8,6 +8,11 @@ export class CreateCourseDto {
 	@IsString()
 	readonly name: string;
 	@ApiProperty({
+		description: 'Institute id of user',
+	})
+	@IsInt()
+	readonly instituteId: number;
+	@ApiProperty({
 		description: 'Indicates if the course is active or "deleted"',
 	})
 	@IsBoolean()

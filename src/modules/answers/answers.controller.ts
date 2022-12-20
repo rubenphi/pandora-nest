@@ -29,7 +29,7 @@ export class AnswersController {
 		return this.answerService.getAnswer(id);
 	}
 	@Auth()
-	@Get('question/bonus/:id')
+	@Get('question/:id/bonus')
 	bonusToAnswer(@Param('id') id: number): Promise<Answer> {
 		return this.answerService.bonusToAnswer(id);
 	}

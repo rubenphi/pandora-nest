@@ -7,6 +7,7 @@ import {
 	Body,
 	Patch,
 	Delete,
+	Req,
 } from '@nestjs/common';
 
 import { Area } from './area.entity';
@@ -22,9 +23,10 @@ export class AreasController {
 	constructor(private readonly areaService: AreasService) {}
 	@Auth()
 	@Get()
-	getAreas(@Query() queryArea: QueryAreaDto): Promise<Area[]> {
+	getAreas(@Req() req, @Query() queryArea: QueryAreaDto): Promise<Area[]> {
 		return this.areaService.getAreas(queryArea);
 	}
+
 	@Auth()
 	@Get(':id')
 	getArea(@Param('id') id: number): Promise<Area> {

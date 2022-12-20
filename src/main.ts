@@ -11,12 +11,16 @@ async function bootstrap() {
 		.addBearerAuth()
 		.build();
 
-	const document = SwaggerModule.createDocument(app, swaggerOptions);
+	const document = SwaggerModule.createDocument(app, swaggerOptions );
 
 	SwaggerModule.setup('api/docs', app, document, {
 		explorer: true,
-		swaggerOptions: { filter: true, displayRequestDuration: true },
-	});
+		swaggerOptions: { filter: true, displayRequestDuration: true,
+		},
+		uiConfig: {tagsSorter: 'alpha'}
+	}
+	
+	);
 	app.useGlobalPipes(
 		new ValidationPipe({
 			transform: true,

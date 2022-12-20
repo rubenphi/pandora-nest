@@ -13,6 +13,7 @@ import {
 	DeleteAreaFromCourseDto,
 	QueryCourseDto,
 } from './dto';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class CoursesService {
@@ -21,21 +22,25 @@ export class CoursesService {
 		private readonly courseRepository: Repository<Course>,
 		@InjectRepository(Area)
 		private readonly areaRepository: Repository<Area>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
 	async getCourses(queryCourse: QueryCourseDto): Promise<Course[]> {
 		if (queryCourse) {
 			return await this.courseRepository.find({
 				where: { name: queryCourse.name, exist: queryCourse.exist },
+				relations: ['institute'],
 			});
 		} else {
-			return await this.courseRepository.find();
+			return await this.courseRepository.find({ relations: ['institute'] });
 		}
 	}
 	async getCourse(id: number): Promise<Course> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -44,13 +49,32 @@ export class CoursesService {
 		return course;
 	}
 	async createCourse(courseDto: CreateCourseDto): Promise<Course> {
-		const course: Course = await this.courseRepository.create(courseDto);
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: courseDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+		const course: Course = await this.courseRepository.create({
+			name: courseDto.name,
+			institute,
+			exist: courseDto.exist,
+		});
 		return this.courseRepository.save(course);
 	}
 	async updateCourse(id: number, courseDto: UpdateCourseDto): Promise<Course> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: courseDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const course: Course = await this.courseRepository.preload({
 			id: id,
 			name: courseDto.name,
+			institute,
 			exist: courseDto.exist,
 		});
 		if (!course) {

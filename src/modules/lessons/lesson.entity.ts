@@ -7,6 +7,7 @@ import {
 	ManyToOne,
 	OneToMany,
 	JoinColumn,
+	JoinTable,
 } from 'typeorm';
 
 import { Course } from 'src/modules/courses/course.entity';
@@ -15,15 +16,19 @@ import { Answer } from 'src/modules/answers/answer.entity';
 import { Area } from 'src/modules/areas/area.entity';
 import { User } from 'src/modules/users/user.entity';
 import { Period } from '../periods/period.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class Lesson {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 	@Column({ nullable: false })
-	theme: string;
+	topic: string;
 	@Column({ nullable: false })
 	date: Date;
+	@ManyToOne(() => Institute)
+	@JoinTable({ name: 'instituteId' })
+	institute: Institute;
 	@ManyToOne(() => Course, (course) => course.lessons, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'courseId' })
 	course: Course;

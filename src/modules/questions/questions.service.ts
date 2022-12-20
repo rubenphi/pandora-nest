@@ -4,7 +4,7 @@ import {
 	BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, ILike } from 'typeorm';
 import * as fs from 'fs';
 
 import { Question } from './question.entity';
@@ -17,6 +17,7 @@ import {
 import { Lesson } from '../lessons/lesson.entity';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -27,14 +28,18 @@ export class QuestionsService {
 		private readonly lessonRepository: Repository<Lesson>,
 		@InjectRepository(Option)
 		private readonly optionRepository: Repository<Option>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
 	async getQuestions(queryQuestion: QueryQuestionDto): Promise<Question[]> {
 		if (queryQuestion) {
 			return await this.questionRepository.find({
 				where: {
-					title: queryQuestion.title,
-					sentence: queryQuestion.sentence,
+					title: queryQuestion.title ? ILike(`%${queryQuestion.title}%`) : null,
+					sentence: queryQuestion.title
+						? ILike(`%${queryQuestion.sentence}%`)
+						: null,
 					points: queryQuestion.points,
 					photo: queryQuestion.photo,
 					visible: queryQuestion.visible,
@@ -42,17 +47,19 @@ export class QuestionsService {
 					lesson: { id: queryQuestion.lessonId },
 					exist: queryQuestion.exist,
 				},
-				relations: ['lesson'],
+				relations: ['lesson', 'institute'],
 			});
 		} else {
-			return await this.questionRepository.find({ relations: ['lesson'] });
+			return await this.questionRepository.find({
+				relations: ['lesson', 'institute'],
+			});
 		}
 	}
 	async getQuestion(id: number): Promise<Question> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['lesson'],
+				relations: ['lesson', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
@@ -60,6 +67,13 @@ export class QuestionsService {
 		return question;
 	}
 	async createQuestion(questionDto: CreateQuestionDto): Promise<Question> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: questionDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id: questionDto.lessonId },
@@ -70,7 +84,8 @@ export class QuestionsService {
 		const question: Question = await this.questionRepository.create({
 			title: questionDto.title,
 			sentence: questionDto.sentence,
-			lesson: lesson,
+			lesson,
+			institute,
 			points: questionDto.points,
 			photo: questionDto.photo,
 			visible: questionDto.visible,
@@ -83,6 +98,13 @@ export class QuestionsService {
 		id: number,
 		questionDto: UpdateQuestionDto,
 	): Promise<Question> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: questionDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id: questionDto.lessonId },
@@ -98,6 +120,7 @@ export class QuestionsService {
 			title: questionDto.title,
 			sentence: questionDto.sentence,
 			lesson,
+			institute,
 			points: questionDto.points,
 			photo: questionDto.photo,
 			visible: questionDto.visible,
@@ -134,7 +157,7 @@ export class QuestionsService {
 			});
 		if (
 			question.photo &&
-			!(await this.questionRepository.findOneOrFail({
+			!(await this.questionRepository.findOne({
 				where: { id: Not(id), photo: question.photo },
 			}))
 		) {
@@ -197,7 +220,7 @@ export class QuestionsService {
 			}
 
 			return (
-				await this.questionRepository.findOneOrFail({
+				await this.questionRepository.findOne({
 					relations: ['options.question'],
 					where: { id },
 				})

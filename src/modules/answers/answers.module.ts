@@ -8,10 +8,18 @@ import { Option } from 'src/modules/options/option.entity';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Group } from 'src/modules/groups/group.entity';
 import { Question } from 'src/modules/questions/question.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Answer, Option, Lesson, Group, Question]),
+		TypeOrmModule.forFeature([
+			Answer,
+			Option,
+			Lesson,
+			Group,
+			Question,
+			Institute,
+		]),
 	],
 	providers: [AnswersService],
 	controllers: [AnswersController],
