@@ -26,7 +26,9 @@ export class Answer {
 	})
 	@JoinColumn({ name: 'questionId' })
 	question: Question;
-	@ManyToOne(() => Institute, (institute) => institute.answers, { onDelete: 'CASCADE' })
+	@ManyToOne(() => Institute, (institute) => institute.answers, {
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@ManyToOne(() => Group, (group) => group.answers, { onDelete: 'CASCADE' })

@@ -8,7 +8,6 @@ import {
 	Patch,
 	Delete,
 	Req,
-	ForbiddenException,
 } from '@nestjs/common';
 
 import { Institute } from './institute.entity';
@@ -21,26 +20,17 @@ import {
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
-import { AbilityFactory, Action } from '../ability/ability.factory';
 
 @ApiTags('Institutes Routes')
 @Controller('institutes')
 export class InstitutesController {
-	constructor(
-		private readonly instituteService: InstitutesService,
-		private abilityFactory: AbilityFactory,
-	) {}
+	constructor(private readonly instituteService: InstitutesService) {}
 	@Auth()
 	@Get()
 	getInstitutes(
 		@Req() req,
 		@Query() queryInstitute: QueryInstituteDto,
 	): Promise<Institute[]> {
-		const ability = this.abilityFactory.defineAbility(req.user);
-		const isAllowed = ability.can(Action.Read, Institute);
-		if (!isAllowed) {
-			throw new ForbiddenException('only admin');
-		}
 		return this.instituteService.getInstitutes(queryInstitute);
 	}
 	@Auth()

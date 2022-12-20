@@ -5,11 +5,10 @@ import { AreasService } from './areas.service';
 import { AreasController } from './areas.controller';
 import { Area } from './area.entity';
 import { Course } from 'src/modules/courses/course.entity';
-import { AbilityModule } from '../ability/ability.module';
 import { Institute } from '../institutes/institute.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Area, Course, Institute]), AbilityModule],
+	imports: [TypeOrmModule.forFeature([Area, Course, Institute])],
 	providers: [AreasService],
 	controllers: [AreasController],
 })

@@ -15,7 +15,6 @@ import { Configuration } from './config/config.keys';
 import { UsersModule } from './modules/users/users.module';
 import { PeriodsModule } from './modules/periods/periods.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { AbilityModule } from './modules/ability/ability.module';
 import { InstitutesModule } from './modules/institutes/institutes.module';
 
 const dotenv = require('dotenv');
@@ -46,7 +45,6 @@ dotenv.config();
 		UsersModule,
 		PeriodsModule,
 		AuthModule,
-		AbilityModule,
 		InstitutesModule,
 	],
 })

@@ -8,8 +8,6 @@ import {
 	Patch,
 	Delete,
 	Req,
-	ForbiddenException,
-	ForbiddenError
 } from '@nestjs/common';
 
 import { Area } from './area.entity';
@@ -18,43 +16,21 @@ import { AreasService } from './areas.service';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
-import { AbilityFactory, Action } from '../ability/ability.factory';
-
 
 @ApiTags('Areas Routes')
 @Controller('areas')
 export class AreasController {
-	constructor(
-		private readonly areaService: AreasService,
-		private abilityFactory: AbilityFactory,
-	) {}
+	constructor(private readonly areaService: AreasService) {}
 	@Auth()
 	@Get()
 	getAreas(@Req() req, @Query() queryArea: QueryAreaDto): Promise<Area[]> {
-		const ability = this.abilityFactory.defineAbility(req.user);
-		try{
-			ForbiddenError.from(ability).throwUnlessCan(Action.Read, Area);
-			return this.areaService.getAreas(queryArea);
-		} catch(error) {
-			if(error instanceof ForbiddenError) {
-				throw new ForbiddenException(error.message)
-			}
-		}
-		
-		
-	
+		return this.areaService.getAreas(queryArea);
+	}
+
 	@Auth()
 	@Get(':id')
 	getArea(@Param('id') id: number): Promise<Area> {
-		const ability = this.abilityFactory.defineAbility(req.user);
-		try{
-			ForbiddenError.from(ability).throwUnlessCan(Action.Read, Area);
-			return this.areaService.getArea(id);
-		} catch(error) {
-			if(error instanceof ForbiddenError) {
-				throw new ForbiddenException(error.message)
-			}
-		}
+		return this.areaService.getArea(id);
 	}
 	@Auth()
 	@Post()
