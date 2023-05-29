@@ -51,6 +51,7 @@ export class CreateQuestionDto {
 	@ApiProperty({
 		description: 'Institute id of user',
 	})
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

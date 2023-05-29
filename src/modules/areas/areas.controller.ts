@@ -51,7 +51,7 @@ export class AreasController {
 		return this.areaService.deleteArea(id);
 	}
 	@Auth()
-	@Get(':id/Lessons')
+	@Get(':id/lessons')
 	getLessonsByArea(@Param('id') id: number): Promise<Lesson[]> {
 		return this.areaService.getLessonsByArea(id);
 	}

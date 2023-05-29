@@ -17,6 +17,7 @@ import {
 	UpdateLessonDto,
 	QueryLessonDto,
 	ResultLessonDto,
+	ImportFromLessonDto,
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
@@ -30,7 +31,7 @@ export class LessonsController {
 	getLessons(@Query() queryLesson: QueryLessonDto): Promise<Lesson[]> {
 		return this.lessonService.getLessons(queryLesson);
 	}
-	
+
 	@Auth()
 	@Get(':id')
 	getLesson(@Param('id') id: number): Promise<Lesson> {
@@ -74,5 +75,14 @@ export class LessonsController {
 	@Get(':id/questions')
 	getQuestionsByLesson(@Param('id') id: number): Promise<Question[]> {
 		return this.lessonService.getQuestionsByLesson(id);
+	}
+
+	@Auth()
+	@Patch(':id/questions/import')
+	importQuestionsToLesson(
+		@Param('id') id: number,
+		@Body() importFromLessonDto: ImportFromLessonDto,
+	): Promise<Question[]> {
+		return this.lessonService.importQuestionsToLesson(id, importFromLessonDto);
 	}
 }

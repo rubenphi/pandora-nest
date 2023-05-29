@@ -230,10 +230,10 @@ export class QuestionsService {
 
 	async importPhotoToQuestion(
 		id: number,
-		ImportFromQuestionDto: ImportFromQuestionDto,
+		importFromQuestionDto: ImportFromQuestionDto,
 	): Promise<Question> {
 		const fromQuestion: Question = await this.questionRepository
-			.findOneOrFail({ where: { id: ImportFromQuestionDto.fromQuestionId } })
+			.findOneOrFail({ where: { id: importFromQuestionDto.fromQuestionId } })
 			.catch(() => {
 				throw new NotFoundException('Question origin not found');
 			});

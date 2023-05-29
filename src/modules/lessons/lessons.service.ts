@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -14,6 +18,9 @@ import { Answer } from '../answers/answer.entity';
 import { Question } from '../questions/question.entity';
 import { Area } from '../areas/area.entity';
 import { Institute } from '../institutes/institute.entity';
+import { ImportFromLessonDto } from './dto/import-from-lesson.dto';
+import { CreateQuestionDto } from '../questions/dto';
+import { Option } from '../options/option.entity';
 
 @Injectable()
 export class LessonsService {
@@ -26,6 +33,10 @@ export class LessonsService {
 		private readonly areaRepository: Repository<Area>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(Question)
+		private readonly questionRepository: Repository<Question>,
+		@InjectRepository(Option)
+		private readonly optionRepository: Repository<Option>,
 	) {}
 
 	async getLessons(queryLesson: QueryLessonDto): Promise<Lesson[]> {
@@ -190,5 +201,72 @@ export class LessonsService {
 			return res;
 		}, {});
 		return resultLesson.sort((a, b) => b.points - a.points);
+	}
+
+	async importQuestionsToLesson(
+		id: number,
+		importFromLessonDto: ImportFromLessonDto,
+	): Promise<Question[]> {
+		const fromLesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				relations: ['questions', 'questions.options'],
+				where: { id: importFromLessonDto.fromLessonId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Question origin not found');
+			});
+
+		const toLesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				relations: ['questions', 'institute'],
+				where: { id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Question destiny not found');
+			});
+		if (toLesson.questions.length) {
+			throw new BadRequestException(
+				`You can only import options to a question that doesn't have them`,
+			);
+		} else {
+			for (const question of fromLesson.questions) {
+				const questionToSave: Question = this.questionRepository.create({
+					available: question.available,
+					exist: question.exist,
+					institute: toLesson.institute,
+					lesson: toLesson,
+					sentence: question.sentence,
+					photo: question.photo,
+					points: question.points,
+					title: question.title,
+					visible: question.visible,
+				});
+				console.log(question);
+
+				const savedQuestion = await this.questionRepository.save(
+					questionToSave,
+				);
+				question.options.forEach(async (option) => {
+					const optionToSave: Option = this.optionRepository.create({
+						correct: option.correct,
+						exist: option.exist,
+						question: savedQuestion,
+						sentence: option.sentence,
+						identifier: option.identifier,
+						institute: toLesson.institute,
+						questionCorrect: `${savedQuestion.id}-${option.correct}`,
+						questionIdentifier: `${savedQuestion.id}-${option.identifier}`,
+					});
+					await this.optionRepository.save(optionToSave);
+				});
+			}
+
+			return (
+				await this.lessonRepository.findOne({
+					relations: ['questions.lesson'],
+					where: { id },
+				})
+			).questions;
+		}
 	}
 }
