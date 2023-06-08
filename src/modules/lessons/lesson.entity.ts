@@ -24,6 +24,8 @@ export class Lesson {
 	id: number;
 	@Column({ nullable: false })
 	topic: string;
+	@Column({ nullable: false, default: new Date().getFullYear() })
+	year: number;
 	@Column({ nullable: false })
 	date: Date;
 	@ManyToOne(() => Institute)

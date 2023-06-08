@@ -5,6 +5,8 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	OneToMany,
+	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
 import { Answer } from '../answers/answer.entity';
 import { Area } from '../areas/area.entity';
@@ -40,6 +42,9 @@ export class Institute {
 	questions: Question[];
 	@OneToMany(() => User, (user) => user.institute)
 	users: User[];
+	@ManyToOne(() => User, (user) => user.institute, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: 'userId' })
+	owner: User;
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

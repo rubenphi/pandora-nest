@@ -9,6 +9,8 @@ import {
 	UpdateInstituteDto,
 	QueryInstituteDto,
 } from './dto';
+import { Course } from '../courses/course.entity';
+import { Group } from '../groups/group.entity';
 
 @Injectable()
 export class InstitutesService {
@@ -21,7 +23,7 @@ export class InstitutesService {
 		if (queryInstitute) {
 			return await this.instituteRepository.find({
 				where: {
-					name: queryInstitute.name ? ILike(`%${queryInstitute.name}%`): null,
+					name: queryInstitute.name ? ILike(`%${queryInstitute.name}%`) : null,
 					exist: queryInstitute.exist,
 				},
 			});
@@ -86,5 +88,29 @@ export class InstitutesService {
 				throw new NotFoundException('Institute not found');
 			});
 		return institute.lessons;
+	}
+
+	async getCoursesByInstitute(id: number): Promise<Course[]> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['courses'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+		return institute.courses;
+	}
+
+	async getGroupsByInstitute(id: number): Promise<Group[]> {
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['groups'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+		return institute.groups;
 	}
 }

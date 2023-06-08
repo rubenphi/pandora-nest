@@ -5,14 +5,14 @@ import { IsString, IsInt, IsBoolean, IsOptional } from 'class-validator';
 export class QueryGroupDto {
 	@ApiProperty({
 		description: 'Search group using name',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@IsString()
 	readonly name?: string;
 	@ApiProperty({
 		description: 'Search group using course id',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
@@ -27,12 +27,18 @@ export class QueryGroupDto {
 	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search group if exist or not',
-		required: false
+		required: false,
 	})
+	@IsOptional()
+	@ApiProperty({
+		description: 'Year of the group',
+	})
+	@IsInt()
+	readonly year: number;
 	@IsOptional()
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly exist: boolean;
 }

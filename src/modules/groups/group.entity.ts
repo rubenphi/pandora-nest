@@ -21,6 +21,8 @@ export class Group {
 	id: number;
 	@Column({ nullable: false })
 	name: string;
+	@Column({ nullable: false, default: new Date().getFullYear() })
+	year: number;
 	@ManyToOne(() => Institute)
 	@JoinTable({ name: 'instituteId' })
 	institute: Institute;

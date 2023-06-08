@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsInt, IsBoolean, IsOptional } from 'class-validator';
+import {
+	IsString,
+	IsDateString,
+	IsInt,
+	IsBoolean,
+	IsOptional,
+} from 'class-validator';
 
 export class UpdateLessonDto {
 	@ApiProperty({
@@ -29,6 +35,12 @@ export class UpdateLessonDto {
 	@ApiProperty({
 		description: 'Institute id of user',
 	})
+	@ApiProperty({
+		description: 'Year of lesson',
+	})
+	@IsOptional()
+	@IsInt()
+	readonly year: number;
 	@IsOptional()
 	@IsInt()
 	readonly instituteId: number;

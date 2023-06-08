@@ -19,7 +19,6 @@ import { Question } from '../questions/question.entity';
 import { Area } from '../areas/area.entity';
 import { Institute } from '../institutes/institute.entity';
 import { ImportFromLessonDto } from './dto/import-from-lesson.dto';
-import { CreateQuestionDto } from '../questions/dto';
 import { Option } from '../options/option.entity';
 
 @Injectable()
@@ -43,6 +42,7 @@ export class LessonsService {
 		if (queryLesson) {
 			return await this.lessonRepository.find({
 				where: {
+					year: queryLesson.year,
 					course: { id: queryLesson.courseId },
 					area: { id: queryLesson.areaId },
 					topic: queryLesson.topic,
@@ -93,6 +93,7 @@ export class LessonsService {
 			});
 
 		const lesson: Lesson = await this.lessonRepository.create({
+			year: lessonDto.year,
 			topic: lessonDto.topic,
 			date: lessonDto.date,
 			institute,
@@ -118,6 +119,7 @@ export class LessonsService {
 				throw new NotFoundException('Course not found');
 			});
 		const lesson: Lesson = await this.lessonRepository.preload({
+			year: lessonDto.year,
 			id: id,
 			topic: lessonDto.topic,
 			date: lessonDto.date,
@@ -241,7 +243,6 @@ export class LessonsService {
 					title: question.title,
 					visible: question.visible,
 				});
-				console.log(question);
 
 				const savedQuestion = await this.questionRepository.save(
 					questionToSave,

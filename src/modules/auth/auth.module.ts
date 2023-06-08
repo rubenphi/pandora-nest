@@ -6,17 +6,21 @@ import { UsersModule } from '../users/users.module';
 import { JwtStrategy, LocalStrategy } from './strategies';
 import { JwtModule } from '@nestjs/jwt';
 
-const dotenv = require('dotenv');
+import * as dotenv from 'dotenv';
+import { PermissionsModule } from '../permissions/permissions.module';
+
 dotenv.config();
 
 @Module({
 	imports: [
+		PermissionsModule,
 		PassportModule.register({ defaultStrategy: 'jwt' }),
 		JwtModule.register({
 			secret: process.env.HASH_KEY,
 			signOptions: { expiresIn: '604800s' },
 		}),
 		UsersModule,
+		PermissionsModule,
 	],
 	providers: [AuthService, LocalStrategy, JwtStrategy],
 	controllers: [AuthController],

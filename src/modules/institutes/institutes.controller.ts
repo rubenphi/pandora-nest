@@ -20,6 +20,8 @@ import {
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { Course } from '../courses/course.entity';
+import { Group } from '../groups/group.entity';
 
 @ApiTags('Institutes Routes')
 @Controller('institutes')
@@ -57,8 +59,18 @@ export class InstitutesController {
 		return this.instituteService.deleteInstitute(id);
 	}
 	@Auth()
-	@Get(':id/Lessons')
+	@Get(':id/lessons')
 	getLessonsByInstitute(@Param('id') id: number): Promise<Lesson[]> {
 		return this.instituteService.getLessonsByInstitute(id);
+	}
+	@Auth()
+	@Get(':id/courses')
+	getCoursesByInstitute(@Param('id') id: number): Promise<Course[]> {
+		return this.instituteService.getCoursesByInstitute(id);
+	}
+	@Auth()
+	@Get(':id/groups')
+	getGroupsByInstitute(@Param('id') id: number): Promise<Group[]> {
+		return this.instituteService.getGroupsByInstitute(id);
 	}
 }

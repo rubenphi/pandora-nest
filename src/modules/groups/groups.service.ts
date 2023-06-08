@@ -25,6 +25,7 @@ export class GroupsService {
 				where: {
 					name: queryGroup.name,
 					course: { id: queryGroup.courseId },
+					year: queryGroup.year,
 					exist: queryGroup.exist,
 				},
 				relations: ['course', 'institute'],
@@ -66,6 +67,7 @@ export class GroupsService {
 			name: groupDto.name,
 			institute,
 			course: course,
+			year: groupDto.year,
 			exist: groupDto.exist,
 		});
 		return this.groupRepository.save(group);
@@ -89,6 +91,7 @@ export class GroupsService {
 			id: id,
 			name: groupDto.name,
 			institute,
+			year: groupDto.year,
 			course: course,
 			exist: groupDto.exist,
 		});

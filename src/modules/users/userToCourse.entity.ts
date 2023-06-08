@@ -6,7 +6,7 @@ import {
 	UpdateDateColumn,
 	JoinTable,
 	ManyToOne,
-	JoinColumn
+	JoinColumn,
 } from 'typeorm';
 import { Course } from '../courses/course.entity';
 import { User } from './user.entity';
@@ -18,7 +18,7 @@ export class UserToCourse {
 	@Column({ nullable: false })
 	userId: number;
 	@Column({ nullable: false })
-	year: number; 
+	year: number;
 	@ManyToOne(() => Course, (course) => course.userToCourses)
 	@JoinColumn({ name: 'courseId' })
 	course: Course;

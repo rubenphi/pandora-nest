@@ -37,6 +37,7 @@ export class UsersService {
 	async getUserByCode(code: string) {
 		return await this.userRepository
 			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.institute', 'institute')
 			.where({ code })
 			.addSelect('user.password')
 			.getOne();

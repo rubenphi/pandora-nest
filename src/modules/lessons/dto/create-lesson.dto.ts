@@ -17,7 +17,11 @@ export class CreateLessonDto {
 	})
 	@IsInt()
 	readonly courseId: number;
-	
+	@ApiProperty({
+		description: 'Year of lesson',
+	})
+	@IsInt()
+	readonly year: number;
 	@ApiProperty({
 		description: 'Area id of lesson',
 	})

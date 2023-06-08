@@ -4,9 +4,8 @@ import {
 	Column,
 	CreateDateColumn,
 	UpdateDateColumn,
-	JoinTable,
 	ManyToOne,
-	JoinColumn
+	JoinColumn,
 } from 'typeorm';
 import { Group } from '../groups/group.entity';
 import { Period } from '../periods/period.entity';

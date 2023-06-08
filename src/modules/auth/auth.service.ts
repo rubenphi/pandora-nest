@@ -4,15 +4,18 @@ import { User } from '../users/user.entity';
 import { compare } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from 'src/common/interfaces/payload.interface';
+import { PermissionsService } from '../permissions/permissions.service';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: UsersService,
 		private readonly jwtservice: JwtService,
+		private readonly permissionService: PermissionsService,
 	) {}
 	async validateUser(code: string, password: string): Promise<User | null> {
 		const user = await this.userService.getUserByCode(code);
+
 		if (user && (await compare(password, user.password))) {
 			return user;
 		}
@@ -23,6 +26,11 @@ export class AuthService {
 		delete user.password;
 		const { id, ...rest } = user;
 		const payload: Payload = { sub: id };
+
+		console.log(
+			(await this.permissionService.permissionValidator(user, 'read', 'auth'))
+				.user.institute,
+		);
 
 		return {
 			...rest,
