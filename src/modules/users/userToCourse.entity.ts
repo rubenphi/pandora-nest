@@ -9,7 +9,7 @@ import {
 	JoinColumn,
 } from 'typeorm';
 import { Course } from '../courses/course.entity';
-import { Area  } from '../Areas/area.entity';
+import { Area  } from '../areas/area.entity';
 import { User } from './user.entity';
 
 @Entity()
@@ -22,8 +22,6 @@ export class UserToCourse {
 	year: number;
 	@Column({nullable: false})
 	rol: string;
-	@Column({nullable:false })
-	area: Area | string 
 	@ManyToOne(() => Course, (course) => course.userToCourses)
 	@JoinColumn({ name: 'courseId' })
 	course: Course;

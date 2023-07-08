@@ -19,6 +19,7 @@ import { InstitutesModule } from './modules/institutes/institutes.module';
 
 import * as dotenv from 'dotenv';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { CaslModule } from './casl/casl.module';
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ dotenv.config();
 		AuthModule,
 		InstitutesModule,
 		PermissionsModule,
+		CaslModule,
 	],
 })
 export class AppModule {
