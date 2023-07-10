@@ -15,6 +15,7 @@ import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Groups Routes')
 @Controller('groups')
@@ -30,11 +31,13 @@ export class GroupsController {
 	getGroup(@Param('id') id: number): Promise<Group> {
 		return this.groupService.getGroup(id);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
 	createGroup(@Body() group: CreateGroupDto): Promise<Group> {
 		return this.groupService.createGroup(group);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	updateGroup(
@@ -43,6 +46,7 @@ export class GroupsController {
 	): Promise<Group> {
 		return this.groupService.updateGroup(id, group);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Delete(':id')
 	deleteGroup(@Param('id') id: number): Promise<void> {

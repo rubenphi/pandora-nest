@@ -15,7 +15,7 @@ export class AuthController {
 	async login(@Body() loginDto: LoginDto, @User() user: UserEntity) {
 		const userLoged = await this.authService.login(user);
 		return {
-			message : 'Successfull Request',
+			message: 'Successfull Request',
 			userLoged,
 		};
 	}

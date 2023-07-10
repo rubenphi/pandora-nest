@@ -19,11 +19,13 @@ import {
 	DeleteAreaFromCourseDto,
 	QueryCourseDto,
 } from './dto';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Courses Routes')
 @Controller('courses')
 export class CoursesController {
 	constructor(private readonly courseService: CoursesService) {}
+
 	@Auth()
 	@Get()
 	getCourses(@Query() queryCourse: QueryCourseDto): Promise<Course[]> {
@@ -34,11 +36,13 @@ export class CoursesController {
 	getCourse(@Param('id') id: number): Promise<Course> {
 		return this.courseService.getCourse(id);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post()
 	createCourse(@Body() course: CreateCourseDto): Promise<Course> {
 		return this.courseService.createCourse(course);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Patch(':id')
 	updateCourse(
@@ -47,6 +51,7 @@ export class CoursesController {
 	): Promise<Course> {
 		return this.courseService.updateCourse(id, course);
 	}
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deleteCourse(@Param('id') id: number): Promise<void> {
@@ -57,6 +62,7 @@ export class CoursesController {
 	getAreasByCourse(@Param('id') id: number): Promise<any> {
 		return this.courseService.getAreasByCourse(id);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post(':id/areas')
 	addAreaToCourse(
@@ -65,6 +71,7 @@ export class CoursesController {
 	): Promise<any> {
 		return this.courseService.addAreaToCourse(id, courseAreas);
 	}
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id/areas')
 	deleteAreaToCourse(

@@ -22,11 +22,13 @@ import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
 import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Institutes Routes')
 @Controller('institutes')
 export class InstitutesController {
 	constructor(private readonly instituteService: InstitutesService) {}
+
 	@Auth()
 	@Get()
 	getInstitutes(
@@ -45,6 +47,7 @@ export class InstitutesController {
 	createInstitute(@Body() institute: CreateInstituteDto): Promise<Institute> {
 		return this.instituteService.createInstitute(institute);
 	}
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Patch(':id')
 	updateInstitute(
@@ -53,6 +56,7 @@ export class InstitutesController {
 	): Promise<Institute> {
 		return this.instituteService.updateInstitute(id, institute);
 	}
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deleteInstitute(@Param('id') id: number): Promise<void> {

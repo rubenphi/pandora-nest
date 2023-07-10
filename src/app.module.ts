@@ -18,8 +18,6 @@ import { AuthModule } from './modules/auth/auth.module';
 import { InstitutesModule } from './modules/institutes/institutes.module';
 
 import * as dotenv from 'dotenv';
-import { PermissionsModule } from './modules/permissions/permissions.module';
-
 
 dotenv.config();
 
@@ -49,8 +47,6 @@ dotenv.config();
 		PeriodsModule,
 		AuthModule,
 		InstitutesModule,
-		PermissionsModule,
-		
 	],
 })
 export class AppModule {

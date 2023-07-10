@@ -29,6 +29,7 @@ import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Questions Routes')
 @Controller('questions')
@@ -44,6 +45,7 @@ export class QuestionsController {
 	getQuestion(@Param('id') id: number): Promise<Question> {
 		return this.questionService.getQuestion(id);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
 	@UseFilters(DeleteFileException)
@@ -64,11 +66,12 @@ export class QuestionsController {
 	): Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
-		} else if (question.photo == "") {
+		} else if (question.photo == '') {
 			question.photo = null;
 		}
 		return this.questionService.createQuestion(question);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	@UseFilters(DeleteFileException)
@@ -92,6 +95,7 @@ export class QuestionsController {
 		}
 		return this.questionService.updateQuestion(id, question);
 	}
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deleteQuestion(@Param('id') id: number): Promise<void> {
@@ -118,6 +122,7 @@ export class QuestionsController {
 			ImportFromQuestionDto,
 		);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id/photo/import')
 	importPhotoToQuestion(
