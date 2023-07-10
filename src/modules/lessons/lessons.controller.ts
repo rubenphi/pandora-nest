@@ -21,6 +21,7 @@ import {
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Lessons Routes')
 @Controller('lessons')
@@ -38,12 +39,14 @@ export class LessonsController {
 		return this.lessonService.getLesson(id);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
 	createLesson(@Body() lesson: CreateLessonDto): Promise<Lesson> {
 		return this.lessonService.createLesson(lesson);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	updateLesson(
@@ -53,6 +56,7 @@ export class LessonsController {
 		return this.lessonService.updateLesson(id, lesson);
 	}
 
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deleteLesson(@Param('id') id: number): Promise<void> {
@@ -77,6 +81,7 @@ export class LessonsController {
 		return this.lessonService.getQuestionsByLesson(id);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id/questions/import')
 	importQuestionsToLesson(

@@ -13,6 +13,7 @@ import { PeriodsService } from './periods.service';
 import { CreatePeriodDto, UpdatePeriodDto, QueryPeriodDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Periods Routes')
 @Controller('periods')
@@ -28,11 +29,13 @@ export class PeriodsController {
 	getPeriod(@Param('id') id: number): Promise<Period> {
 		return this.periodService.getPeriod(id);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post()
 	createPeriod(@Body() period: CreatePeriodDto): Promise<Period> {
 		return this.periodService.createPeriod(period);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Patch(':id')
 	updatePeriod(
@@ -41,6 +44,7 @@ export class PeriodsController {
 	): Promise<Period> {
 		return this.periodService.updatePeriod(id, period);
 	}
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deletePeriod(@Param('id') id: number): Promise<void> {

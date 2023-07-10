@@ -16,6 +16,7 @@ import { AreasService } from './areas.service';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/common/decorators';
+import { Role, Roles } from '../auth/roles.decorator';
 
 @ApiTags('Areas Routes')
 @Controller('areas')
@@ -32,11 +33,13 @@ export class AreasController {
 	getArea(@Param('id') id: number): Promise<Area> {
 		return this.areaService.getArea(id);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post()
 	createArea(@Body() area: CreateAreaDto): Promise<Area> {
 		return this.areaService.createArea(area);
 	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Patch(':id')
 	updateArea(
@@ -45,6 +48,7 @@ export class AreasController {
 	): Promise<Area> {
 		return this.areaService.updateArea(id, area);
 	}
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deleteArea(@Param('id') id: number): Promise<void> {
