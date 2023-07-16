@@ -14,6 +14,8 @@ import {
 	QueryCourseDto,
 } from './dto';
 import { Institute } from '../institutes/institute.entity';
+import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class CoursesService {
@@ -36,7 +38,7 @@ export class CoursesService {
 			return await this.courseRepository.find({ relations: ['institute'] });
 		}
 	}
-	async getCourse(id: number): Promise<Course> {
+	async getCourse(id: number, user: User): Promise<Course> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -45,10 +47,16 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException('You are not allowed to see a course');
+		}
 
 		return course;
 	}
-	async createCourse(courseDto: CreateCourseDto): Promise<Course> {
+	async createCourse(courseDto: CreateCourseDto, user: User): Promise<Course> {
+		if (user.institute.id !== courseDto.instituteId) {
+			throw new NotFoundException('You are not allowed to create this course');
+		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: courseDto.instituteId },
@@ -63,7 +71,14 @@ export class CoursesService {
 		});
 		return this.courseRepository.save(course);
 	}
-	async updateCourse(id: number, courseDto: UpdateCourseDto): Promise<Course> {
+	async updateCourse(
+		id: number,
+		courseDto: UpdateCourseDto,
+		user: User,
+	): Promise<Course> {
+		if (user.institute.id !== courseDto.instituteId) {
+			throw new NotFoundException('You are not allowed to update this course');
+		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: courseDto.instituteId },
@@ -101,6 +116,7 @@ export class CoursesService {
 	async addAreaToCourse(
 		id: number,
 		courseAreas: AddAreaToCourseDto,
+		user: User,
 	): Promise<any> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
@@ -109,7 +125,11 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to add areas to this course',
+			);
+		}
 		const areas: Area[] = await this.areaRepository.find({
 			where: { id: In(courseAreas.areasId) },
 		});
@@ -122,6 +142,7 @@ export class CoursesService {
 	async deleteAreaToCourse(
 		id: number,
 		courseAreas: DeleteAreaFromCourseDto,
+		user: User,
 	): Promise<any> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
@@ -131,6 +152,11 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to delete areas to this course',
+			);
+		}
 
 		courseAreas.areasId.forEach((areaId) => {
 			course.areas = course.areas.filter((area) => {
@@ -141,7 +167,7 @@ export class CoursesService {
 		return this.courseRepository.save(course);
 	}
 
-	async getAreasByCourse(id: number): Promise<Area[]> {
+	async getAreasByCourse(id: number, user: User): Promise<Area[]> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -150,11 +176,24 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to see areas of this course',
+			);
+		}
+		if (user.rol === Role.Student) {
+			const courseIndex = user.courses.findIndex((course) => course.id === id);
+			if (courseIndex === -1) {
+				throw new NotFoundException(
+					'You are not allowed to see areas of this course',
+				);
+			}
+		}
 
 		return course.areas;
 	}
 
-	async getLessonsByCourse(id: number): Promise<Lesson[]> {
+	async getLessonsByCourse(id: number, user: User): Promise<Lesson[]> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -163,11 +202,24 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to see lessons of this course',
+			);
+		}
+		if (user.rol === Role.Student) {
+			const courseIndex = user.courses.findIndex((course) => course.id === id);
+			if (courseIndex === -1) {
+				throw new NotFoundException(
+					'You are not allowed to see lessons of this course',
+				);
+			}
+		}
 
 		return course.lessons;
 	}
 
-	async getGroupsByCourse(id: number): Promise<Group[]> {
+	async getGroupsByCourse(id: number, user: User): Promise<Group[]> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -176,6 +228,19 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to see groups of this course',
+			);
+		}
+		if (user.rol === Role.Student) {
+			const courseIndex = user.courses.findIndex((course) => course.id === id);
+			if (courseIndex === -1) {
+				throw new NotFoundException(
+					'You are not allowed to see groups of this course',
+				);
+			}
+		}
 
 		return course.groups;
 	}

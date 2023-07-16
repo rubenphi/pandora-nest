@@ -7,7 +7,6 @@ import {
 	Body,
 	Patch,
 	Delete,
-	Req,
 } from '@nestjs/common';
 
 import { Institute } from './institute.entity';
@@ -19,10 +18,11 @@ import {
 	QueryInstituteDto,
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
 import { Role, Roles } from '../auth/roles.decorator';
+import { User as UserEntity } from '../users/user.entity';
 
 @ApiTags('Institutes Routes')
 @Controller('institutes')
@@ -32,7 +32,6 @@ export class InstitutesController {
 	@Auth()
 	@Get()
 	getInstitutes(
-		@Req() req,
 		@Query() queryInstitute: QueryInstituteDto,
 	): Promise<Institute[]> {
 		return this.instituteService.getInstitutes(queryInstitute);
@@ -53,8 +52,9 @@ export class InstitutesController {
 	updateInstitute(
 		@Param('id') id: number,
 		@Body() institute: UpdateInstituteDto,
+		@User() user: UserEntity,
 	): Promise<Institute> {
-		return this.instituteService.updateInstitute(id, institute);
+		return this.instituteService.updateInstitute(id, institute, user);
 	}
 	@Roles(Role.Admin)
 	@Auth()
@@ -64,17 +64,26 @@ export class InstitutesController {
 	}
 	@Auth()
 	@Get(':id/lessons')
-	getLessonsByInstitute(@Param('id') id: number): Promise<Lesson[]> {
-		return this.instituteService.getLessonsByInstitute(id);
+	getLessonsByInstitute(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Lesson[]> {
+		return this.instituteService.getLessonsByInstitute(id, user);
 	}
 	@Auth()
 	@Get(':id/courses')
-	getCoursesByInstitute(@Param('id') id: number): Promise<Course[]> {
-		return this.instituteService.getCoursesByInstitute(id);
+	getCoursesByInstitute(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Course[]> {
+		return this.instituteService.getCoursesByInstitute(id, user);
 	}
 	@Auth()
 	@Get(':id/groups')
-	getGroupsByInstitute(@Param('id') id: number): Promise<Group[]> {
-		return this.instituteService.getGroupsByInstitute(id);
+	getGroupsByInstitute(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Group[]> {
+		return this.instituteService.getGroupsByInstitute(id, user);
 	}
 }

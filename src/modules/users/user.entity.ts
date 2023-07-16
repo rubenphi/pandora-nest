@@ -40,9 +40,9 @@ export class User {
 	@OneToMany(() => Lesson, (lesson) => lesson.author)
 	lessons: Lesson[];
 	@OneToMany(() => UserToCourse, (userToCourse) => userToCourse.user)
-	userToCourses: UserToCourse[];
+	courses: UserToCourse[];
 	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.user)
-	userToGroups: UserToGroup[];
+	groups: UserToGroup[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

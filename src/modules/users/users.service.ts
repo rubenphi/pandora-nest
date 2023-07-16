@@ -27,7 +27,8 @@ export class UsersService {
 					code: queryUser.code,
 					email: queryUser.email,
 					exist: queryUser.exist,
-				},relations: ['institute']
+				},
+				relations: ['institute'],
 			});
 		} else {
 			return await this.userRepository.find();
@@ -46,7 +47,7 @@ export class UsersService {
 		const user: User = await this.userRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['institute']
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('User not found');

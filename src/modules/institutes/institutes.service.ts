@@ -11,6 +11,7 @@ import {
 } from './dto';
 import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class InstitutesService {
@@ -51,7 +52,12 @@ export class InstitutesService {
 	async updateInstitute(
 		id: number,
 		instituteDto: UpdateInstituteDto,
+		user: User,
 	): Promise<Institute> {
+		if (user.institute.id !== id)
+			throw new NotFoundException(
+				'You are not allowed to update this institute',
+			);
 		const institute: Institute = await this.instituteRepository.preload({
 			id: id,
 			name: instituteDto.name,
@@ -75,10 +81,15 @@ export class InstitutesService {
 					'The institute you want to delete does not exist',
 				);
 			});
+
 		this.instituteRepository.remove(institute);
 	}
 
-	async getLessonsByInstitute(id: number): Promise<Lesson[]> {
+	async getLessonsByInstitute(id: number, user: User): Promise<Lesson[]> {
+		if (user.institute.id !== id)
+			throw new NotFoundException(
+				'You are not allowed to see lessons of this institute',
+			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id },
@@ -90,7 +101,11 @@ export class InstitutesService {
 		return institute.lessons;
 	}
 
-	async getCoursesByInstitute(id: number): Promise<Course[]> {
+	async getCoursesByInstitute(id: number, user: User): Promise<Course[]> {
+		if (user.institute.id !== id)
+			throw new NotFoundException(
+				'You are not allowed to see courses of this institute',
+			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id },
@@ -102,7 +117,11 @@ export class InstitutesService {
 		return institute.courses;
 	}
 
-	async getGroupsByInstitute(id: number): Promise<Group[]> {
+	async getGroupsByInstitute(id: number, user: User): Promise<Group[]> {
+		if (user.institute.id !== id)
+			throw new NotFoundException(
+				'You are not allowed to see groups of this institute',
+			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id },

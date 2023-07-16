@@ -23,7 +23,7 @@ export class UserToGroup {
 	@ManyToOne(() => Group, (group) => group.userToGroups)
 	@JoinColumn({ name: 'groupId' })
 	group: Group;
-	@ManyToOne(() => User, (user) => user.userToGroups)
+	@ManyToOne(() => User, (user) => user.groups)
 	@JoinColumn({ name: 'userId' })
 	user: User;
 	@CreateDateColumn()
