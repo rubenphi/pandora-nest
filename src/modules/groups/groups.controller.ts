@@ -14,13 +14,15 @@ import { GroupsService } from './groups.service';
 import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
+import { User as UserEntity } from '../users/user.entity';
 
 @ApiTags('Groups Routes')
 @Controller('groups')
 export class GroupsController {
 	constructor(private readonly groupService: GroupsService) {}
+	@Roles(Role.Admin)
 	@Auth()
 	@Get()
 	getGroups(@Query() queryGroupDto: QueryGroupDto): Promise<Group[]> {
@@ -28,14 +30,14 @@ export class GroupsController {
 	}
 	@Auth()
 	@Get(':id')
-	getGroup(@Param('id') id: number): Promise<Group> {
-		return this.groupService.getGroup(id);
+	getGroup(@Param('id') id: number, @User() user: UserEntity): Promise<Group> {
+		return this.groupService.getGroup(id,  user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
-	createGroup(@Body() group: CreateGroupDto): Promise<Group> {
-		return this.groupService.createGroup(group);
+	createGroup(@Body() group: CreateGroupDto, @User() user: UserEntity): Promise<Group> {
+		return this.groupService.createGroup(group, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
@@ -43,8 +45,9 @@ export class GroupsController {
 	updateGroup(
 		@Param('id') id: number,
 		@Body() group: UpdateGroupDto,
-	): Promise<Group> {
-		return this.groupService.updateGroup(id, group);
+		@User() user: UserEntity,)
+	: Promise<Group> {
+		return this.groupService.updateGroup(id, group, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
@@ -52,9 +55,10 @@ export class GroupsController {
 	deleteGroup(@Param('id') id: number): Promise<void> {
 		return this.groupService.deleteGroup(id);
 	}
+	
 	@Auth()
 	@Get(':id')
-	getAnswersByGroup(@Param('id') id: number): Promise<Answer[]> {
-		return this.groupService.getAnswersByGroup(id);
+	getAnswersByGroup(@Param('id') id: number,  @User() user: UserEntity): Promise<Answer[]> {
+		return this.groupService.getAnswersByGroup(id, user);
 	}
 }

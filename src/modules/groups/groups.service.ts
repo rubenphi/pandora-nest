@@ -7,6 +7,8 @@ import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Course } from '../courses/course.entity';
 import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
+import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class GroupsService {
@@ -37,7 +39,8 @@ export class GroupsService {
 		}
 	}
 
-	async getGroup(id: number): Promise<Group> {
+	async getGroup(id: number, user: User): Promise<Group> {
+	
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
@@ -46,9 +49,22 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
+			if(user.institute.id !== group.institute.id){
+				throw new NotFoundException('You are not allowed to see this group');
+			}
+		if(user.rol === Role.Student){
+			const studentInSameCourse =  user.courses.find(course => 
+				course.id === group.course.id && course.year === group.year)
+			if(!studentInSameCourse){
+				throw new NotFoundException('You are not allowed to see this group');
+			}
+		}
 		return group;
 	}
-	async createGroup(groupDto: CreateGroupDto): Promise<Group> {
+	async createGroup(groupDto: CreateGroupDto, user: User): Promise<Group> {
+		if(user.institute.id !== groupDto.instituteId){
+			throw new NotFoundException('You are not allowed to create this group');
+		}
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id: groupDto.courseId },
@@ -72,7 +88,10 @@ export class GroupsService {
 		});
 		return this.groupRepository.save(group);
 	}
-	async updateGroup(id: number, groupDto: UpdateGroupDto): Promise<Group> {
+	async updateGroup(id: number, groupDto: UpdateGroupDto, user: User): Promise<Group> {
+		if(user.institute.id !== groupDto.instituteId){
+			throw new NotFoundException('You are not allowed to update this group');
+		}
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id: groupDto.courseId },
@@ -115,7 +134,8 @@ export class GroupsService {
 			});
 		this.groupRepository.remove(group);
 	}
-	async getAnswersByGroup(id: number): Promise<Answer[]> {
+	async getAnswersByGroup(id: number, user: User): Promise<Answer[]> {
+		
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
@@ -124,6 +144,16 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
+			if(user.institute.id !== group.institute.id){
+				throw new NotFoundException('You are not allowed to see this group');
+			}
+			if(user.rol === Role.Student){
+				const studentInSameCourse =  user.courses.find(course => 
+					course.id === group.course.id && course.year === group.year)
+				if(!studentInSameCourse){
+					throw new NotFoundException('You are not allowed to see this group');
+				}
+			}
 		return group.answers;
 	}
 }
