@@ -6,6 +6,7 @@ import { Area } from './area.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AreasService {
@@ -26,7 +27,7 @@ export class AreasService {
 			return await this.areaRepository.find({ relations: ['institute'] });
 		}
 	}
-	async getArea(id: number): Promise<Area> {
+	async getArea(id: number, user: User): Promise<Area> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
 				where: { id },
@@ -35,9 +36,15 @@ export class AreasService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
+			if(user.institute.id !== area.institute.id){
+				throw new NotFoundException('You are not allowed to view this area');
+			}
 		return area;
 	}
-	async createArea(areaDto: CreateAreaDto): Promise<Area> {
+	async createArea(areaDto: CreateAreaDto, user: User): Promise<Area> {
+		if(user.institute.id !== areaDto.instituteId){
+			throw new NotFoundException('You are not allowed to create this area');
+		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: areaDto.instituteId },
@@ -52,7 +59,10 @@ export class AreasService {
 		});
 		return this.areaRepository.save(area);
 	}
-	async updateArea(id: number, areaDto: UpdateAreaDto): Promise<Area> {
+	async updateArea(id: number, areaDto: UpdateAreaDto, user: User): Promise<Area> {
+		if(user.institute.id !== areaDto.instituteId){
+			throw new NotFoundException('You are not allowed to update this area');
+		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: areaDto.instituteId },
@@ -85,15 +95,18 @@ export class AreasService {
 		this.areaRepository.remove(area);
 	}
 
-	async getLessonsByArea(id: number): Promise<Lesson[]> {
+	async getLessonsByArea(id: number, user: User): Promise<Lesson[]> {
 		const area: Area = await this.areaRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['lessons'],
+				relations: ['lessons', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
+			if(user.institute.id !== area.institute.id){
+				throw new NotFoundException('You are not allowed to view the lessons of this area');
+			}
 		return area.lessons;
 	}
 }
