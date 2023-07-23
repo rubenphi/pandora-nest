@@ -32,7 +32,7 @@ export class Option {
 	@ManyToOne(() => Institute)
 	@JoinTable({ name: 'instituteId' })
 	institute: Institute;
-	@Column({ nullable: false })
+	@Column({ nullable: false, unique: true })
 	questionIdentifier: string;
 	@Column({ nullable: false })
 	questionCorrect: string;

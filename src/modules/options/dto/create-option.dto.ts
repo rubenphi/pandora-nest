@@ -13,7 +13,8 @@ export class CreateOptionDto {
 	@IsBoolean()
 	readonly correct: boolean;
 	@ApiProperty({
-		description: 'Use an identifier for the option, it can be a letter [For example for multiple choice questions: A,B,C,D...] [Also for example true or false questions: F, V] or it can be a number [1,2,3,4...]'
+		description:
+			'Use an identifier for the option, it can be a letter [For example for multiple choice questions: A,B,C,D...] [Also for example true or false questions: F, V] or it can be a number [1,2,3,4...]',
 	})
 	@IsString()
 	readonly identifier: string;

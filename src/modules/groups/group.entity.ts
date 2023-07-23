@@ -32,6 +32,8 @@ export class Group {
 	@OneToMany(() => Answer, (answer) => answer.group)
 	answers: Answer[];
 	@Column({ nullable: false })
+	active: boolean;
+	@Column({ nullable: false })
 	exist: boolean;
 	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.group)
 	userToGroups: UserToGroup[];

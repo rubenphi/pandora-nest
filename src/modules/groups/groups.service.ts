@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Group } from './group.entity';
 import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
@@ -9,6 +9,9 @@ import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
+import { UserToGroup } from '../users/userToGroup.entity';
+import { Period } from '../periods/period.entity';
+import { AddUserToGroupDto } from './dto/add-user.dto';
 
 @Injectable()
 export class GroupsService {
@@ -17,6 +20,12 @@ export class GroupsService {
 		private readonly groupRepository: Repository<Group>,
 		@InjectRepository(Course)
 		private readonly courseRepository: Repository<Course>,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
+		@InjectRepository(Period)
+		private readonly periodRepository: Repository<Period>,
+		@InjectRepository(UserToGroup)
+		private readonly userToGroupRepository: Repository<UserToGroup>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
@@ -40,7 +49,6 @@ export class GroupsService {
 	}
 
 	async getGroup(id: number, user: User): Promise<Group> {
-	
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
@@ -49,20 +57,21 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
-			if(user.institute.id !== group.institute.id){
-				throw new NotFoundException('You are not allowed to see this group');
-			}
-		if(user.rol === Role.Student){
-			const studentInSameCourse =  user.courses.find(course => 
-				course.id === group.course.id && course.year === group.year)
-			if(!studentInSameCourse){
+		if (user.institute.id !== group.institute.id) {
+			throw new NotFoundException('You are not allowed to see this group');
+		}
+		if (user.rol === Role.Student) {
+			const studentInSameCourse = user.courses.find(
+				(course) => course.id === group.course.id && course.year === group.year,
+			);
+			if (!studentInSameCourse) {
 				throw new NotFoundException('You are not allowed to see this group');
 			}
 		}
 		return group;
 	}
 	async createGroup(groupDto: CreateGroupDto, user: User): Promise<Group> {
-		if(user.institute.id !== groupDto.instituteId){
+		if (user.institute.id !== groupDto.instituteId) {
 			throw new NotFoundException('You are not allowed to create this group');
 		}
 		const course: Course = await this.courseRepository
@@ -88,8 +97,12 @@ export class GroupsService {
 		});
 		return this.groupRepository.save(group);
 	}
-	async updateGroup(id: number, groupDto: UpdateGroupDto, user: User): Promise<Group> {
-		if(user.institute.id !== groupDto.instituteId){
+	async updateGroup(
+		id: number,
+		groupDto: UpdateGroupDto,
+		user: User,
+	): Promise<Group> {
+		if (user.institute.id !== groupDto.instituteId) {
 			throw new NotFoundException('You are not allowed to update this group');
 		}
 		const course: Course = await this.courseRepository
@@ -135,7 +148,6 @@ export class GroupsService {
 		this.groupRepository.remove(group);
 	}
 	async getAnswersByGroup(id: number, user: User): Promise<Answer[]> {
-		
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
@@ -144,16 +156,56 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
-			if(user.institute.id !== group.institute.id){
+		if (user.institute.id !== group.institute.id) {
+			throw new NotFoundException('You are not allowed to see this group');
+		}
+		if (user.rol === Role.Student) {
+			const studentInSameCourse = user.courses.find(
+				(course) => course.id === group.course.id && course.year === group.year,
+			);
+			if (!studentInSameCourse) {
 				throw new NotFoundException('You are not allowed to see this group');
 			}
-			if(user.rol === Role.Student){
-				const studentInSameCourse =  user.courses.find(course => 
-					course.id === group.course.id && course.year === group.year)
-				if(!studentInSameCourse){
-					throw new NotFoundException('You are not allowed to see this group');
-				}
-			}
+		}
 		return group.answers;
+	}
+	async addUserToGroup(id: number, usersToAdd: AddUserToGroupDto, user: User) {
+		const group: Group = await this.groupRepository
+			.findOneOrFail({
+				where: { id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Group not found');
+			});
+		if (user.institute.id !== group.institute.id) {
+			throw new NotFoundException('You are not allowed to see this group');
+		}
+		const users = await this.userRepository
+			.find({
+				where: { id: In(usersToAdd.usersId) },
+			})
+			.catch(() => {
+				throw new NotFoundException('User not found');
+			});
+		const period: Period = await this.periodRepository
+			.findOneOrFail({
+				where: { id: usersToAdd.periodId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
+		// hay que añadir validacion que un usuario no pertenezca a 2 grupos en el mismo periodo
+
+		return await Promise.all(
+			users.map(async (user) => {
+				const userToGroup: UserToGroup =
+					await this.userToGroupRepository.create({
+						user,
+						group,
+						period,
+					});
+				return this.userToGroupRepository.save(userToGroup);
+			}),
+		);
 	}
 }

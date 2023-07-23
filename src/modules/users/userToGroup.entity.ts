@@ -15,11 +15,10 @@ import { User } from './user.entity';
 export class UserToGroup {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
-	@Column({ nullable: false })
-	userId: number;
 	@ManyToOne(() => Period, (period) => period.userToGroups)
 	@JoinColumn({ name: 'periodId' })
 	period: Period;
+
 	@ManyToOne(() => Group, (group) => group.userToGroups)
 	@JoinColumn({ name: 'groupId' })
 	group: Group;
