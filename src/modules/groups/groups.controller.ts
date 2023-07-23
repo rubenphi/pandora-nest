@@ -19,6 +19,7 @@ import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { AddUserToGroupDto } from './dto/add-user.dto';
+import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
 
 @ApiTags('Groups Routes')
 @Controller('groups')
@@ -54,7 +55,7 @@ export class GroupsController {
 	): Promise<Group> {
 		return this.groupService.updateGroup(id, group, user);
 	}
-	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
 	deleteGroup(@Param('id') id: number): Promise<void> {
@@ -69,13 +70,26 @@ export class GroupsController {
 	): Promise<Answer[]> {
 		return this.groupService.getAnswersByGroup(id, user);
 	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post(':id/users')
-	addStudentToGroup(
+	addUserToGroup(
 		@Param('id') id: number,
 		@Body() usersToAdd: AddUserToGroupDto,
 		@User() user: UserEntity,
 	): Promise<UserToGroup[]> {
 		return this.groupService.addUserToGroup(id, usersToAdd, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Delete(':id/users')
+	removeUserFromGroup(
+		@Param('id') id: number,
+		@Body() usersToRemove: RemoveUserFromGroupDto,
+		@User() user: UserEntity,
+	): Promise<UserToGroup[]> {
+		return this.groupService.removeUserFromGroup(id, usersToRemove, user);
 	}
 }

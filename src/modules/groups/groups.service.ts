@@ -12,6 +12,7 @@ import { Role } from '../auth/roles.decorator';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { Period } from '../periods/period.entity';
 import { AddUserToGroupDto } from './dto/add-user.dto';
+import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
 
 @Injectable()
 export class GroupsService {
@@ -214,5 +215,62 @@ export class GroupsService {
 				return this.userToGroupRepository.save(userToGroup);
 			}),
 		);
+	}
+
+	async removeUserFromGroup(
+		id: number,
+		usersToRemove: RemoveUserFromGroupDto,
+		user: User,
+	) {
+		const group: Group = await this.groupRepository
+			.findOneOrFail({
+				where: { id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Group not found');
+			});
+
+		if (user.institute.id !== group.institute.id) {
+			throw new NotFoundException('You are not allowed to see this group');
+		}
+
+		const users = await this.userRepository
+			.find({
+				where: { id: In(usersToRemove.usersIdToRemove) },
+			})
+			.catch(() => {
+				throw new NotFoundException('User not found');
+			});
+
+		const period: Period = await this.periodRepository
+			.findOneOrFail({
+				where: { id: usersToRemove.periodId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
+
+		// Verificar que el usuario exista en el grupo y en el período antes de eliminarlo
+		const userToGroups = await this.userToGroupRepository.find({
+			where: {
+				user: In(users),
+				group: { id: group.id },
+				period: { id: period.id },
+			},
+		});
+
+		if (userToGroups.length === 0) {
+			throw new NotFoundException('User does not belong to this group');
+		}
+
+		// Eliminar los registros de UserToGroup correspondientes a los usuarios y período específico
+		await Promise.all(
+			userToGroups.map(async (userToGroup) => {
+				await this.userToGroupRepository.remove(userToGroup);
+			}),
+		);
+
+		// Devolver los usuarios eliminados del grupo
+		return userToGroups;
 	}
 }
