@@ -9,6 +9,8 @@ import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { Institute } from '../institutes/institute.entity';
+import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class AnswersService {
@@ -46,7 +48,7 @@ export class AnswersService {
 		}
 	}
 
-	async getAnswer(id: number): Promise<Answer> {
+	async getAnswer(id: number, user: User): Promise<Answer> {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { id },
@@ -55,9 +57,34 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
+		if (answer.institute.id !== user.institute.id) {
+			throw new NotFoundException('Your are not allowed to see this answer');
+		}
+		if (user.rol === Role.Student) {
+			const courseIndex = user.courses.findIndex(
+				(course) => answer.lesson.course.id === id,
+			);
+			if (courseIndex === -1) {
+				throw new NotFoundException('You are not allowed to see this answer');
+			}
+		}
 		return answer;
 	}
-	async createAnswer(answerDto: CreateAnswerDto): Promise<Answer> {
+	async createAnswer(answerDto: CreateAnswerDto, user: User): Promise<Answer> {
+		if (user.institute.id !== answerDto.instituteId) {
+			throw new NotFoundException('Your are not allowed to create this answer');
+		}
+		if (user.rol === Role.Student) {
+			const groupIndex = user.groups.findIndex(
+				(assignment) =>
+					assignment.group.id === answerDto.groupId && assignment.group.active,
+			);
+			if (groupIndex === -1) {
+				throw new NotFoundException(
+					'You are not allowed to create this answer',
+				);
+			}
+		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.optionId },
@@ -107,7 +134,14 @@ export class AnswersService {
 		});
 		return this.answerRepository.save(answer);
 	}
-	async updateAnswer(id: number, answerDto: UpdateAnswerDto): Promise<Answer> {
+	async updateAnswer(
+		id: number,
+		answerDto: UpdateAnswerDto,
+		user: User,
+	): Promise<Answer> {
+		if (user.institute.id !== answerDto.instituteId) {
+			throw new NotFoundException('Your are not allowed to update this answer');
+		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.optionId },
@@ -175,7 +209,7 @@ export class AnswersService {
 		this.answerRepository.remove(answer);
 	}
 
-	async bonusToAnswer(id: number): Promise<Answer> {
+	async bonusToAnswer(id: number, user: User): Promise<Answer> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { question: { id: id }, correct: true },
@@ -192,6 +226,10 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
+
+		if (user.institute.id !== answer.institute.id) {
+			throw new NotFoundException('Your are not allowed to update this answer');
+		}
 
 		const answerUpdated: Answer = await this.answerRepository.preload({
 			id: answer.id,
