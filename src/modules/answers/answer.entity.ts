@@ -26,6 +26,7 @@ export class Answer {
 	})
 	@JoinColumn({ name: 'questionId' })
 	question: Question;
+
 	@ManyToOne(() => Institute, (institute) => institute.answers, {
 		onDelete: 'CASCADE',
 	})

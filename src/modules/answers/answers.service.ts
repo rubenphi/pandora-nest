@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 import { Answer } from './answer.entity';
 import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
@@ -62,7 +62,7 @@ export class AnswersService {
 		}
 		if (user.rol === Role.Student) {
 			const courseIndex = user.courses.findIndex(
-				(course) => answer.lesson.course.id === id,
+				(assignment) => answer.lesson.course.id === assignment.course.id,
 			);
 			if (courseIndex === -1) {
 				throw new NotFoundException('You are not allowed to see this answer');
@@ -84,6 +84,16 @@ export class AnswersService {
 					'You are not allowed to create this answer',
 				);
 			}
+		}
+		if (
+			await this.answerRepository.findOne({
+				where: {
+					question: { id: answerDto.questionId },
+					group: { id: answerDto.groupId },
+				},
+			})
+		) {
+			throw new NotFoundException('This group already answered this question');
 		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
@@ -141,6 +151,17 @@ export class AnswersService {
 	): Promise<Answer> {
 		if (user.institute.id !== answerDto.instituteId) {
 			throw new NotFoundException('Your are not allowed to update this answer');
+		}
+		if (
+			await this.answerRepository.findOne({
+				where: {
+					question: { id: answerDto.questionId },
+					group: { id: answerDto.groupId },
+					id: Not(id),
+				},
+			})
+		) {
+			throw new NotFoundException('This group already answered this question');
 		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({

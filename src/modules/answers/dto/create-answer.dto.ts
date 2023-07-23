@@ -17,6 +17,7 @@ export class CreateAnswerDto {
 	})
 	@IsInt()
 	readonly groupId: number;
+
 	@ApiProperty({
 		description: 'Lesson´s id of answer',
 	})
