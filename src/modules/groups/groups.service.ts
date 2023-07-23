@@ -194,7 +194,14 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Period not found');
 			});
-		// hay que añadir validacion que un usuario no pertenezca a 2 grupos en el mismo periodo
+
+		if (
+			await this.userToGroupRepository.findOne({
+				where: { user: In(users), period: { id: usersToAdd.periodId } },
+			})
+		) {
+			throw new NotFoundException('User already belongs to this group');
+		}
 
 		return await Promise.all(
 			users.map(async (user) => {
