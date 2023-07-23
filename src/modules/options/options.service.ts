@@ -59,7 +59,8 @@ export class OptionsService {
 		if (
 			await this.optionRepository.findOne({
 				where: {
-					questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
+					question: { id: optionDto.questionId },
+					identifier: optionDto.identifier,
 				},
 			})
 		) {
@@ -69,7 +70,10 @@ export class OptionsService {
 		} else if (
 			optionDto.correct &&
 			(await this.optionRepository.findOne({
-				where: { questionCorrect: optionDto.questionId + '-' + true },
+				where: {
+					question: { id: optionDto.questionId },
+					correct: true,
+				},
 			}))
 		) {
 			throw new BadRequestException(
@@ -96,8 +100,7 @@ export class OptionsService {
 			identifier: optionDto.identifier,
 			question: question,
 			institute,
-			questionCorrect: optionDto.questionId + '-' + optionDto.correct,
-			questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
+
 			exist: optionDto.exist,
 		});
 		return this.optionRepository.save(option);
@@ -107,7 +110,8 @@ export class OptionsService {
 		if (
 			await this.optionRepository.findOne({
 				where: {
-					questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
+					question: { id: optionDto.questionId },
+					identifier: optionDto.identifier,
 					id: Not(id),
 				},
 			})
@@ -119,7 +123,8 @@ export class OptionsService {
 			optionDto.correct &&
 			(await this.optionRepository.findOne({
 				where: {
-					questionCorrect: optionDto.questionId + '-' + true,
+					question: { id: optionDto.questionId },
+					correct: true,
 					id: Not(id),
 				},
 			}))
@@ -150,8 +155,6 @@ export class OptionsService {
 				identifier: optionDto.identifier,
 				question: question,
 				institute,
-				questionCorrect: optionDto.questionId + '-' + optionDto.correct,
-				questionIdentifier: optionDto.questionId + '-' + optionDto.identifier,
 				exist: optionDto.exist,
 			})
 			.catch(() => {

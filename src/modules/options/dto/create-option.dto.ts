@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsInt, IsBoolean } from 'class-validator';
+import { OneOptionIsCorrect } from 'src/modules/validation-rules/onlyOneOptionCorrect.rule';
 
 export class CreateOptionDto {
 	@ApiProperty({
