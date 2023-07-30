@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
 	IsString,
 	IsBoolean,
 	IsEmail,
 	IsOptional,
-	IsInt
+	IsInt,
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -42,6 +43,7 @@ export class UpdateUserDto {
 		description: 'Institute id of user',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

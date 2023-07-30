@@ -5,7 +5,7 @@ import { IsInt, IsBoolean, IsOptional } from 'class-validator';
 export class QueryAnswerDto {
 	@ApiProperty({
 		description: 'Search answer using option id',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
@@ -13,7 +13,7 @@ export class QueryAnswerDto {
 	readonly optionId?: number;
 	@ApiProperty({
 		description: 'Search answer using question id',
-		required: false 
+		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
@@ -21,7 +21,7 @@ export class QueryAnswerDto {
 	readonly questionId?: number;
 	@ApiProperty({
 		description: 'Search answer using group id',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
@@ -29,7 +29,7 @@ export class QueryAnswerDto {
 	readonly groupId?: number;
 	@ApiProperty({
 		description: 'Search answer using lesson id',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
@@ -40,16 +40,17 @@ export class QueryAnswerDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search answer if exist or not',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly exist: boolean;
 }

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
 	IsString,
 	IsDateString,
@@ -24,12 +25,14 @@ export class UpdateLessonDto {
 		description: 'Course id of lesson',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly courseId: number;
 	@ApiProperty({
 		description: 'Area id of lesson',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly areaId: number;
 	@ApiProperty({
@@ -39,9 +42,11 @@ export class UpdateLessonDto {
 		description: 'Year of lesson',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly year: number;
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

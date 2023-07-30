@@ -37,10 +37,11 @@ export class GroupsService {
 				where: {
 					name: queryGroup.name,
 					course: { id: queryGroup.courseId },
+					period: { id: queryGroup.periodId },
 					year: queryGroup.year,
 					exist: queryGroup.exist,
 				},
-				relations: ['course', 'institute'],
+				relations: ['course', 'institute', 'period'],
 			});
 		} else {
 			return await this.groupRepository.find({
@@ -53,7 +54,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course', 'institute'],
+				relations: ['course', 'institute', 'period'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -89,10 +90,19 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
+		const period: Period = await this.periodRepository
+			.findOneOrFail({
+				where: { id: groupDto.periodId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
+
 		const group: Group = await this.groupRepository.create({
 			name: groupDto.name,
 			institute,
-			course: course,
+			course,
+			period,
 			year: groupDto.year,
 			exist: groupDto.exist,
 		});
@@ -120,12 +130,21 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
+		const period: Period = await this.periodRepository
+			.findOneOrFail({
+				where: { id: groupDto.periodId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
+
 		const group: Group = await this.groupRepository.preload({
 			id: id,
 			name: groupDto.name,
 			institute,
+			course,
 			year: groupDto.year,
-			course: course,
+			period,
 			exist: groupDto.exist,
 		});
 		if (!group) {
@@ -170,10 +189,12 @@ export class GroupsService {
 		}
 		return group.answers;
 	}
-	async addUserToGroup(id: number, usersToAdd: AddUserToGroupDto, user: User) {
+
+	async getUsersByGroup(id: number, user: User): Promise<UserToGroup[]> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['users'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -181,40 +202,49 @@ export class GroupsService {
 		if (user.institute.id !== group.institute.id) {
 			throw new NotFoundException('You are not allowed to see this group');
 		}
-		const users = await this.userRepository
-			.find({
-				where: { id: In(usersToAdd.usersId) },
-			})
-			.catch(() => {
-				throw new NotFoundException('User not found');
-			});
-		const period: Period = await this.periodRepository
+		if (user.rol === Role.Student) {
+			const studentInSameCourse = user.courses.find(
+				(course) => course.id === group.course.id && course.year === group.year,
+			);
+			if (!studentInSameCourse) {
+				throw new NotFoundException('You are not allowed to see this group');
+			}
+		}
+		return group.userToGroups;
+	}
+
+	async addUserToGroup(
+		id: number,
+		usersToAdd: AddUserToGroupDto[],
+		user: User,
+	) {
+		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id: usersToAdd.periodId },
+				where: { id },
+				relations: ['institute'],
 			})
 			.catch(() => {
-				throw new NotFoundException('Period not found');
+				throw new NotFoundException('Group not found');
 			});
 
-		if (
-			await this.userToGroupRepository.findOne({
-				where: { user: In(users), period: { id: usersToAdd.periodId } },
-			})
-		) {
-			throw new NotFoundException('User already belongs to this group');
+		if (user.institute.id !== group.institute.id) {
+			throw new NotFoundException('You are not allowed to see this group');
 		}
 
-		return await Promise.all(
-			users.map(async (user) => {
-				const userToGroup: UserToGroup =
-					await this.userToGroupRepository.create({
-						user,
-						group,
-						period,
-					});
-				return this.userToGroupRepository.save(userToGroup);
+		const usersToAddInGroup: User[] = await this.userRepository.find({
+			where: { id: In(usersToAdd.map((userToAdd) => userToAdd.userId)) },
+		});
+
+		const usersToGroup: UserToGroup[] = await Promise.all(
+			usersToAdd.map(async (userToAdd) => {
+				const userToGroup: UserToGroup = this.userToGroupRepository.create({
+					user: usersToAddInGroup.find((user) => user.id === userToAdd.userId),
+					group,
+				});
+				return userToGroup;
 			}),
 		);
+		return this.userToGroupRepository.save(usersToGroup);
 	}
 
 	async removeUserFromGroup(
@@ -225,6 +255,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -234,43 +265,24 @@ export class GroupsService {
 			throw new NotFoundException('You are not allowed to see this group');
 		}
 
-		const users = await this.userRepository
-			.find({
-				where: { id: In(usersToRemove.usersIdToRemove) },
+		const userToRemove: User = await this.userRepository
+			.findOneOrFail({
+				where: { id: usersToRemove.userIdToRemove },
 			})
 			.catch(() => {
 				throw new NotFoundException('User not found');
 			});
 
-		const period: Period = await this.periodRepository
-			.findOneOrFail({
-				where: { id: usersToRemove.periodId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Period not found');
+		const userToRemoveFromGroup: UserToGroup =
+			await this.userToGroupRepository.findOneOrFail({
+				where: {
+					user: { id: userToRemove.id },
+					group: { id: group.id },
+				},
 			});
 
-		// Verificar que el usuario exista en el grupo y en el período antes de eliminarlo
-		const userToGroups = await this.userToGroupRepository.find({
-			where: {
-				user: In(users),
-				group: { id: group.id },
-				period: { id: period.id },
-			},
-		});
+		await this.userToGroupRepository.remove(userToRemoveFromGroup);
 
-		if (userToGroups.length === 0) {
-			throw new NotFoundException('User does not belong to this group');
-		}
-
-		// Eliminar los registros de UserToGroup correspondientes a los usuarios y período específico
-		await Promise.all(
-			userToGroups.map(async (userToGroup) => {
-				await this.userToGroupRepository.remove(userToGroup);
-			}),
-		);
-
-		// Devolver los usuarios eliminados del grupo
-		return userToGroups;
+		return userToRemoveFromGroup;
 	}
 }

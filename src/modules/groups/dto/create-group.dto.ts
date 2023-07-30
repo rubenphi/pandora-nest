@@ -23,6 +23,11 @@ export class CreateGroupDto {
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
+		description: 'Period id of user',
+	})
+	@IsInt()
+	readonly periodId: number;
+	@ApiProperty({
 		description: 'Indicates if the group is active or "deleted"',
 	})
 	@IsBoolean()

@@ -14,6 +14,7 @@ import { Course } from 'src/modules/courses/course.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { Institute } from '../institutes/institute.entity';
+import { Period } from '../periods/period.entity';
 
 @Entity()
 export class Group {
@@ -29,6 +30,9 @@ export class Group {
 	@ManyToOne(() => Course, (course) => course.groups, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'courseId' })
 	course: Course;
+	@ManyToOne(() => Period, (period) => period.groups, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: 'periodId' })
+	period: Period;
 	@OneToMany(() => Answer, (answer) => answer.group)
 	answers: Answer[];
 	@Column({ nullable: false })

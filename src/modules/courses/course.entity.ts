@@ -35,7 +35,7 @@ export class Course {
 	@OneToMany(() => Lesson, (lesson) => lesson.course)
 	lessons: Lesson[];
 	@OneToMany(() => UserToCourse, (userToCourse) => userToCourse.course)
-	userToCourses: UserToCourse[];
+	users: UserToCourse[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

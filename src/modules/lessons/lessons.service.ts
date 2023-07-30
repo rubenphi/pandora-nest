@@ -255,8 +255,6 @@ export class LessonsService {
 						sentence: option.sentence,
 						identifier: option.identifier,
 						institute: toLesson.institute,
-						questionCorrect: `${savedQuestion.id}-${option.correct}`,
-						questionIdentifier: `${savedQuestion.id}-${option.identifier}`,
 					});
 					await this.optionRepository.save(optionToSave);
 				});

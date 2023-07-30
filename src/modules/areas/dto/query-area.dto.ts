@@ -5,7 +5,7 @@ import { IsString, IsBoolean, IsOptional, IsInt } from 'class-validator';
 export class QueryAreaDto {
 	@ApiProperty({
 		description: 'Search area using name',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@IsString()
@@ -15,16 +15,17 @@ export class QueryAreaDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search area if exist or not',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly exist?: boolean;
 }

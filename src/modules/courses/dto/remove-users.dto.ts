@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt } from 'class-validator';
 
-export class RemoveUserFromGroupDto {
+export class RemoveUserFromCourseDto {
 	@ApiProperty({
 		type: Number,
-		description: 'User ID to remove from the group',
+		description: 'User IDs to remove from the group',
 	})
 	@IsInt()
 	readonly userIdToRemove: number;
+
+	@ApiProperty({
+		description: 'Year',
+	})
+	@IsInt()
+	readonly year: number;
 }

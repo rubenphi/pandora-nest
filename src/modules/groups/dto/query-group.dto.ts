@@ -23,6 +23,7 @@ export class QueryGroupDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
@@ -31,8 +32,17 @@ export class QueryGroupDto {
 	})
 	@IsOptional()
 	@ApiProperty({
+		description: 'Period of the group',
+	})
+	@IsInt()
+	@Type(() => Number)
+	readonly periodId: number;
+	@IsOptional()
+	@ApiProperty({
 		description: 'Year of the group',
 	})
+	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly year: number;
 	@IsOptional()

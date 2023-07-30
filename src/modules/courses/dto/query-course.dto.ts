@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type, Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsString, IsBoolean, IsOptional, IsInt } from 'class-validator';
 
 export class QueryCourseDto {
 	@ApiProperty({
 		description: 'Search curse using name',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@IsString()
@@ -15,16 +15,17 @@ export class QueryCourseDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
 		description: 'Search course if exist or not',
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
-	  })
+	})
 	@IsBoolean()
 	readonly exist: boolean;
 }

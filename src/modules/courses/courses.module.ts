@@ -6,9 +6,13 @@ import { CoursesService } from './courses.service';
 import { Area } from '../areas/area.entity';
 import { Course } from './course.entity';
 import { Institute } from '../institutes/institute.entity';
+import { UserToCourse } from '../users/userToCourse.entity';
+import { User } from '../users/user.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Course, Area, Institute])],
+	imports: [
+		TypeOrmModule.forFeature([Course, Area, Institute, UserToCourse, User]),
+	],
 	controllers: [CoursesController],
 	providers: [CoursesService],
 })

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 
@@ -16,12 +20,20 @@ import {
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
+import { AddUserToCourseDto } from './dto/add-user.dto';
+import { UserToCourse } from '../users/userToCourse.entity';
+import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
+import { QueryUsersOfCourseDto } from './dto/query-user.dto';
 
 @Injectable()
 export class CoursesService {
 	constructor(
 		@InjectRepository(Course)
 		private readonly courseRepository: Repository<Course>,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
+		@InjectRepository(UserToCourse)
+		private readonly userToCourseRepository: Repository<UserToCourse>,
 		@InjectRepository(Area)
 		private readonly areaRepository: Repository<Area>,
 		@InjectRepository(Institute)
@@ -139,7 +151,7 @@ export class CoursesService {
 		return this.courseRepository.save(course);
 	}
 
-	async deleteAreaToCourse(
+	async deleteAreaFromCourse(
 		id: number,
 		courseAreas: DeleteAreaFromCourseDto,
 		user: User,
@@ -243,5 +255,122 @@ export class CoursesService {
 		}
 
 		return course.groups;
+	}
+
+	async getUsersByCourse(
+		id: number,
+		user: User,
+		queryUser: QueryUsersOfCourseDto,
+	): Promise<UserToCourse[]> {
+		const course: Course = await this.courseRepository.findOneOrFail({
+			where: { id },
+			relations: ['institute'],
+		});
+		const users: UserToCourse[] = await this.userToCourseRepository.find({
+			where: { course: { id }, year: queryUser.year },
+			relations: ['user'],
+		});
+
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException('You are not allowed to see this course');
+		}
+		if (user.rol === Role.Student) {
+			const studentInSameCourse = user.courses.find(
+				(course) =>
+					course.id === course.course.id && course.year === course.year,
+			);
+			if (!studentInSameCourse) {
+				throw new NotFoundException('You are not allowed to see this course');
+			}
+		}
+		return users;
+	}
+	async addUserToCourse(
+		id: number,
+		usersToAdd: AddUserToCourseDto[],
+		user: User,
+	) {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['institute'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to add users to this course',
+			);
+		}
+
+		if (
+			await this.userToCourseRepository.findOne({
+				where: usersToAdd.map((userToAdd) => ({
+					user: { id: userToAdd.userId },
+					year: userToAdd.year,
+				})),
+			})
+		) {
+			throw new BadRequestException('User already belongs to this group');
+		}
+
+		const usersToAddIncourse: User[] = await this.userRepository.find({
+			where: { id: In(usersToAdd.map((userToAdd) => userToAdd.userId)) },
+		});
+
+		const usersToCourse: UserToCourse[] = await Promise.all(
+			usersToAdd.map(async (userToAdd) => {
+				const userToCourse: UserToCourse = this.userToCourseRepository.create({
+					user: usersToAddIncourse.find((user) => user.id === userToAdd.userId),
+					course,
+					rol: userToAdd.rol,
+					year: userToAdd.year,
+				});
+				return userToCourse;
+			}),
+		);
+
+		return this.userToCourseRepository.save(usersToCourse);
+	}
+	async removeUserFromCourse(
+		id: number,
+		userToRemove: RemoveUserFromCourseDto,
+		user: User,
+	): Promise<UserToCourse> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+		if (user.institute.id !== course.institute.id) {
+			throw new NotFoundException(
+				'You are not allowed to delete users to this course',
+			);
+		}
+
+		const userToDelete: User = await this.userRepository
+			.findOneOrFail({
+				where: { id: userToRemove.userIdToRemove },
+			})
+			.catch(() => {
+				throw new NotFoundException('User not found');
+			});
+
+		const userToDeleteFromCourse: UserToCourse =
+			await this.userToCourseRepository.findOneOrFail({
+				where: {
+					user: { id: userToDelete.id },
+					course: { id: course.id },
+					year: userToRemove.year,
+				},
+			});
+
+		await this.userToCourseRepository.remove(userToDeleteFromCourse);
+
+		return userToDeleteFromCourse;
 	}
 }

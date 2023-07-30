@@ -8,7 +8,7 @@ import {
 	Patch,
 	Delete,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Course } from './course.entity';
 import { CoursesService } from './courses.service';
@@ -21,6 +21,10 @@ import {
 } from './dto';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
+import { AddUserToCourseDto } from './dto/add-user.dto';
+import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
+import { QueryUsersOfCourseDto } from './dto/query-user.dto';
+import { UserToCourse } from '../users/userToCourse.entity';
 
 @ApiTags('Courses Routes')
 @Controller('courses')
@@ -92,7 +96,7 @@ export class CoursesController {
 		@Body() courseAreas: DeleteAreaFromCourseDto,
 		@User() user: UserEntity,
 	): Promise<any> {
-		return this.courseService.deleteAreaToCourse(id, courseAreas, user);
+		return this.courseService.deleteAreaFromCourse(id, courseAreas, user);
 	}
 	@Auth()
 	@Get(':id/groups')
@@ -109,5 +113,38 @@ export class CoursesController {
 		@User() user: UserEntity,
 	): Promise<any> {
 		return this.courseService.getLessonsByCourse(id, user);
+	}
+
+	@Auth()
+	@Get(':id/users')
+	getUsersByCourse(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+		@Query() queryUser: QueryUsersOfCourseDto,
+	): Promise<any> {
+		return this.courseService.getUsersByCourse(id, user, queryUser);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Auth()
+	@Post(':id/users')
+	@ApiBody({ type: [AddUserToCourseDto] })
+	addUserToCourse(
+		@Param('id') id: number,
+		@Body() usersToAdd: AddUserToCourseDto[],
+		@User() user: UserEntity,
+	) {
+		return this.courseService.addUserToCourse(id, usersToAdd, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Delete(':id/users')
+	removeUserFromCourse(
+		@Param('id') id: number,
+		@Body() usersToRemove: RemoveUserFromCourseDto,
+		@User() user: UserEntity,
+	): Promise<UserToCourse> {
+		return this.courseService.removeUserFromCourse(id, usersToRemove, user);
 	}
 }

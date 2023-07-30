@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsString, IsBoolean, IsOptional, IsInt } from 'class-validator';
 
 export class QueryPeriodDto {
@@ -15,6 +15,7 @@ export class QueryPeriodDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

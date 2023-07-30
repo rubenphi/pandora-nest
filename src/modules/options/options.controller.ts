@@ -31,7 +31,7 @@ export class OptionsController {
 	}
 	@Auth()
 	@Post()
-	createOption(@Body() option: CreateOptionDto): Promise<Option> {
+	createOption(@Body() option: CreateOptionDto[]): Promise<Option[]> {
 		return this.optionService.createOption(option);
 	}
 	@Auth()

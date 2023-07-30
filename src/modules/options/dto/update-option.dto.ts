@@ -1,5 +1,6 @@
 import { IsString, IsInt, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 export class UpdateOptionDto {
 	@ApiProperty({
 		description: 'Sentence of option',
@@ -24,12 +25,14 @@ export class UpdateOptionDto {
 		description: 'Question id of option',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly questionId: number;
 	@ApiProperty({
 		description: 'Institute id of user',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

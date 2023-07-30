@@ -55,12 +55,31 @@ export class OptionsService {
 			});
 		return option;
 	}
-	async createOption(optionDto: CreateOptionDto): Promise<Option> {
+	async createOption(optionsDto: CreateOptionDto[]): Promise<Option[]> {
+		if (
+			optionsDto.some(
+				(optionDto) =>
+					optionDto.questionId !== optionsDto[0].questionId ||
+					optionDto.instituteId !== optionsDto[0].instituteId,
+			)
+		) {
+			throw new BadRequestException(
+				'All options must be from the same question and same institute',
+			);
+		}
+
+		const correctOptions = optionsDto.filter((optionDto) => optionDto.correct);
+		if (correctOptions.length > 1) {
+			throw new BadRequestException(
+				'Cannot mark two answer options as correct',
+			);
+		}
+
 		if (
 			await this.optionRepository.findOne({
 				where: {
-					question: { id: optionDto.questionId },
-					identifier: optionDto.identifier,
+					question: { id: optionsDto[0].questionId },
+					identifier: optionsDto[0].identifier,
 				},
 			})
 		) {
@@ -68,10 +87,10 @@ export class OptionsService {
 				'An option with that idenfier already exist',
 			);
 		} else if (
-			optionDto.correct &&
+			correctOptions.length == 1 &&
 			(await this.optionRepository.findOne({
 				where: {
-					question: { id: optionDto.questionId },
+					question: { id: optionsDto[0].questionId },
 					correct: true,
 				},
 			}))
@@ -80,30 +99,36 @@ export class OptionsService {
 				'Cannot mark two answer options as correct',
 			);
 		}
+
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
-				where: { id: optionDto.instituteId },
+				where: { id: optionsDto[0].instituteId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: optionDto.questionId },
+				where: { id: optionsDto[0].questionId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-		const option: Option = await this.optionRepository.create({
-			sentence: optionDto.sentence,
-			correct: optionDto.correct,
-			identifier: optionDto.identifier,
-			question: question,
-			institute,
 
-			exist: optionDto.exist,
-		});
-		return this.optionRepository.save(option);
+		const options: Option[] = await Promise.all(
+			optionsDto.map(async (optionDto) => {
+				const option: Option = this.optionRepository.create({
+					sentence: optionDto.sentence,
+					correct: optionDto.correct,
+					identifier: optionDto.identifier,
+					question,
+					institute,
+					exist: optionDto.exist,
+				});
+				return option;
+			}),
+		);
+		return this.optionRepository.save(options);
 	}
 
 	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {

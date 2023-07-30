@@ -12,6 +12,7 @@ import {
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { Institute } from '../institutes/institute.entity';
+import { Group } from '../groups/group.entity';
 
 @Entity()
 export class Period {
@@ -26,8 +27,8 @@ export class Period {
 	@ManyToOne(() => Institute)
 	@JoinTable({ name: 'instituteId' })
 	institute: Institute;
-	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.period)
-	userToGroups: UserToGroup[];
+	@OneToMany(() => Group, (group) => group.period)
+	groups: Group[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

@@ -32,7 +32,6 @@ export class Option {
 	@ManyToOne(() => Institute)
 	@JoinTable({ name: 'instituteId' })
 	institute: Institute;
-
 	@OneToMany(() => Answer, (answer) => answer.option)
 	answers: Answer[];
 	@Column({ nullable: false })

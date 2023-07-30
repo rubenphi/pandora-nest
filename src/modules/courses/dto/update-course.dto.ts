@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsBoolean, IsOptional, IsInt } from 'class-validator';
 
 export class UpdateCourseDto {
@@ -12,6 +13,7 @@ export class UpdateCourseDto {
 		description: 'Institute id of user',
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

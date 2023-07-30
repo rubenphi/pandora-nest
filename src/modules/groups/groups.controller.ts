@@ -71,12 +71,21 @@ export class GroupsController {
 		return this.groupService.getAnswersByGroup(id, user);
 	}
 
+	@Auth()
+	@Get(':id/users')
+	getUsersByGroup(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<UserToGroup[]> {
+		return this.groupService.getUsersByGroup(id, user);
+	}
+
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post(':id/users')
 	addUserToGroup(
 		@Param('id') id: number,
-		@Body() usersToAdd: AddUserToGroupDto,
+		@Body() usersToAdd: AddUserToGroupDto[],
 		@User() user: UserEntity,
 	): Promise<UserToGroup[]> {
 		return this.groupService.addUserToGroup(id, usersToAdd, user);
@@ -89,7 +98,7 @@ export class GroupsController {
 		@Param('id') id: number,
 		@Body() usersToRemove: RemoveUserFromGroupDto,
 		@User() user: UserEntity,
-	): Promise<UserToGroup[]> {
+	): Promise<UserToGroup> {
 		return this.groupService.removeUserFromGroup(id, usersToRemove, user);
 	}
 }

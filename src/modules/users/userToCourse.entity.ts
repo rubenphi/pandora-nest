@@ -17,12 +17,10 @@ export class UserToCourse {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 	@Column({ nullable: false })
-	userId: number;
-	@Column({ nullable: false })
 	year: number;
 	@Column({ nullable: false })
 	rol: string;
-	@ManyToOne(() => Course, (course) => course.userToCourses)
+	@ManyToOne(() => Course, (course) => course.users)
 	@JoinColumn({ name: 'courseId' })
 	course: Course;
 	@ManyToOne(() => User, (user) => user.courses)

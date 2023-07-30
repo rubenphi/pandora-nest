@@ -1,17 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt } from 'class-validator';
 
-export class AddUserToGroupDto {
+export class AddUserToCourseDto {
 	@ApiProperty({
 		type: Number,
 		description: 'User to add Id',
 	})
-	@IsInt()
+	@IsInt({ each: true })
 	readonly userId: number;
 	@ApiProperty({
 		type: Number,
-		description: 'period Id',
+		description: 'year',
 	})
 	@IsInt()
-	readonly periodId: number;
+	readonly year: number;
+	@ApiProperty({
+		type: String,
+		description: 'rol',
+	})
+	readonly rol: string;
 }
