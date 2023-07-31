@@ -68,7 +68,7 @@ export class InstitutesService {
 		user: User,
 	): Promise<Institute> {
 		if (user.rol !== Role.Admin && user.institute.id !== id)
-			throw new NotFoundException(
+			throw new BadRequestException(
 				'You are not allowed to update this institute',
 			);
 
@@ -84,9 +84,12 @@ export class InstitutesService {
 			);
 		}
 		if (instituteDto.ownerId){
-			const owner: User = await this.userRepository.findOneByOrFail({id: instituteDto.ownerId}).catch(() => {
+			const owner: User = await this.userRepository.findOne({where: {id: instituteDto.ownerId}, relations: ['institute']}).catch(() => {
 				throw new NotFoundException('User not found');
 			});
+			if(owner.institute.id !== instituteDto.id) throw new BadRequestException(
+				'The new owner must belong to the institute.',
+			);
 			institute.owner = owner
 			await this.userRepository.update(instituteDto.ownerId, {rol: Role.Director})
 		}
@@ -110,7 +113,7 @@ export class InstitutesService {
 
 	async getLessonsByInstitute(id: number, user: User): Promise<Lesson[]> {
 		if (user.institute.id !== id)
-			throw new NotFoundException(
+			throw new BadRequestException(
 				'You are not allowed to see lessons of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
@@ -126,7 +129,7 @@ export class InstitutesService {
 
 	async getCoursesByInstitute(id: number, user: User): Promise<Course[]> {
 		if (user.institute.id !== id)
-			throw new NotFoundException(
+			throw new BadRequestException(
 				'You are not allowed to see courses of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
@@ -142,7 +145,7 @@ export class InstitutesService {
 
 	async getGroupsByInstitute(id: number, user: User): Promise<Group[]> {
 		if (user.institute.id !== id)
-			throw new NotFoundException(
+			throw new BadRequestException(
 				'You are not allowed to see groups of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
