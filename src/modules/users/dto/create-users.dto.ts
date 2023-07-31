@@ -24,7 +24,6 @@ export class CreateUserDto {
 	@ApiProperty({
 		description: 'Email of user',
 	})
-	@IsOptional()
 	@IsNotEmpty()
 	@ValidateIf((o) => o.email != '')
 	@IsEmail()
@@ -37,6 +36,7 @@ export class CreateUserDto {
 	@ApiProperty({
 		description: 'Institute id of user',
 	})
+	@IsOptional()
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({

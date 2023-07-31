@@ -43,8 +43,8 @@ export class InstitutesController {
 	}
 	@Auth()
 	@Post()
-	createInstitute(@Body() institute: CreateInstituteDto): Promise<Institute> {
-		return this.instituteService.createInstitute(institute);
+	createInstitute(@Body() institute: CreateInstituteDto, @User() user: UserEntity,): Promise<Institute> {
+		return this.instituteService.createInstitute(institute, user);
 	}
 	@Roles(Role.Admin, Role.Director)
 	@Auth()

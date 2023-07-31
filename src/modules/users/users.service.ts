@@ -8,12 +8,16 @@ import { Repository, Not, ILike } from 'typeorm';
 
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
+import { Institute } from '../institutes/institute.entity';
 
 @Injectable()
 export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
+		@InjectRepository(Institute)
+		private readonly instituteRepository: Repository<Institute>,
+
 	) {}
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
@@ -71,11 +75,13 @@ export class UsersService {
 				'You cannot create two users with the same code',
 			);
 		}
+		const institute = await this.instituteRepository.findOneBy({id: userDto.instituteId})
 		const user: User = await this.userRepository.create({
 			name: userDto.name,
 			lastName: userDto.lastName,
 			email: userDto.email,
 			code: userDto.code,
+			institute,
 			password: userDto.password,
 			rol: 'user',
 			exist: userDto.exist,
@@ -101,9 +107,13 @@ export class UsersService {
 				'You cannot create two users with the same code',
 			);
 		}
+		const institute = await this.instituteRepository.findOneByOrFail({id: userDto.instituteId}).catch(() => {
+			throw new NotFoundException('Institute not found');
+		});
 		const user: User = await this.userRepository.preload({
 			id: id,
 			name: userDto.name,
+			institute,
 			lastName: userDto.lastName,
 			email: userDto.email,
 			code: userDto.code,

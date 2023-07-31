@@ -12,12 +12,15 @@ import {
 import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
 import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class InstitutesService {
 	constructor(
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
 	) {}
 
 	async getInstitutes(queryInstitute: QueryInstituteDto): Promise<Institute[]> {
@@ -26,7 +29,9 @@ export class InstitutesService {
 				where: {
 					name: queryInstitute.name ? ILike(`%${queryInstitute.name}%`) : null,
 					exist: queryInstitute.exist,
+					
 				},
+				relations: ['owner']
 			});
 		} else {
 			return await this.instituteRepository.find();
@@ -36,28 +41,38 @@ export class InstitutesService {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['owner']
 			})
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
 		return institute;
 	}
-	async createInstitute(instituteDto: CreateInstituteDto): Promise<Institute> {
-		const institute: Institute = await this.instituteRepository.create({
+	
+	async createInstitute(instituteDto: CreateInstituteDto, user: User): Promise<Institute> {
+		const { institute, ...userWithoutInstitute } = user
+		console.log(user);
+		
+		const instituteToSave: Institute = await this.instituteRepository.create({
 			name: instituteDto.name,
 			exist: instituteDto.exist,
+			owner: userWithoutInstitute 
 		});
-		return this.instituteRepository.save(institute);
+		const respuesta = await this.instituteRepository.save(instituteToSave)
+		await this.userRepository.update(user.id, {rol: Role.Director, institute: instituteToSave})
+		return respuesta;
 	}
 	async updateInstitute(
 		id: number,
 		instituteDto: UpdateInstituteDto,
 		user: User,
 	): Promise<Institute> {
-		if (user.institute.id !== id)
+		if (user.rol !== Role.Admin && user.institute.id !== id)
 			throw new NotFoundException(
 				'You are not allowed to update this institute',
 			);
+
+		
 		const institute: Institute = await this.instituteRepository.preload({
 			id: id,
 			name: instituteDto.name,
@@ -68,6 +83,14 @@ export class InstitutesService {
 				'The institute you want to update does not exist',
 			);
 		}
+		if (instituteDto.ownerId){
+			const owner: User = await this.userRepository.findOneByOrFail({id: instituteDto.ownerId}).catch(() => {
+				throw new NotFoundException('User not found');
+			});
+			institute.owner = owner
+			await this.userRepository.update(instituteDto.ownerId, {rol: Role.Director})
+		}
+		
 		return this.instituteRepository.save(institute);
 	}
 
