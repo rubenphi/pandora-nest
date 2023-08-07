@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	ForbiddenException,
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
@@ -20,6 +21,9 @@ import { Area } from '../areas/area.entity';
 import { Institute } from '../institutes/institute.entity';
 import { ImportFromLessonDto } from './dto/import-from-lesson.dto';
 import { Option } from '../options/option.entity';
+import { User } from '../users/user.entity';
+import { userInfo } from 'os';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class LessonsService {
@@ -58,7 +62,8 @@ export class LessonsService {
 		}
 	}
 
-	async getLesson(id: number): Promise<Lesson> {
+	async getLesson(id: number, user: User): Promise<Lesson> {
+		
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -67,9 +72,15 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
+			if (user.institute.id !== lesson.institute.id) {
+				throw new ForbiddenException('You are not allowed to see this group');
+			}
 		return lesson;
 	}
-	async createLesson(lessonDto: CreateLessonDto): Promise<Lesson> {
+	async createLesson(lessonDto: CreateLessonDto, user: User): Promise<Lesson> {
+		if(user.institute.id !== lessonDto.instituteId){
+			throw new ForbiddenException('You are not allowed to create a lesson for this institute');
+		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: lessonDto.instituteId },
@@ -103,7 +114,11 @@ export class LessonsService {
 		});
 		return this.lessonRepository.save(lesson);
 	}
-	async updateLesson(id: number, lessonDto: UpdateLessonDto): Promise<Lesson> {
+	async updateLesson(id: number, lessonDto: UpdateLessonDto, user: User): Promise<Lesson> {
+		if(user.institute.id !== lessonDto.instituteId){
+			throw new ForbiddenException('You are not allowed to update this lesson');
+		}
+
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: lessonDto.instituteId },
@@ -127,6 +142,9 @@ export class LessonsService {
 			course,
 			exist: lessonDto.exist,
 		});
+		if(user.rol !== Role.Admin && user.id !== lesson.author.id){
+			throw new ForbiddenException('You are not allowed to update this lesson');
+		}
 		if (!lesson) {
 			throw new NotFoundException(
 				'The lesson you want to update does not exist',
@@ -135,7 +153,8 @@ export class LessonsService {
 		return this.lessonRepository.save(lesson);
 	}
 
-	async deleteLesson(id: number): Promise<void> {
+	async deleteLesson(id: number, user: User): Promise<void> {
+
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -145,10 +164,16 @@ export class LessonsService {
 					'The lesson you want to delete does not exist',
 				);
 			});
+			if(user.institute.id !== lesson.institute.id){
+				throw new ForbiddenException('You are not allowed to delete this lesson');
+			}
+			if(user.rol !== Role.Admin && user.id !== lesson.author.id){
+				throw new ForbiddenException('You are not allowed to update this lesson');
+			}
 		this.lessonRepository.remove(lesson);
 	}
 
-	async getAnswersByLesson(id: number): Promise<Answer[]> {
+	async getAnswersByLesson(id: number, user: User): Promise<Answer[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -163,10 +188,13 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
+			if(user.institute.id !== lesson.institute.id){
+				throw new ForbiddenException('You are not allowed to see this lesson');
+			}
 		return lesson.answers;
 	}
 
-	async getQuestionsByLesson(id: number): Promise<Question[]> {
+	async getQuestionsByLesson(id: number, user: User): Promise<Question[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -175,10 +203,13 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
+			if(user.institute.id !== lesson.institute.id){
+				throw new ForbiddenException('You are not allowed to see this lesson');
+			}
 		return lesson.questions;
 	}
 
-	async getResultLesson(id: number): Promise<ResultLessonDto[]> {
+	async getResultLesson(id: number, user: User): Promise<ResultLessonDto[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -193,6 +224,9 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
+			if(user.institute.id !== lesson.institute.id){
+				throw new ForbiddenException('You are not allowed to see this lesson');
+			}
 		const resultLesson = [];
 		lesson.answers.reduce((res, value) => {
 			if (!res[value.group.id]) {

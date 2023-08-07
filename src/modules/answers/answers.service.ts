@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -58,21 +58,21 @@ export class AnswersService {
 				throw new NotFoundException('Answer not found');
 			});
 		if (answer.institute.id !== user.institute.id) {
-			throw new NotFoundException('Your are not allowed to see this answer');
+			throw new ForbiddenException('You are not allowed to see this answer');
 		}
 		if (user.rol === Role.Student) {
 			const courseIndex = user.courses.findIndex(
 				(assignment) => answer.lesson.course.id === assignment.course.id,
 			);
 			if (courseIndex === -1) {
-				throw new NotFoundException('You are not allowed to see this answer');
+				throw new ForbiddenException('You are not allowed to see this answer');
 			}
 		}
 		return answer;
 	}
 	async createAnswer(answerDto: CreateAnswerDto, user: User): Promise<Answer> {
 		if (user.institute.id !== answerDto.instituteId) {
-			throw new NotFoundException('Your are not allowed to create this answer');
+			throw new ForbiddenException('You are not allowed to create this answer');
 		}
 		if (user.rol === Role.Student) {
 			const groupIndex = user.groups.findIndex(
@@ -150,7 +150,7 @@ export class AnswersService {
 		user: User,
 	): Promise<Answer> {
 		if (user.institute.id !== answerDto.instituteId) {
-			throw new NotFoundException('Your are not allowed to update this answer');
+			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 		if (
 			await this.answerRepository.findOne({
@@ -249,7 +249,7 @@ export class AnswersService {
 			});
 
 		if (user.institute.id !== answer.institute.id) {
-			throw new NotFoundException('Your are not allowed to update this answer');
+			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 
 		const answerUpdated: Answer = await this.answerRepository.preload({

@@ -20,8 +20,9 @@ import {
 	ImportFromLessonDto,
 } from './dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
+import { User as UserEntity  } from '../users/user.entity';
 
 @ApiTags('Lessons Routes')
 @Controller('lessons')
@@ -35,15 +36,15 @@ export class LessonsController {
 
 	@Auth()
 	@Get(':id')
-	getLesson(@Param('id') id: number): Promise<Lesson> {
-		return this.lessonService.getLesson(id);
+	getLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Lesson> {
+		return this.lessonService.getLesson(id, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
-	createLesson(@Body() lesson: CreateLessonDto): Promise<Lesson> {
-		return this.lessonService.createLesson(lesson);
+	createLesson(@Body() lesson: CreateLessonDto,@User() user: UserEntity ): Promise<Lesson> {
+		return this.lessonService.createLesson(lesson, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
@@ -52,33 +53,34 @@ export class LessonsController {
 	updateLesson(
 		@Param('id') id: number,
 		@Body() lesson: UpdateLessonDto,
+		@User() user: UserEntity
 	): Promise<Lesson> {
-		return this.lessonService.updateLesson(id, lesson);
+		return this.lessonService.updateLesson(id, lesson, user);
 	}
 
 	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
-	deleteLesson(@Param('id') id: number): Promise<void> {
-		return this.lessonService.deleteLesson(id);
+	deleteLesson(@Param('id') id: number, @User() user: UserEntity): Promise<void> {
+		return this.lessonService.deleteLesson(id, user);
 	}
 
 	@Auth()
 	@Get(':id')
-	getLessonResult(@Param('id') id: number): Promise<ResultLessonDto[]> {
-		return this.lessonService.getResultLesson(id);
+	getLessonResult(@Param('id') id: number, @User() user: UserEntity): Promise<ResultLessonDto[]> {
+		return this.lessonService.getResultLesson(id, user);
 	}
 
 	@Auth()
 	@Get(':id/answers')
-	getAnswersByLesson(@Param('id') id: number): Promise<Answer[]> {
-		return this.lessonService.getAnswersByLesson(id);
+	getAnswersByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Answer[]> {
+		return this.lessonService.getAnswersByLesson(id, user);
 	}
 
 	@Auth()
 	@Get(':id/questions')
-	getQuestionsByLesson(@Param('id') id: number): Promise<Question[]> {
-		return this.lessonService.getQuestionsByLesson(id);
+	getQuestionsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Question[]> {
+		return this.lessonService.getQuestionsByLesson(id, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -37,13 +37,13 @@ export class AreasService {
 				throw new NotFoundException('Area not found');
 			});
 			if(user.institute.id !== area.institute.id){
-				throw new NotFoundException('You are not allowed to view this area');
+				throw new ForbiddenException('You are not allowed to view this area');
 			}
 		return area;
 	}
 	async createArea(areaDto: CreateAreaDto, user: User): Promise<Area> {
 		if(user.institute.id !== areaDto.instituteId){
-			throw new NotFoundException('You are not allowed to create this area');
+			throw new ForbiddenException('You are not allowed to create this area');
 		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -61,7 +61,7 @@ export class AreasService {
 	}
 	async updateArea(id: number, areaDto: UpdateAreaDto, user: User): Promise<Area> {
 		if(user.institute.id !== areaDto.instituteId){
-			throw new NotFoundException('You are not allowed to update this area');
+			throw new ForbiddenException('You are not allowed to update this area');
 		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -105,7 +105,7 @@ export class AreasService {
 				throw new NotFoundException('Area not found');
 			});
 			if(user.institute.id !== area.institute.id){
-				throw new NotFoundException('You are not allowed to view the lessons of this area');
+				throw new ForbiddenException('You are not allowed to view the lessons of this area');
 			}
 		return area.lessons;
 	}

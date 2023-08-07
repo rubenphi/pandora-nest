@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 
@@ -68,8 +68,7 @@ export class InstitutesService {
 		user: User,
 	): Promise<Institute> {
 		if (user.rol !== Role.Admin && user.institute.id !== id)
-			throw new BadRequestException(
-				'You are not allowed to update this institute',
+			throw new ForbiddenException('You are not allowed to update this institute',
 			);
 
 		
@@ -87,7 +86,7 @@ export class InstitutesService {
 			const owner: User = await this.userRepository.findOne({where: {id: instituteDto.ownerId}, relations: ['institute']}).catch(() => {
 				throw new NotFoundException('User not found');
 			});
-			if(owner.institute.id !== instituteDto.id) throw new BadRequestException(
+			if(owner.institute.id !== id) throw new BadRequestException(
 				'The new owner must belong to the institute.',
 			);
 			institute.owner = owner
@@ -113,8 +112,7 @@ export class InstitutesService {
 
 	async getLessonsByInstitute(id: number, user: User): Promise<Lesson[]> {
 		if (user.institute.id !== id)
-			throw new BadRequestException(
-				'You are not allowed to see lessons of this institute',
+			throw new ForbiddenException('You are not allowed to see lessons of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -129,8 +127,7 @@ export class InstitutesService {
 
 	async getCoursesByInstitute(id: number, user: User): Promise<Course[]> {
 		if (user.institute.id !== id)
-			throw new BadRequestException(
-				'You are not allowed to see courses of this institute',
+			throw new ForbiddenException('You are not allowed to see courses of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -145,8 +142,7 @@ export class InstitutesService {
 
 	async getGroupsByInstitute(id: number, user: User): Promise<Group[]> {
 		if (user.institute.id !== id)
-			throw new BadRequestException(
-				'You are not allowed to see groups of this institute',
+			throw new ForbiddenException('You are not allowed to see groups of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({

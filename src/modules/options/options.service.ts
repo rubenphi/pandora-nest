@@ -2,6 +2,7 @@ import {
 	Injectable,
 	NotFoundException,
 	BadRequestException,
+	ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, ILike } from 'typeorm';
@@ -11,6 +12,8 @@ import { CreateOptionDto, UpdateOptionDto, QueryOptionDto } from './dto';
 import { Question } from '../questions/question.entity';
 import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
+import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class OptionsService {
@@ -44,7 +47,7 @@ export class OptionsService {
 		}
 	}
 
-	async getOption(id: number): Promise<Option> {
+	async getOption(id: number, user: User): Promise<Option> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id },
@@ -53,9 +56,13 @@ export class OptionsService {
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
+			if(user.institute.id !== option.institute.id){
+				throw new ForbiddenException('You are not allowed to see this option');
+			}
 		return option;
 	}
-	async createOption(optionsDto: CreateOptionDto[]): Promise<Option[]> {
+	async createOption(optionsDto: CreateOptionDto[], user : User): Promise<Option[]> {
+		
 		if (
 			optionsDto.some(
 				(optionDto) =>
@@ -66,6 +73,10 @@ export class OptionsService {
 			throw new BadRequestException(
 				'All options must be from the same question and same institute',
 			);
+		}
+
+		if(user.institute.id !== optionsDto[0].instituteId){
+			throw new ForbiddenException('You are not allowed to create this option');
 		}
 
 		const correctOptions = optionsDto.filter((optionDto) => optionDto.correct);
@@ -110,10 +121,15 @@ export class OptionsService {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id: optionsDto[0].questionId },
+				relations: ['lesson','lesson.author']
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+
+			if(user.rol !== Role.Admin && user.id !== question.lesson.author.id){
+				throw new ForbiddenException('You are not allowed to create this option');
+			}
 
 		const options: Option[] = await Promise.all(
 			optionsDto.map(async (optionDto) => {
@@ -131,7 +147,7 @@ export class OptionsService {
 		return this.optionRepository.save(options);
 	}
 
-	async updateOption(id: number, optionDto: UpdateOptionDto): Promise<Option> {
+	async updateOption(id: number, optionDto: UpdateOptionDto, user: User): Promise<Option> {
 		if (
 			await this.optionRepository.findOne({
 				where: {
@@ -168,10 +184,15 @@ export class OptionsService {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id: optionDto.questionId },
+				relations: ['lesson.author']
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+
+			if(user.rol !== Role.Admin &&  user.id !== question.lesson.author.id){
+				throw new ForbiddenException('You are not allowed to update this option');
+			}
 		const option: Option = await this.optionRepository
 			.preload({
 				id: id,
@@ -190,19 +211,24 @@ export class OptionsService {
 		return this.optionRepository.save(option);
 	}
 
-	async deleteOption(id: number): Promise<void> {
+	async deleteOption(id: number, user: User): Promise<void> {
 		const option: Option = await this.optionRepository.findOne({
 			where: { id },
+			relations: ['question', 'question.lesson.author'],
 		});
 		if (!option) {
 			throw new NotFoundException(
 				'The option you want to delete does not exist',
 			);
 		}
+		if(user.rol !== Role.Admin && user.id !== option.question.lesson.author.id){
+			throw new ForbiddenException('You are not allowed to delete this option');
+		}
 		this.optionRepository.remove(option);
 	}
 
-	async getAnswersByOption(id: number): Promise<Answer[]> {
+	async getAnswersByOption(id: number, user: User): Promise<Answer[]> {
+
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id },
@@ -211,6 +237,9 @@ export class OptionsService {
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
+			if(user.institute.id !== option.institute.id){
+				throw new ForbiddenException('You are not allowed to see this option');
+			}
 		return option.answers;
 	}
 }

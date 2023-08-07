@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	ForbiddenException,
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
@@ -60,14 +61,14 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException('You are not allowed to see a course');
+			throw new ForbiddenException('You are not allowed to see a course');
 		}
 
 		return course;
 	}
 	async createCourse(courseDto: CreateCourseDto, user: User): Promise<Course> {
 		if (user.institute.id !== courseDto.instituteId) {
-			throw new NotFoundException('You are not allowed to create this course');
+			throw new ForbiddenException('You are not allowed to create this course');
 		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -89,7 +90,7 @@ export class CoursesService {
 		user: User,
 	): Promise<Course> {
 		if (user.institute.id !== courseDto.instituteId) {
-			throw new NotFoundException('You are not allowed to update this course');
+			throw new ForbiddenException('You are not allowed to update this course');
 		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -138,15 +139,14 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to add areas to this course',
+			throw new ForbiddenException('You are not allowed to add areas to this course',
 			);
 		}
 		const areas: Area[] = await this.areaRepository.find({
 			where: { id: In(courseAreas.areasId) },
 		});
 
-		course.areas = areas;
+		course.areas = course.areas.concat(areas);
 
 		return this.courseRepository.save(course);
 	}
@@ -165,8 +165,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to delete areas to this course',
+			throw new ForbiddenException('You are not allowed to delete areas to this course',
 			);
 		}
 
@@ -189,8 +188,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to see areas of this course',
+			throw new ForbiddenException('You are not allowed to see areas of this course',
 			);
 		}
 		if (user.rol === Role.Student) {
@@ -215,8 +213,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to see lessons of this course',
+			throw new ForbiddenException('You are not allowed to see lessons of this course',
 			);
 		}
 		if (user.rol === Role.Student) {
@@ -241,8 +238,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to see groups of this course',
+			throw new ForbiddenException('You are not allowed to see groups of this course',
 			);
 		}
 		if (user.rol === Role.Student) {
@@ -272,7 +268,7 @@ export class CoursesService {
 		});
 
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException('You are not allowed to see this course');
+			throw new ForbiddenException('You are not allowed to see this course');
 		}
 		if (user.rol === Role.Student) {
 			const studentInSameCourse = user.courses.find(
@@ -280,7 +276,7 @@ export class CoursesService {
 					course.id === course.course.id && course.year === course.year,
 			);
 			if (!studentInSameCourse) {
-				throw new NotFoundException('You are not allowed to see this course');
+				throw new ForbiddenException('You are not allowed to see this course');
 			}
 		}
 		return users;
@@ -300,8 +296,7 @@ export class CoursesService {
 			});
 
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to add users to this course',
+			throw new ForbiddenException('You are not allowed to add users to this course',
 			);
 		}
 
@@ -347,8 +342,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.institute.id !== course.institute.id) {
-			throw new NotFoundException(
-				'You are not allowed to delete users to this course',
+			throw new ForbiddenException('You are not allowed to delete users to this course',
 			);
 		}
 
