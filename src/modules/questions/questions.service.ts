@@ -1,6 +1,7 @@
 import {
 	Injectable,
 	NotFoundException,
+	ForbiddenException,
 	BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +19,7 @@ import { Lesson } from '../lessons/lesson.entity';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class QuestionsService {
@@ -66,7 +68,7 @@ export class QuestionsService {
 			});
 		return question;
 	}
-	async createQuestion(questionDto: CreateQuestionDto): Promise<Question> {
+	async createQuestion(questionDto: CreateQuestionDto, user: User): Promise<Question> {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: questionDto.instituteId },
@@ -77,10 +79,15 @@ export class QuestionsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id: questionDto.lessonId },
+				relations: ['author'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+
+			if(user.id !== lesson.author.id){
+				throw new ForbiddenException('You are not the author of this lesson')
+			}
 		const question: Question = await this.questionRepository.create({
 			title: questionDto.title,
 			sentence: questionDto.sentence,
@@ -97,6 +104,7 @@ export class QuestionsService {
 	async updateQuestion(
 		id: number,
 		questionDto: UpdateQuestionDto,
+		user: User,
 	): Promise<Question> {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -108,10 +116,14 @@ export class QuestionsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id: questionDto.lessonId },
+				relations: ['author'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+			if(user.id !== lesson.author.id){
+				throw new ForbiddenException('You are not the author of this lesson')
+			}
 		const imageUrl = await (
 			await this.questionRepository.findOne({ where: { id } })
 		).photo;
@@ -175,12 +187,15 @@ export class QuestionsService {
 		return question.options;
 	}
 
-	async getAnswersByQuestion(id): Promise<Answer[]> {
+	async getAnswersByQuestion(id: number, user: User): Promise<Answer[]> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({ relations: ['answers'], where: { id } })
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+			if(user.institute.id !== question.institute.id){
+				throw new ForbiddenException('You are not allowed to see this question')
+			}
 		return question.answers;
 	}
 

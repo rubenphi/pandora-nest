@@ -12,8 +12,9 @@ import { Period } from './period.entity';
 import { PeriodsService } from './periods.service';
 import { CreatePeriodDto, UpdatePeriodDto, QueryPeriodDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
+import { User as UserEntity} from '../users/user.entity';
 
 @ApiTags('Periods Routes')
 @Controller('periods')
@@ -26,23 +27,23 @@ export class PeriodsController {
 	}
 	@Auth()
 	@Get(':id')
-	getPeriod(@Param('id') id: number): Promise<Period> {
-		return this.periodService.getPeriod(id);
+	getPeriod(@Param('id') id: number, @User() user: UserEntity): Promise<Period> {
+		return this.periodService.getPeriod(id, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post()
-	createPeriod(@Body() period: CreatePeriodDto): Promise<Period> {
-		return this.periodService.createPeriod(period);
+	createPeriod(@Body() period: CreatePeriodDto, @User() user: UserEntity): Promise<Period> {
+		return this.periodService.createPeriod(period, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Patch(':id')
 	updatePeriod(
 		@Param('id') id: number,
-		@Body() period: UpdatePeriodDto,
+		@Body() period: UpdatePeriodDto, @User() user: UserEntity
 	): Promise<Period> {
-		return this.periodService.updatePeriod(id, period);
+		return this.periodService.updatePeriod(id, period, user);
 	}
 	@Roles(Role.Admin)
 	@Auth()
@@ -52,7 +53,7 @@ export class PeriodsController {
 	}
 	@Auth()
 	@Get(':id/lessons')
-	getLessonsByPeriod(@Param('id') id: number): Promise<any> {
-		return this.periodService.getLessonsByPeriod(id);
+	getLessonsByPeriod(@Param('id') id: number, @User() user: UserEntity): Promise<any> {
+		return this.periodService.getLessonsByPeriod(id, user);
 	}
 }

@@ -2,6 +2,7 @@ import {
 	Injectable,
 	NotFoundException,
 	BadRequestException,
+	ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, ILike } from 'typeorm';
@@ -39,16 +40,22 @@ export class UsersService {
 		}
 	}
 
-	async getUserByCode(code: string) {
-		return await this.userRepository
-			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.institute', 'institute')
-			.where({ code })
-			.addSelect('user.password')
-			.getOne();
+	async getUserByCode(code: string, user: User) {
+		const userToReturn = await this.userRepository
+		.createQueryBuilder('user')
+		.leftJoinAndSelect('user.institute', 'institute')
+		.where({ code })
+		.addSelect('user.password')
+		.getOne()
+
+		if(user.institute.id !== userToReturn.institute.id)
+		{throw new ForbiddenException('You are not allowed to see this user')}
+		
+		
+		return userToReturn ;
 	}
-	async getUser(id: number): Promise<User> {
-		const user: User = await this.userRepository
+	async getUser(id: number, user: User): Promise<User> {
+		const userToReturn: User = await this.userRepository
 			.findOneOrFail({
 				where: { id },
 				relations: ['institute'],
@@ -56,7 +63,9 @@ export class UsersService {
 			.catch(() => {
 				throw new NotFoundException('User not found');
 			});
-		return user;
+			if(user.institute.id !== userToReturn.institute.id)
+			{throw new ForbiddenException('You are not allowed to see this user')}
+		return userToReturn;
 	}
 	async createUser(userDto: CreateUserDto): Promise<User> {
 		const sameEmail = await this.userRepository.findOne({
@@ -90,7 +99,10 @@ export class UsersService {
 		delete returnUser.password;
 		return returnUser;
 	}
-	async updateUser(id: number, userDto: UpdateUserDto): Promise<User> {
+	async updateUser(id: number, userDto: UpdateUserDto, user: User): Promise<User> {
+		if(user.id !== id)
+		{throw new ForbiddenException('You are not allowed to update this user')}
+		 
 		const sameEmail = await this.userRepository.findOne({
 			where: { email: userDto.email, id: Not(id) },
 		});
@@ -110,7 +122,7 @@ export class UsersService {
 		const institute = await this.instituteRepository.findOneByOrFail({id: userDto.instituteId}).catch(() => {
 			throw new NotFoundException('Institute not found');
 		});
-		const user: User = await this.userRepository.preload({
+		const userToUpdate: User = await this.userRepository.preload({
 			id: id,
 			name: userDto.name,
 			institute,
@@ -121,10 +133,10 @@ export class UsersService {
 			password: userDto.password,
 			exist: userDto.exist,
 		});
-		if (!user) {
+		if (!userToUpdate) {
 			throw new NotFoundException('The user you want to update does not exist');
 		}
-		const returnUser = await this.userRepository.save(user);
+		const returnUser = await this.userRepository.save(userToUpdate);
 		delete returnUser.password;
 		return returnUser;
 	}

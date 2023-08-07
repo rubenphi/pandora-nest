@@ -28,8 +28,9 @@ import {
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
+import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
+import { User as UserEntity  } from '../users/user.entity';
 
 @ApiTags('Questions Routes')
 @Controller('questions')
@@ -63,13 +64,14 @@ export class QuestionsController {
 	createQuestion(
 		@Body() question: CreateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
-	): Promise<Question> {
+		@User() user: UserEntity)
+	: Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
 		} else if (question.photo == '') {
 			question.photo = null;
 		}
-		return this.questionService.createQuestion(question);
+		return this.questionService.createQuestion(question, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
@@ -89,11 +91,12 @@ export class QuestionsController {
 		@Param('id') id: number,
 		@Body() question: UpdateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
+		@User() user: UserEntity
 	): Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
 		}
-		return this.questionService.updateQuestion(id, question);
+		return this.questionService.updateQuestion(id, question, user);
 	}
 	@Roles(Role.Admin)
 	@Auth()
@@ -108,8 +111,8 @@ export class QuestionsController {
 	}
 	@Auth()
 	@Get(':id/answers')
-	getAnswersByQuestion(@Param('id') id: number): Promise<Answer[]> {
-		return this.questionService.getAnswersByQuestion(id);
+	getAnswersByQuestion(@Param('id') id: number, @User() user: UserEntity): Promise<Answer[]> {
+		return this.questionService.getAnswersByQuestion(id, user);
 	}
 	@Auth()
 	@Patch(':id/options/import')

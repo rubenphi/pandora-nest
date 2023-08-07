@@ -72,9 +72,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
-			if (user.institute.id !== lesson.institute.id) {
-				throw new ForbiddenException('You are not allowed to see this group');
-			}
+
 		return lesson;
 	}
 	async createLesson(lessonDto: CreateLessonDto, user: User): Promise<Lesson> {
@@ -203,9 +201,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
-			if(user.institute.id !== lesson.institute.id){
-				throw new ForbiddenException('You are not allowed to see this lesson');
-			}
+
 		return lesson.questions;
 	}
 
