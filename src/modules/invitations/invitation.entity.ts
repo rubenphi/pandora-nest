@@ -24,7 +24,7 @@ export class Invitation {
 	@JoinTable({ name: 'instituteId' })
 	institute: Institute;
 	@Column({ nullable: false })
-	active: boolean;
+	valid: boolean;
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

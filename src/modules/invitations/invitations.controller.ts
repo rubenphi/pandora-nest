@@ -27,13 +27,14 @@ export class InvitationsController {
     return this.invitationsService.findAll(queryInvitationDto);
   }
 
+  @Roles(Role.Admin, Role.Director, Role.Coordinator)
   @Auth()
   @Get(':id')
   findOne(@Param('id') id: number, @User() user: UserEntity) {
     return this.invitationsService.findOne(id, user);
   }
 
-  @Roles(Role.Admin, Role.Director)
+  @Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateInvitationDto: UpdateInvitationDto, @User() user: UserEntity)  {

@@ -10,6 +10,7 @@ import { Repository, Not, ILike } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
+import { Invitation } from '../invitations/invitation.entity';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,8 @@ export class UsersService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(Invitation)
+		private readonly invitationRepository: Repository<Invitation>,
 
 	) {}
 
@@ -85,7 +88,8 @@ export class UsersService {
 				'You cannot create two users with the same code',
 			);
 		}
-		const institute = await this.instituteRepository.findOneBy({id: userDto.instituteId})
+		const invitation: Invitation = await this.invitationRepository.findOne({where: { code: userDto.instituteInvitation, valid: true}, relations: ['institute']})
+		const institute = invitation.institute
 		const user: User = await this.userRepository.create({
 			name: userDto.name,
 			lastName: userDto.lastName,
@@ -96,7 +100,12 @@ export class UsersService {
 			rol: 'user',
 			exist: userDto.exist,
 		});
-		const returnUser = await this.userRepository.save(user);
+		const returnUser = await this.userRepository.save(user).then(
+			async (user) => {await this.invitationRepository.update(invitation.id, {valid: false})
+			return user
+			}
+
+		);
 		delete returnUser.password;
 		return returnUser;
 	}
@@ -120,13 +129,10 @@ export class UsersService {
 				'You cannot create two users with the same code',
 			);
 		}
-		const institute = await this.instituteRepository.findOneByOrFail({id: userDto.instituteId}).catch(() => {
-			throw new NotFoundException('Institute not found');
-		});
+		const invitation: Invitation = await this.invitationRepository.findOne({where: { code: userDto.instituteInvitation, valid: true}, relations: ['institute']})
 		const userToUpdate: User = await this.userRepository.preload({
 			id: id,
 			name: userDto.name,
-			institute,
 			lastName: userDto.lastName,
 			email: userDto.email,
 			code: userDto.code,
@@ -134,10 +140,19 @@ export class UsersService {
 			password: userDto.password,
 			exist: userDto.exist,
 		});
+
 		if (!userToUpdate) {
 			throw new NotFoundException('The user you want to update does not exist');
 		}
-		const returnUser = await this.userRepository.save(userToUpdate);
+		if(invitation){
+			userToUpdate.institute = invitation.institute
+	   }
+		const returnUser = await this.userRepository.save(userToUpdate).then(
+			async (user) => {await this.invitationRepository.update(invitation.id, {valid: false})
+			return user
+			}
+
+		);
 		delete returnUser.password;
 		return returnUser;
 	}

@@ -17,6 +17,7 @@ import { Option } from '../options/option.entity';
 import { Period } from '../periods/period.entity';
 import { Question } from '../questions/question.entity';
 import { User } from '../users/user.entity';
+import { Invitation } from '../invitations/invitation.entity';
 
 @Entity()
 export class Institute {
@@ -40,6 +41,8 @@ export class Institute {
 	periods: Period[];
 	@OneToMany(() => Question, (question) => question.institute)
 	questions: Question[];
+	@OneToMany(() => Invitation, (invitation) => invitation.institute)
+	invitations: Invitation[];
 	@OneToMany(() => User, (user) => user.institute)
 	users: User[];
 	@ManyToOne(() => User, (user) => user.institute, { onDelete: 'CASCADE' })

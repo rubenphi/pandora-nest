@@ -40,12 +40,12 @@ export class UpdateUserDto {
 	@IsString()
 	readonly rol: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute invitation',
 	})
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
-	readonly instituteId: number;
+	readonly instituteInvitation: string;
 	@ApiProperty({
 		description: 'Password of user',
 	})

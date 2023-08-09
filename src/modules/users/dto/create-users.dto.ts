@@ -34,11 +34,11 @@ export class CreateUserDto {
 	@IsString()
 	readonly code: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute invitation of user',
 	})
 	@IsOptional()
 	@IsInt()
-	readonly instituteId: number;
+	readonly instituteInvitation: string;
 	@ApiProperty({
 		description: 'Password of user',
 	})

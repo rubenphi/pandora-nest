@@ -13,6 +13,7 @@ import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
+import { Invitation } from '../invitations/invitation.entity';
 
 @Injectable()
 export class InstitutesService {
@@ -138,6 +139,21 @@ export class InstitutesService {
 				throw new NotFoundException('Institute not found');
 			});
 		return institute.courses;
+	}
+
+	async getInvitationsByInstitute(id: number, user: User): Promise<Invitation[]> {
+		if (user.rol !== Role.Admin && user.institute.id !== id)
+			throw new ForbiddenException('You are not allowed to see courses of this institute',
+			);
+			const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['invitations'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+			return institute.invitations; 
 	}
 
 	async getGroupsByInstitute(id: number, user: User): Promise<Group[]> {

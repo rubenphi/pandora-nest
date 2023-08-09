@@ -41,7 +41,7 @@ export class InvitationsService {
 		}
 
     const invitation: Invitation = this.invitationRepository.create({
-      active: createInvitationDto.active,
+      valid: createInvitationDto.active,
       institute,
       expirationDate: createInvitationDto.expirationDate,
       exist: createInvitationDto.exist,
@@ -60,7 +60,7 @@ export class InvitationsService {
 			return await this.invitationRepository.find({
 				where: {
           expirationDate: Between(queryInvitation.initialDate, queryInvitation.finalDate),
-          active: queryInvitation.active,
+          valid: queryInvitation.active,
           exist: queryInvitation.exist,
           institute: { id: queryInvitation.instituteId}
 				},
@@ -84,14 +84,14 @@ export class InvitationsService {
 				throw new NotFoundException('Group not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== invitation.institute.id) {
-			throw new ForbiddenException('You are not allowed to see this group');
+			throw new ForbiddenException('You are not allowed to see this invitations');
 		}
     return invitation
   }
 
   async update(id: number, updateInvitationDto: UpdateInvitationDto, user: User) {
     if (user.rol !== Role.Admin && user.institute.id !== updateInvitationDto.instituteId) {
-			throw new ForbiddenException('You are not allowed to update this group');
+			throw new ForbiddenException('You are not allowed to update this invitations');
 		}
     const institute: Institute = await this.instituteRepository
     .findOneOrFail({
@@ -115,7 +115,7 @@ export class InvitationsService {
 
     const group: Invitation = await this.invitationRepository.preload({
 			id: id,
-			active: updateInvitationDto.active,
+			valid: updateInvitationDto.active,
       institute,
       expirationDate: updateInvitationDto.expirationDate,
       exist: updateInvitationDto.exist,
