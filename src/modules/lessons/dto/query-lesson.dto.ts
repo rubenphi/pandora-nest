@@ -47,7 +47,7 @@ export class QueryLessonDto {
 	@IsInt()
 	readonly areaId?: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of lesson',
 		required: false,
 	})
 	@IsOptional()

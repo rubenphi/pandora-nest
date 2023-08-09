@@ -44,7 +44,7 @@ export class CoursesService {
 	async getCourses(queryCourse: QueryCourseDto): Promise<Course[]> {
 		if (queryCourse) {
 			return await this.courseRepository.find({
-				where: { name: queryCourse.name, exist: queryCourse.exist },
+				where: { name: queryCourse.name, exist: queryCourse.exist, institute: { id: queryCourse.instituteId }  },
 				relations: ['institute'],
 			});
 		} else {
@@ -60,14 +60,14 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to see a course');
 		}
 
 		return course;
 	}
 	async createCourse(courseDto: CreateCourseDto, user: User): Promise<Course> {
-		if (user.institute.id !== courseDto.instituteId) {
+		if (user.rol !== Role.Admin && user.institute.id !== courseDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to create this course');
 		}
 		const institute: Institute = await this.instituteRepository
@@ -89,7 +89,7 @@ export class CoursesService {
 		courseDto: UpdateCourseDto,
 		user: User,
 	): Promise<Course> {
-		if (user.institute.id !== courseDto.instituteId) {
+		if (user.rol !== Role.Admin && user.institute.id !== courseDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to update this course');
 		}
 		const institute: Institute = await this.instituteRepository
@@ -138,7 +138,7 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to add areas to this course',
 			);
 		}
@@ -164,7 +164,7 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to delete areas to this course',
 			);
 		}
@@ -187,7 +187,7 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to see areas of this course',
 			);
 		}
@@ -212,7 +212,7 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to see lessons of this course',
 			);
 		}
@@ -237,7 +237,7 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to see groups of this course',
 			);
 		}
@@ -267,7 +267,7 @@ export class CoursesService {
 			relations: ['user'],
 		});
 
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this course');
 		}
 		if (user.rol === Role.Student) {
@@ -295,7 +295,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to add users to this course',
 			);
 		}
@@ -341,7 +341,7 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-		if (user.institute.id !== course.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to delete users to this course',
 			);
 		}

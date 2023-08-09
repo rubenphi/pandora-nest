@@ -29,7 +29,7 @@ export class UpdateOptionDto {
 	@IsInt()
 	readonly questionId: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of option',
 	})
 	@IsOptional()
 	@Type(() => Number)

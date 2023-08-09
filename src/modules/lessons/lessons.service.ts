@@ -52,6 +52,7 @@ export class LessonsService {
 					topic: queryLesson.topic,
 					date: queryLesson.date,
 					exist: queryLesson.exist,
+					institute: { id: queryLesson.instituteId }
 				},
 				relations: ['course', 'area', 'institute'],
 			});

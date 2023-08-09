@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -38,6 +38,7 @@ export class AnswersService {
 					group: { id: queryAnswer.groupId },
 					lesson: { id: queryAnswer.lessonId },
 					exist: queryAnswer.exist,
+					institute: { id: queryAnswer.instituteId }
 				},
 				relations: ['option', 'question', 'group', 'lesson', 'institute'],
 			});
@@ -71,7 +72,7 @@ export class AnswersService {
 		return answer;
 	}
 	async createAnswer(answerDto: CreateAnswerDto, user: User): Promise<Answer> {
-		if (user.institute.id !== answerDto.instituteId) {
+		if (user.rol !== Role.Admin && user.institute.id !== answerDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to create this answer');
 		}
 		if (user.rol === Role.Student) {
@@ -149,7 +150,7 @@ export class AnswersService {
 		answerDto: UpdateAnswerDto,
 		user: User,
 	): Promise<Answer> {
-		if (user.institute.id !== answerDto.instituteId) {
+		if (user.rol !== Role.Admin && user.institute.id !== answerDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 		if (
@@ -161,7 +162,7 @@ export class AnswersService {
 				},
 			})
 		) {
-			throw new NotFoundException('This group already answered this question');
+			throw new BadRequestException('This group already answered this question');
 		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
@@ -248,7 +249,7 @@ export class AnswersService {
 				throw new NotFoundException('Answer not found');
 			});
 
-		if (user.institute.id !== answer.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== answer.institute.id) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 

@@ -11,7 +11,7 @@ export class QueryCourseDto {
 	@IsString()
 	readonly name?: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of course',
 		required: false,
 	})
 	@IsOptional()

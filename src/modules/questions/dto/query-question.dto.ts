@@ -60,7 +60,7 @@ export class QueryQuestionDto {
 	@IsInt()
 	readonly lessonId?: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of question',
 		required: false,
 	})
 	@IsOptional()

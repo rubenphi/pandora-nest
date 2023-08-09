@@ -111,7 +111,7 @@ export class InstitutesService {
 	}
 
 	async getLessonsByInstitute(id: number, user: User): Promise<Lesson[]> {
-		if (user.institute.id !== id)
+		if (user.rol !== Role.Admin && user.institute.id !== id)
 			throw new ForbiddenException('You are not allowed to see lessons of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
@@ -126,7 +126,7 @@ export class InstitutesService {
 	}
 
 	async getCoursesByInstitute(id: number, user: User): Promise<Course[]> {
-		if (user.institute.id !== id)
+		if (user.rol !== Role.Admin && user.institute.id !== id)
 			throw new ForbiddenException('You are not allowed to see courses of this institute',
 			);
 		const institute: Institute = await this.instituteRepository
@@ -141,7 +141,7 @@ export class InstitutesService {
 	}
 
 	async getGroupsByInstitute(id: number, user: User): Promise<Group[]> {
-		if (user.institute.id !== id)
+		if (user.rol !== Role.Admin && user.institute.id !== id)
 			throw new ForbiddenException('You are not allowed to see groups of this institute',
 			);
 		const institute: Institute = await this.instituteRepository

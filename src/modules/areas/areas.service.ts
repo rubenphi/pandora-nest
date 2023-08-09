@@ -20,7 +20,7 @@ export class AreasService {
 	async getAreas(queryArea: QueryAreaDto): Promise<Area[]> {
 		if (queryArea) {
 			return await this.areaRepository.find({
-				where: { name: queryArea.name, exist: queryArea.exist },
+				where: { name: queryArea.name, exist: queryArea.exist, institute: { id: queryArea.instituteId }  },
 				relations: ['institute'],
 			});
 		} else {

@@ -10,7 +10,7 @@ export class UpdateAreaDto {
 	@IsString()
 	readonly name: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of area',
 	})
 	@IsOptional()
 	@Type(() => Number)

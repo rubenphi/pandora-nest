@@ -24,7 +24,7 @@ export class CreateAnswerDto {
 	@IsInt()
 	readonly lessonId: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of answer',
 	})
 	@IsInt()
 	readonly instituteId: number;

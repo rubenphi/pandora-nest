@@ -8,7 +8,7 @@ export class CreateCourseDto {
 	@IsString()
 	readonly name: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of course',
 	})
 	@IsInt()
 	readonly instituteId: number;

@@ -40,6 +40,7 @@ export class GroupsService {
 					period: { id: queryGroup.periodId },
 					year: queryGroup.year,
 					exist: queryGroup.exist,
+					institute: { id: queryGroup.instituteId }
 				},
 				relations: ['course', 'institute', 'period'],
 			});
@@ -59,7 +60,7 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
-		if (user.institute.id !== group.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== group.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 		if (user.rol === Role.Student) {
@@ -73,7 +74,7 @@ export class GroupsService {
 		return group;
 	}
 	async createGroup(groupDto: CreateGroupDto, user: User): Promise<Group> {
-		if (user.institute.id !== groupDto.instituteId) {
+		if (user.rol !== Role.Admin && user.institute.id !== groupDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to create this group');
 		}
 		const course: Course = await this.courseRepository
@@ -113,7 +114,7 @@ export class GroupsService {
 		groupDto: UpdateGroupDto,
 		user: User,
 	): Promise<Group> {
-		if (user.institute.id !== groupDto.instituteId) {
+		if (user.rol !== Role.Admin && user.institute.id !== groupDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to update this group');
 		}
 		const course: Course = await this.courseRepository
@@ -176,7 +177,7 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
-		if (user.institute.id !== group.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== group.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 		if (user.rol === Role.Student) {
@@ -199,7 +200,7 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Group not found');
 			});
-		if (user.institute.id !== group.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== group.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 		if (user.rol === Role.Student) {
@@ -227,7 +228,7 @@ export class GroupsService {
 				throw new NotFoundException('Group not found');
 			});
 
-		if (user.institute.id !== group.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== group.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 
@@ -261,7 +262,7 @@ export class GroupsService {
 				throw new NotFoundException('Group not found');
 			});
 
-		if (user.institute.id !== group.institute.id) {
+		if (user.rol !== Role.Admin && user.institute.id !== group.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 

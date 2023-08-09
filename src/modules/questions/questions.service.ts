@@ -48,6 +48,7 @@ export class QuestionsService {
 					available: queryQuestion.available,
 					lesson: { id: queryQuestion.lessonId },
 					exist: queryQuestion.exist,
+					institute: { id: queryQuestion.instituteId }
 				},
 				relations: ['lesson', 'institute'],
 			});

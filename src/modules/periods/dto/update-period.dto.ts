@@ -10,7 +10,7 @@ export class UpdatePeriodDto {
 	@IsNotEmpty()
 	readonly name: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of period',
 	})
 	@IsOptional()
 	@Type(() => Number)

@@ -28,7 +28,7 @@ export class CreateLessonDto {
 	@IsInt()
 	readonly areaId: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of lesson',
 	})
 	@IsInt()
 	readonly instituteId: number;

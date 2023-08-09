@@ -34,7 +34,7 @@ export class UpdateAnswerDto {
 	@IsOptional()
 	readonly points: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of answer',
 	})
 	@IsOptional()
 	@Type(() => Number)

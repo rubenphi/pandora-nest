@@ -20,7 +20,7 @@ export class PeriodsService {
 	async getPeriods(queryPeriod: QueryPeriodDto): Promise<Period[]> {
 		if (queryPeriod) {
 			return await this.periodRepository.find({
-				where: { name: queryPeriod.name, exist: queryPeriod.exist },
+				where: { name: queryPeriod.name, exist: queryPeriod.exist, institute: { id: queryPeriod.instituteId} },
 				relations: ['institute'],
 			});
 		} else {

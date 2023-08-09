@@ -10,7 +10,7 @@ export class UpdateCourseDto {
 	@IsNotEmpty()
 	readonly name: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of course',
 	})
 	@IsOptional()
 	@Type(() => Number)

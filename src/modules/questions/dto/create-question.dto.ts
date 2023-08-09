@@ -49,7 +49,7 @@ export class CreateQuestionDto {
 	@IsInt()
 	readonly lessonId: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of question',
 	})
 	@Type(() => Number)
 	@IsInt()

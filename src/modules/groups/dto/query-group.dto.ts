@@ -19,7 +19,7 @@ export class QueryGroupDto {
 	@IsInt()
 	readonly courseId?: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of group',
 		required: false,
 	})
 	@IsOptional()

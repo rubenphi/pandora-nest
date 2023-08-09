@@ -58,7 +58,7 @@ export class UpdateQuestionDto {
 	@IsInt()
 	readonly lessonId: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of question',
 	})
 	@IsOptional()
 	@Type(() => Number)

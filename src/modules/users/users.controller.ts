@@ -14,7 +14,7 @@ import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/common/decorators';
+import { Auth , User as UserDecorator} from 'src/common/decorators';
 
 @ApiTags('Users Routes')
 @Controller('users')
@@ -28,8 +28,8 @@ export class UsersController {
 
 	@Auth()
 	@Get(':id')
-	getUser(@Param('id') id: number): Promise<User> {
-		return this.userService.getUser(id);
+	getUser(@Param('id') id: number, @UserDecorator() user: User): Promise<User> {
+		return this.userService.getUser(id, user );
 	}
 
 	@Post()
@@ -41,9 +41,10 @@ export class UsersController {
 	@Patch(':id')
 	updateUser(
 		@Param('id') id: number,
-		@Body() user: UpdateUserDto,
+		@Body() userDto: UpdateUserDto,
+		@UserDecorator() user: User
 	): Promise<User> {
-		return this.userService.updateUser(id, user);
+		return this.userService.updateUser(id, userDto, user);
 	}
 
 	@Auth()

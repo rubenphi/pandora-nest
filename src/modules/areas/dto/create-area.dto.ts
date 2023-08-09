@@ -8,7 +8,7 @@ export class CreateAreaDto {
 	@IsString()
 	readonly name: string;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of area',
 	})
 	@IsInt()
 	readonly instituteId: number;

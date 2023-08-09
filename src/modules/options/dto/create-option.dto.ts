@@ -24,7 +24,7 @@ export class CreateOptionDto {
 	@IsInt()
 	readonly questionId: number;
 	@ApiProperty({
-		description: 'Institute id of user',
+		description: 'Institute id of option',
 	})
 	@IsInt()
 	readonly instituteId: number;
