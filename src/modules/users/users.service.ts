@@ -41,7 +41,7 @@ export class UsersService {
 		}
 	}
 
-	async getUserByCode(code: string, user: User) {
+	async getUserByCode(code: string, user?: User, ) {
 		const userToReturn = await this.userRepository
 		.createQueryBuilder('user')
 		.leftJoinAndSelect('user.institute', 'institute')
@@ -49,13 +49,13 @@ export class UsersService {
 		.addSelect('user.password')
 		.getOne()
 
-		if(user.institute.id !== userToReturn.institute.id)
+		if(user && user.institute.id !== userToReturn.institute.id)
 		{throw new ForbiddenException('You are not allowed to see this user')}
 		
 		
 		return userToReturn ;
 	}
-	async getUser(id: number, user: User): Promise<User> {
+	async getUser(id: number, user?: User): Promise<User> {
 		const userToReturn: User = await this.userRepository
 			.findOneOrFail({
 				where: { id },
@@ -64,7 +64,7 @@ export class UsersService {
 			.catch(() => {
 				throw new NotFoundException('User not found');
 			});
-			if(user.institute.id !== userToReturn.institute.id)
+			if(user && user.institute.id !== userToReturn.institute.id)
 			{throw new ForbiddenException('You are not allowed to see this user')}
 		return userToReturn;
 	}
