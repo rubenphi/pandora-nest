@@ -38,4 +38,3 @@ export class CreateGroupDto {
 	@IsBoolean()
 	readonly active: boolean;
 }
-}
