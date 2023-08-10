@@ -109,6 +109,7 @@ export class LessonsService {
 			institute,
 			course,
 			area,
+			author: user,
 			exist: lessonDto.exist,
 		});
 		return this.lessonRepository.save(lesson);
@@ -141,6 +142,7 @@ export class LessonsService {
 			course,
 			exist: lessonDto.exist,
 		});
+		lesson.author = lesson.author ?? user
 		if(user.rol !== Role.Admin && user.id !== lesson.author.id){
 			throw new ForbiddenException('You are not allowed to update this lesson');
 		}
