@@ -110,6 +110,9 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+			if (!question.available){
+				throw new ForbiddenException('Debe esperar que la pregunta esté disponible')
+			}
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id: answerDto.groupId },
@@ -244,7 +247,7 @@ export class AnswersService {
 			.findOneOrFail({
 				where: { question: { id: id }, option: { id: option.id } },
 				order: { id: 'ASC' },
-				relations: ['institute']
+				relations: ['institute', 'question']
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
@@ -256,7 +259,7 @@ export class AnswersService {
 
 		const answerUpdated: Answer = await this.answerRepository.preload({
 			id: answer.id,
-			points: answer.points * 1.5,
+			points: answer.question.points * 1.5,
 		});
 
 		const questionUpdated: Question = await this.questionRepository.preload({
