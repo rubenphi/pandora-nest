@@ -38,9 +38,15 @@ export class UpdateGroupDto {
 	@IsInt()
 	readonly periodId: number;
 	@ApiProperty({
-		description: 'Indicates if the group is active or "deleted"',
+		description: 'Indicates if the group is exist or was "deleted"',
 	})
 	@IsOptional()
 	@IsBoolean()
 	readonly exist: boolean;
+	@ApiProperty({
+		description: 'Indicates if the group is active or inactive',
+	})
+	@IsOptional()
+	@IsBoolean()
+	readonly active: boolean;
 }

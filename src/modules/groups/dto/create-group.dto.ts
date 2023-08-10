@@ -28,8 +28,13 @@ export class CreateGroupDto {
 	@IsInt()
 	readonly periodId: number;
 	@ApiProperty({
-		description: 'Indicates if the group is active or "deleted"',
+		description: 'Indicates if the group exist or was "deleted"',
 	})
 	@IsBoolean()
 	readonly exist: boolean;
+	@ApiProperty({
+		description: 'Indicates if the group is active or inactive',
+	})
+	@IsBoolean()
+	readonly active: boolean;
 }
