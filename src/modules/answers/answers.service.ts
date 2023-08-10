@@ -207,9 +207,9 @@ export class AnswersService {
 			group,
 			lesson,
 			institute,
-			points: answerDto.points,
 			exist: answerDto.exist,
 		});
+		answer.points = option.correct ? question.points : 0
 		if (!answer) {
 			throw new NotFoundException(
 				'The answer you want to update does not exist',
@@ -244,6 +244,7 @@ export class AnswersService {
 			.findOneOrFail({
 				where: { question: { id: id }, option: { id: option.id } },
 				order: { id: 'ASC' },
+				relations: ['institute']
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');

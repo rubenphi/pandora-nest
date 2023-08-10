@@ -29,11 +29,6 @@ export class CreateAnswerDto {
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
-		description: 'Points of answer',
-	})
-	@IsNumber()
-	readonly points: number;
-	@ApiProperty({
 		description: 'Indicates if the answer is active or "deleted"',
 	})
 	@IsBoolean()

@@ -13,7 +13,7 @@ import { Group } from './group.entity';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, QueryGroupDto, UpdateGroupDto } from './dto';
 import { Answer } from 'src/modules/answers/answer.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
@@ -82,6 +82,7 @@ export class GroupsController {
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
+	@ApiBody({type: [AddUserToGroupDto]})
 	@Post(':id/users')
 	addUserToGroup(
 		@Param('id') id: number,
