@@ -106,6 +106,7 @@ export class GroupsService {
 			period,
 			year: groupDto.year,
 			exist: groupDto.exist,
+			active: groupDto.active
 		});
 		return this.groupRepository.save(group);
 	}
@@ -147,6 +148,7 @@ export class GroupsService {
 			year: groupDto.year,
 			period,
 			exist: groupDto.exist,
+			active: groupDto.active
 		});
 		if (!group) {
 			throw new NotFoundException(
