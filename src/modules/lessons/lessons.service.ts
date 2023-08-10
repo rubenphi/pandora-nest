@@ -24,6 +24,7 @@ import { Option } from '../options/option.entity';
 import { User } from '../users/user.entity';
 import { userInfo } from 'os';
 import { Role } from '../auth/roles.decorator';
+import { Period } from '../periods/period.entity';
 
 @Injectable()
 export class LessonsService {
@@ -40,6 +41,8 @@ export class LessonsService {
 		private readonly questionRepository: Repository<Question>,
 		@InjectRepository(Option)
 		private readonly optionRepository: Repository<Option>,
+		@InjectRepository(Period)
+		private readonly periodRepository: Repository<Period>,
 	) {}
 
 	async getLessons(queryLesson: QueryLessonDto): Promise<Lesson[]> {
@@ -52,6 +55,7 @@ export class LessonsService {
 					topic: queryLesson.topic,
 					date: queryLesson.date,
 					exist: queryLesson.exist,
+					period: {id: queryLesson.periodId},
 					institute: { id: queryLesson.instituteId }
 				},
 				relations: ['course', 'area', 'institute'],
@@ -68,7 +72,7 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course', 'area'],
+				relations: ['course', 'area', 'author', 'period'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
@@ -101,6 +105,13 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
+			const period: Period = await this.periodRepository
+			.findOneOrFail({
+				where: { id: lessonDto.periodId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
 
 		const lesson: Lesson = await this.lessonRepository.create({
 			year: lessonDto.year,
@@ -109,6 +120,7 @@ export class LessonsService {
 			institute,
 			course,
 			area,
+			period,
 			author: user,
 			exist: lessonDto.exist,
 		});
@@ -133,6 +145,20 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
+			const period: Period = await this.periodRepository
+			.findOneOrFail({
+				where: { id: lessonDto.periodId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
+			const area: Area = await this.areaRepository
+			.findOneOrFail({
+				where: { id: lessonDto.areaId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Period not found');
+			});
 		const lesson: Lesson = await this.lessonRepository.preload({
 			year: lessonDto.year,
 			id: id,
@@ -140,6 +166,8 @@ export class LessonsService {
 			date: lessonDto.date,
 			institute,
 			course,
+			area,
+			period,
 			exist: lessonDto.exist,
 		});
 		lesson.author = lesson.author ?? user

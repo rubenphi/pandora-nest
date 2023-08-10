@@ -14,6 +14,7 @@ import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
+import { ApiBody } from '@nestjs/swagger';
 
 @Injectable()
 export class OptionsService {
@@ -62,6 +63,8 @@ export class OptionsService {
 			}
 		return option;
 	}
+
+	
 	async createOption(optionsDto: CreateOptionDto[], user : User): Promise<Option[]> {
 		
 		if (

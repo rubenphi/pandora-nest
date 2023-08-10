@@ -33,6 +33,10 @@ export class QueryLessonDto {
 	@IsInt()
 	readonly courseId?: number;
 	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly periodId?: number;
+	@IsOptional()
 	@ApiProperty({
 		description: 'Year of lesson',
 	})

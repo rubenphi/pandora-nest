@@ -12,7 +12,7 @@ import { Option } from './option.entity';
 import { OptionsService } from './options.service';
 import { CreateOptionDto, UpdateOptionDto, QueryOptionDto } from './dto';
 import { Answer } from '../answers/answer.entity';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { User as UserEntity } from '../users/user.entity';
 
@@ -32,6 +32,7 @@ export class OptionsController {
 	}
 	@Auth()
 	@Post()
+	@ApiBody({ type: [CreateOptionDto] })
 	createOption(@Body() option: CreateOptionDto[], @User() user: UserEntity): Promise<Option[]> {
 		return this.optionService.createOption(option, user);
 	}

@@ -28,6 +28,11 @@ export class CreateLessonDto {
 	@IsInt()
 	readonly areaId: number;
 	@ApiProperty({
+		description: 'Period id of lesson',
+	})
+	@IsInt()
+	readonly periodId: number;
+	@ApiProperty({
 		description: 'Institute id of lesson',
 	})
 	@IsInt()

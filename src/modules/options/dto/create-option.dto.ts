@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsBoolean } from 'class-validator';
+import { IsString, IsInt, IsBoolean, IsArray } from 'class-validator';
+
 
 export class CreateOptionDto {
+	
 	@ApiProperty({
 		description: 'Sentence of option',
 	})

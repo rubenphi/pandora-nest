@@ -36,6 +36,13 @@ export class UpdateLessonDto {
 	@IsInt()
 	readonly areaId: number;
 	@ApiProperty({
+		description: 'Period id of lesson',
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly periodId: number;
+	@ApiProperty({
 		description: 'Institute id of lesson',
 	})
 	@ApiProperty({

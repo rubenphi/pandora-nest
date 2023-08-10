@@ -9,6 +9,7 @@ import { Area } from '../areas/area.entity';
 import { Institute } from '../institutes/institute.entity';
 import { Question } from '../questions/question.entity';
 import { Option } from '../options/option.entity';
+import { Period } from '../periods/period.entity';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { Option } from '../options/option.entity';
 			Institute,
 			Question,
 			Option,
+			Period
 		]),
 	],
 	providers: [LessonsService],
