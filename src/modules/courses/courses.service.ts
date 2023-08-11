@@ -134,6 +134,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['areas','institute']
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -159,7 +160,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['areas'],
+				relations: ['areas', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -182,7 +183,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['areas'],
+				relations: ['areas', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -207,7 +208,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['lessons'],
+				relations: ['lessons', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -232,7 +233,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['groups'],
+				relations: ['groups', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -337,6 +338,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['institute']
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
