@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	app.enableCors();
+	app.enableCors({origin: '*'});
 	const swaggerOptions = new DocumentBuilder()
 		.setTitle('Pandora')
 		.setDescription('Api to make lessons more fun')
