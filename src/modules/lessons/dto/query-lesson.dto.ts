@@ -32,16 +32,22 @@ export class QueryLessonDto {
 	@Type(() => Number)
 	@IsInt()
 	readonly courseId?: number;
+	@ApiProperty({
+		description: 'Search lesson using period id',
+		required: false,
+	})
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
 	readonly periodId?: number;
-	@IsOptional()
 	@ApiProperty({
 		description: 'Year of lesson',
+		required: false,
 	})
+	@Type(() => Number)
 	@IsInt()
-	readonly year: number;
+	@IsOptional()
+	readonly year?: number;
 	@ApiProperty({
 		description: 'Search lesson using area id',
 		required: false,
@@ -57,7 +63,7 @@ export class QueryLessonDto {
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
-	readonly instituteId: number;
+	readonly instituteId?: number;
 	@ApiProperty({
 		description: 'Search group if exist or not',
 		required: false,
