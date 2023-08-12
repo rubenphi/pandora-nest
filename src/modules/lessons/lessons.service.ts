@@ -246,6 +246,7 @@ export class LessonsService {
 					'answers.question',
 					'answers.group',
 					'answers.option',
+					'institute',
 				],
 			})
 			.catch(() => {
@@ -255,6 +256,7 @@ export class LessonsService {
 				throw new ForbiddenException('You are not allowed to see this lesson');
 			}
 		const resultLesson = [];
+	
 		lesson.answers.reduce((res, value) => {
 			if (!res[value.group.id]) {
 				res[value.group.id] = { group: value.group, points: 0 };
