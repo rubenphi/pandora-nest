@@ -22,11 +22,11 @@ export class AuthService {
 
 	async login(user: User) {
 		delete user.password;
-		const { id, ...rest } = user;
-		const payload: Payload = { sub: id };
+		
+		const payload: Payload = { sub: user.id };
 
 		return {
-			...rest,
+			...user,
 			accessToken: this.jwtservice.sign(payload),
 		};
 	}

@@ -7,6 +7,7 @@ import { Lesson } from '../lessons/lesson.entity';
 import { CreateAreaDto, UpdateAreaDto, QueryAreaDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class AreasService {
@@ -17,10 +18,12 @@ export class AreasService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getAreas(queryArea: QueryAreaDto): Promise<Area[]> {
+	async getAreas(queryArea: QueryAreaDto, user: User): Promise<Area[]> {
 		if (queryArea) {
 			return await this.areaRepository.find({
-				where: { name: queryArea.name, exist: queryArea.exist, institute: { id: queryArea.instituteId }  },
+				where: { name: queryArea.name, exist: queryArea.exist, 
+					institute: { id: user.rol == Role.Admin ? queryArea.instituteId : user.institute.id }
+				},
 				relations: ['institute'],
 			});
 		} else {

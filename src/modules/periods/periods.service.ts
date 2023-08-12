@@ -7,6 +7,7 @@ import { Lesson } from '../lessons/lesson.entity';
 import { CreatePeriodDto, UpdatePeriodDto, QueryPeriodDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class PeriodsService {
@@ -17,10 +18,10 @@ export class PeriodsService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getPeriods(queryPeriod: QueryPeriodDto): Promise<Period[]> {
+	async getPeriods(queryPeriod: QueryPeriodDto, user : User): Promise<Period[]> {
 		if (queryPeriod) {
 			return await this.periodRepository.find({
-				where: { name: queryPeriod.name, exist: queryPeriod.exist, institute: { id: queryPeriod.instituteId} },
+				where: { name: queryPeriod.name, exist: queryPeriod.exist, institute: { id: user.rol == Role.Admin ? queryPeriod.instituteId : user.institute.id } },
 				relations: ['institute'],
 			});
 		} else {

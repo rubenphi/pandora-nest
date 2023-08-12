@@ -41,10 +41,12 @@ export class CoursesService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getCourses(queryCourse: QueryCourseDto): Promise<Course[]> {
+	async getCourses(queryCourse: QueryCourseDto, user : User): Promise<Course[]> {
 		if (queryCourse) {
 			return await this.courseRepository.find({
-				where: { name: queryCourse.name, exist: queryCourse.exist, institute: { id: queryCourse.instituteId }  },
+				where: { name: queryCourse.name, exist: queryCourse.exist,
+					institute: { id: user.rol == Role.Admin ? queryCourse.instituteId : user.institute.id }
+					  },
 				relations: ['institute'],
 			});
 		} else {

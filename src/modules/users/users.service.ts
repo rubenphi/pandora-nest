@@ -11,6 +11,9 @@ import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
 import { Invitation } from '../invitations/invitation.entity';
+import { Course } from '../courses/course.entity';
+import { UserToCourse } from './userToCourse.entity';
+import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +24,8 @@ export class UsersService {
 		private readonly instituteRepository: Repository<Institute>,
 		@InjectRepository(Invitation)
 		private readonly invitationRepository: Repository<Invitation>,
+		@InjectRepository(UserToCourse)
+		private readonly userToCourseRepository: Repository<UserToCourse>,
 
 	) {}
 
@@ -41,6 +46,21 @@ export class UsersService {
 			});
 		} else {
 			return await this.userRepository.find();
+		}
+	}
+
+	async getUserCourses(queryCourses: QueryUserCoursesDto, id:number): Promise<UserToCourse[]> {
+		if (Object.entries(queryCourses).length != 0) {
+			return await this.userToCourseRepository.find({
+				where: {
+				year: queryCourses.year,
+				user: {id}
+
+				},
+				relations: ['course'],
+			});
+		} else {
+			throw new ForbiddenException('userId is required');
 		}
 	}
 

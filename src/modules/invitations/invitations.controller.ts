@@ -20,7 +20,7 @@ export class InvitationsController {
     return this.invitationsService.create(createInvitationDto, user);
   }
 
-  @Roles(Role.Admin)
+
 	@Auth()
   @Get()
   findAll(@Query() queryInvitationDto: QueryInvitationDto) {
