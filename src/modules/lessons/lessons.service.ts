@@ -55,8 +55,8 @@ export class LessonsService {
 					topic: queryLesson.topic,
 					date: queryLesson.date,
 					exist: queryLesson.exist,
-					period: {id: queryLesson.periodId},
-					institute: { id: queryLesson.instituteId }
+					period: { id: queryLesson.periodId },
+					institute: { id: queryLesson.instituteId },
 				},
 				relations: ['course', 'area', 'institute'],
 			});
@@ -68,7 +68,6 @@ export class LessonsService {
 	}
 
 	async getLesson(id: number, user: User): Promise<Lesson> {
-		
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -81,8 +80,10 @@ export class LessonsService {
 		return lesson;
 	}
 	async createLesson(lessonDto: CreateLessonDto, user: User): Promise<Lesson> {
-		if(user.institute.id !== lessonDto.instituteId){
-			throw new ForbiddenException('You are not allowed to create a lesson for this institute');
+		if (user.institute.id !== lessonDto.instituteId) {
+			throw new ForbiddenException(
+				'You are not allowed to create a lesson for this institute',
+			);
 		}
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -105,7 +106,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
-			const period: Period = await this.periodRepository
+		const period: Period = await this.periodRepository
 			.findOneOrFail({
 				where: { id: lessonDto.periodId },
 			})
@@ -126,8 +127,12 @@ export class LessonsService {
 		});
 		return this.lessonRepository.save(lesson);
 	}
-	async updateLesson(id: number, lessonDto: UpdateLessonDto, user: User): Promise<Lesson> {
-		if(user.institute.id !== lessonDto.instituteId){
+	async updateLesson(
+		id: number,
+		lessonDto: UpdateLessonDto,
+		user: User,
+	): Promise<Lesson> {
+		if (user.institute.id !== lessonDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to update this lesson');
 		}
 
@@ -145,14 +150,14 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
-			const period: Period = await this.periodRepository
+		const period: Period = await this.periodRepository
 			.findOneOrFail({
 				where: { id: lessonDto.periodId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Period not found');
 			});
-			const area: Area = await this.areaRepository
+		const area: Area = await this.areaRepository
 			.findOneOrFail({
 				where: { id: lessonDto.areaId },
 			})
@@ -170,8 +175,8 @@ export class LessonsService {
 			period,
 			exist: lessonDto.exist,
 		});
-		lesson.author = lesson.author ?? user
-		if(user.rol !== Role.Admin && user.id !== lesson.author.id){
+		lesson.author = lesson.author ?? user;
+		if (user.rol !== Role.Admin && user.id !== lesson.author.id) {
 			throw new ForbiddenException('You are not allowed to update this lesson');
 		}
 		if (!lesson) {
@@ -183,7 +188,6 @@ export class LessonsService {
 	}
 
 	async deleteLesson(id: number, user: User): Promise<void> {
-
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
@@ -193,12 +197,12 @@ export class LessonsService {
 					'The lesson you want to delete does not exist',
 				);
 			});
-			if(user.institute.id !== lesson.institute.id){
-				throw new ForbiddenException('You are not allowed to delete this lesson');
-			}
-			if(user.rol !== Role.Admin && user.id !== lesson.author.id){
-				throw new ForbiddenException('You are not allowed to update this lesson');
-			}
+		if (user.institute.id !== lesson.institute.id) {
+			throw new ForbiddenException('You are not allowed to delete this lesson');
+		}
+		if (user.rol !== Role.Admin && user.id !== lesson.author.id) {
+			throw new ForbiddenException('You are not allowed to update this lesson');
+		}
 		this.lessonRepository.remove(lesson);
 	}
 
@@ -217,23 +221,31 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
-			if(user.institute.id !== lesson.institute.id){
-				throw new ForbiddenException('You are not allowed to see this lesson');
-			}
+		if (user.institute.id !== lesson.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this lesson');
+		}
 		return lesson.answers;
 	}
 
-	async getQuestionsByLesson(id: number, user: User): Promise<Question[]> {
+	async getQuestionsByLesson(
+		id: number,
+		user: User,
+	): Promise<Partial<Question>[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['questions', 'questions.lesson'],
+				relations: ['questions'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
 
-		return lesson.questions;
+		return lesson.questions.map((question) => ({
+			id: question.id,
+			title: question.title,
+			available: question.available,
+			visible: question.visible,
+		}));
 	}
 
 	async getResultLesson(id: number, user: User): Promise<ResultLessonDto[]> {
@@ -252,11 +264,11 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
-			if(user.institute.id !== lesson.institute.id){
-				throw new ForbiddenException('You are not allowed to see this lesson');
-			}
+		if (user.institute.id !== lesson.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this lesson');
+		}
 		const resultLesson = [];
-	
+
 		lesson.answers.reduce((res, value) => {
 			if (!res[value.group.id]) {
 				res[value.group.id] = { group: value.group, points: 0 };

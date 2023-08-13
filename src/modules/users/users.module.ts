@@ -7,9 +7,10 @@ import { User } from './user.entity';
 import { Institute } from '../institutes/institute.entity';
 import { Invitation } from '../invitations/invitation.entity';
 import { UserToCourse } from './userToCourse.entity';
+import { UserToGroup } from './userToGroup.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User, Institute, Invitation, UserToCourse])],
+	imports: [TypeOrmModule.forFeature([User, Institute, Invitation, UserToCourse, UserToGroup])],
 	providers: [UsersService],
 	controllers: [UsersController],
 	exports: [UsersService],

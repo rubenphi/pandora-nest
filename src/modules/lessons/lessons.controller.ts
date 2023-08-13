@@ -84,7 +84,7 @@ export class LessonsController {
 
 	@Auth()
 	@Get(':id/questions')
-	getQuestionsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Question[]> {
+	getQuestionsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Partial<Question>[]> {
 		return this.lessonService.getQuestionsByLesson(id, user);
 	}
 
