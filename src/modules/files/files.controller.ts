@@ -14,6 +14,8 @@ import { join } from 'path';
 export class FilesController {
 	@Get('uploads/:name')
 	getFile(@Param('name') name: string): StreamableFile {
+		console.log(name);
+
 		if (existsSync('uploads/' + name)) {
 			const file = createReadStream(join(process.cwd(), 'uploads/' + name));
 			return new StreamableFile(file);

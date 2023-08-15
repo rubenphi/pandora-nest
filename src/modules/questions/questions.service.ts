@@ -49,7 +49,7 @@ export class QuestionsService {
 					available: queryQuestion.available,
 					lesson: { id: queryQuestion.lessonId },
 					exist: queryQuestion.exist,
-					institute: { id: queryQuestion.instituteId }
+					institute: { id: queryQuestion.instituteId },
 				},
 				relations: ['lesson', 'institute'],
 			});
@@ -70,7 +70,10 @@ export class QuestionsService {
 			});
 		return question;
 	}
-	async createQuestion(questionDto: CreateQuestionDto, user: User): Promise<Question> {
+	async createQuestion(
+		questionDto: CreateQuestionDto,
+		user: User,
+	): Promise<Question> {
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: questionDto.instituteId },
@@ -87,16 +90,16 @@ export class QuestionsService {
 				throw new NotFoundException('Question not found');
 			});
 
-			if(user.id !== lesson.author.id){
-				throw new ForbiddenException('You are not the author of this lesson')
-			}
+		if (user.id !== lesson.author.id) {
+			throw new ForbiddenException('You are not the author of this lesson');
+		}
 		const question: Question = await this.questionRepository.create({
 			title: questionDto.title,
 			sentence: questionDto.sentence,
 			lesson,
 			institute,
 			points: questionDto.points,
-			photo: questionDto.photo,
+			photo: questionDto.photo == 'null' ? null : questionDto.photo,
 			visible: questionDto.visible,
 			available: questionDto.available,
 			exist: questionDto.exist,
@@ -123,9 +126,9 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-			if(user.id !== lesson.author.id){
-				throw new ForbiddenException('You are not the author of this lesson')
-			}
+		if (user.id !== lesson.author.id) {
+			throw new ForbiddenException('You are not the author of this lesson');
+		}
 		const imageUrl = await (
 			await this.questionRepository.findOne({ where: { id } })
 		).photo;
@@ -136,7 +139,7 @@ export class QuestionsService {
 			lesson,
 			institute,
 			points: questionDto.points,
-			photo: questionDto.photo,
+			photo: questionDto.photo == 'null' ? null : questionDto.photo,
 			visible: questionDto.visible,
 			available: questionDto.available,
 			exist: questionDto.exist,
@@ -180,20 +183,27 @@ export class QuestionsService {
 		this.questionRepository.remove(question);
 	}
 
-	async getOptionsByQuestion(id: number, user: User): Promise<Partial<Option>[]> {
+	async getOptionsByQuestion(
+		id: number,
+		user: User,
+	): Promise<Partial<Option>[]> {
 		const question: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['options'], where: { id },order: {options: {identifier: 'asc'}} })
+			.findOneOrFail({
+				relations: ['options'],
+				where: { id },
+				order: { options: { identifier: 'asc' } },
+			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
 
-			let response: Partial<Option>[] = question.options
-			if (user.rol == Role.Student) {
-				response = response.map((option) => {
-					delete option.correct
-					return option
-				})
-			} 
+		let response: Partial<Option>[] = question.options;
+		if (user.rol == Role.Student) {
+			response = response.map((option) => {
+				delete option.correct;
+				return option;
+			});
+		}
 		return response;
 	}
 
@@ -203,9 +213,9 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-			if(user.institute.id !== question.institute.id){
-				throw new ForbiddenException('You are not allowed to see this question')
-			}
+		if (user.institute.id !== question.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this question');
+		}
 		return question.answers;
 	}
 
