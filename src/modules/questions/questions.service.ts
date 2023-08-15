@@ -199,7 +199,7 @@ export class QuestionsService {
 
 	async getAnswersByQuestion(id: number, user: User): Promise<Answer[]> {
 		const question: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['answers', 'institute'], where: { id } })
+			.findOneOrFail({ relations: ['answers', 'answers.group', 'institute'], where: { id } })
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});

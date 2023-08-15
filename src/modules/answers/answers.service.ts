@@ -94,7 +94,7 @@ export class AnswersService {
 				},
 			})
 		) {
-			throw new NotFoundException('This group already answered this question');
+			throw new BadRequestException('This group already answered this question');
 		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
