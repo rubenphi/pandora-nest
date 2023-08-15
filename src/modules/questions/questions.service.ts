@@ -181,7 +181,7 @@ export class QuestionsService {
 
 	async getOptionsByQuestion(id): Promise<Option[]> {
 		const question: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['options'], where: { id } })
+			.findOneOrFail({ relations: ['options'], where: { id },order: {options: {identifier: 'asc'}} })
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
