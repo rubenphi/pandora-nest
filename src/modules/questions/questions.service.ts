@@ -175,13 +175,16 @@ export class QuestionsService {
 					'The question you want to delete does not exist',
 				);
 			});
+		const imagePath = question.photo
+			? question.photo.replace('files/', '')
+			: '';
 		if (
 			question.photo &&
 			!(await this.questionRepository.findOne({
-				where: { id: Not(id), photo: question.photo },
+				where: { id: Not(id), photo: imagePath },
 			}))
 		) {
-			fs.unlinkSync(question.photo);
+			fs.unlinkSync(imagePath);
 		}
 		this.questionRepository.remove(question);
 	}
