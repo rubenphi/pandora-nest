@@ -132,6 +132,8 @@ export class QuestionsService {
 		const imageUrl = await (
 			await this.questionRepository.findOne({ where: { id } })
 		).photo;
+
+		const imagePath = imageUrl ? imageUrl.replace('files/', '') : '';
 		const question: Question = await this.questionRepository.preload({
 			id,
 			title: questionDto.title,
@@ -144,21 +146,22 @@ export class QuestionsService {
 			available: questionDto.available,
 			exist: questionDto.exist,
 		});
+
 		if (!question) {
 			throw new NotFoundException(
 				'The question you want to update does not exist',
 			);
 		} else if (
-			question &&
-			!question.photo &&
+			(!question.photo || question.photo !== imageUrl) &&
 			imageUrl &&
-			fs.existsSync(imageUrl) &&
+			fs.existsSync(imagePath) &&
 			!(await this.questionRepository.findOne({
-				where: { id: Not(id), photo: question.photo },
+				where: { id: Not(id), photo: imageUrl },
 			}))
 		) {
-			fs.unlinkSync(imageUrl);
+			fs.unlinkSync(imagePath);
 		}
+
 		return this.questionRepository.save(question);
 	}
 
