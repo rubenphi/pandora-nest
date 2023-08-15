@@ -31,11 +31,11 @@ import { UserToCourse } from '../users/userToCourse.entity';
 export class CoursesController {
 	constructor(private readonly courseService: CoursesService) {}
 
-	@Roles(Role.Admin)
+
 	@Auth()
 	@Get()
-	getCourses(@Query() queryCourse: QueryCourseDto): Promise<Course[]> {
-		return this.courseService.getCourses(queryCourse);
+	getCourses(@Query() queryCourse: QueryCourseDto, @User() user: UserEntity): Promise<Course[]> {
+		return this.courseService.getCourses(queryCourse, user);
 	}
 	@Auth()
 	@Get(':id')

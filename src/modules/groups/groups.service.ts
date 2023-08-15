@@ -31,7 +31,7 @@ export class GroupsService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getGroups(queryGroup: QueryGroupDto): Promise<Group[]> {
+	async getGroups(queryGroup: QueryGroupDto, user: User): Promise<Group[]> {
 		if (queryGroup) {
 			return await this.groupRepository.find({
 				where: {
@@ -40,7 +40,7 @@ export class GroupsService {
 					period: { id: queryGroup.periodId },
 					year: queryGroup.year,
 					exist: queryGroup.exist,
-					institute: { id: queryGroup.instituteId }
+					institute: { id: user.rol == Role.Admin ? queryGroup.instituteId : user.institute.id }
 				},
 				relations: ['course', 'institute', 'period'],
 			});

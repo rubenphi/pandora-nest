@@ -77,9 +77,14 @@ export class LessonsController {
 		return this.lessonService.getAnswersByLesson(id, user);
 	}
 
+
+	@Auth()                                                 @Get(':id/results')                                     getResultsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<ResultLessonDto[]> {
+                return this.lessonService.getResultLesson(id, user);                                                 }
+
+
 	@Auth()
 	@Get(':id/questions')
-	getQuestionsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Question[]> {
+	getQuestionsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Partial<Question>[]> {
 		return this.lessonService.getQuestionsByLesson(id, user);
 	}
 

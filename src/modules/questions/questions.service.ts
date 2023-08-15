@@ -20,6 +20,7 @@ import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class QuestionsService {
@@ -179,18 +180,26 @@ export class QuestionsService {
 		this.questionRepository.remove(question);
 	}
 
-	async getOptionsByQuestion(id): Promise<Option[]> {
+	async getOptionsByQuestion(id: number, user: User): Promise<Partial<Option>[]> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({ relations: ['options'], where: { id },order: {options: {identifier: 'asc'}} })
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-		return question.options;
+
+			let response: Partial<Option>[] = question.options
+			if (user.rol == Role.Student) {
+				response = response.map((option) => {
+					delete option.correct
+					return option
+				})
+			} 
+		return response;
 	}
 
 	async getAnswersByQuestion(id: number, user: User): Promise<Answer[]> {
 		const question: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['answers'], where: { id } })
+			.findOneOrFail({ relations: ['answers', 'institute'], where: { id } })
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});

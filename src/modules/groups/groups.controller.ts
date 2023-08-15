@@ -25,11 +25,11 @@ import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
 @Controller('groups')
 export class GroupsController {
 	constructor(private readonly groupService: GroupsService) {}
-	@Roles(Role.Admin)
+
 	@Auth()
 	@Get()
-	getGroups(@Query() queryGroupDto: QueryGroupDto): Promise<Group[]> {
-		return this.groupService.getGroups(queryGroupDto);
+	getGroups(@Query() queryGroupDto: QueryGroupDto, @User() user: UserEntity): Promise<Group[]> {
+		return this.groupService.getGroups(queryGroupDto, user);
 	}
 	@Auth()
 	@Get(':id')

@@ -42,7 +42,7 @@ export class Answer {
 		nullable: false,
 		type: 'decimal',
 		precision: 50,
-		scale: 2,
+		scale: 1,
 		default: 0.0,
 	})
 	points: number;

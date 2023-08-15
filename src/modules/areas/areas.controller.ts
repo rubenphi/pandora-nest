@@ -23,11 +23,10 @@ import { User as UserEntity } from '../users/user.entity';
 @Controller('areas')
 export class AreasController {
 	constructor(private readonly areaService: AreasService) {}
-	@Roles(Role.Admin)
 	@Auth()
 	@Get()
-	getAreas( queryArea: QueryAreaDto): Promise<Area[]> {
-		return this.areaService.getAreas(queryArea);
+	getAreas( queryArea: QueryAreaDto, @User() user: UserEntity): Promise<Area[]> {
+		return this.areaService.getAreas(queryArea, user);
 	}
 
 	@Auth()

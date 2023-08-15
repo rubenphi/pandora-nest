@@ -22,8 +22,8 @@ export class PeriodsController {
 	constructor(private readonly periodService: PeriodsService) {}
 	@Auth()
 	@Get()
-	getPeriods(@Query() queryPeriod: QueryPeriodDto): Promise<Period[]> {
-		return this.periodService.getPeriods(queryPeriod);
+	getPeriods(@Query() queryPeriod: QueryPeriodDto, @User() user: UserEntity): Promise<Period[]> {
+		return this.periodService.getPeriods(queryPeriod, user);
 	}
 	@Auth()
 	@Get(':id')

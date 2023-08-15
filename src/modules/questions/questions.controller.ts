@@ -106,8 +106,8 @@ export class QuestionsController {
 	}
 	@Auth()
 	@Get(':id/options')
-	getOptionByQuestion(@Param('id') id: number): Promise<Option[]> {
-		return this.questionService.getOptionsByQuestion(id);
+	getOptionByQuestion(@Param('id') id: number, @User() user: UserEntity): Promise<Partial<Option>[]> {
+		return this.questionService.getOptionsByQuestion(id, user);
 	}
 	@Auth()
 	@Get(':id/answers')

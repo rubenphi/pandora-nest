@@ -15,6 +15,11 @@ import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth , User as UserDecorator} from 'src/common/decorators';
+import { Course } from '../courses/course.entity';
+import { UserToCourse } from './userToCourse.entity';
+import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
+import { UserToGroup } from './userToGroup.entity';
+import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 
 @ApiTags('Users Routes')
 @Controller('users')
@@ -22,7 +27,7 @@ export class UsersController {
 	constructor(private readonly userService: UsersService) {}
 	@Auth()
 	@Get()
-	getUsers(@Req() req, @Query() queryUser: QueryUserDto): Promise<User[]> {
+	getUsers( @Query() queryUser: QueryUserDto): Promise<User[]> {
 		return this.userService.getUsers(queryUser);
 	}
 
@@ -51,5 +56,17 @@ export class UsersController {
 	@Delete(':id')
 	deleteUser(@Param('id') id: number): Promise<void> {
 		return this.userService.deleteUser(id);
+	}
+
+	@Auth()
+	@Get(':id/courses')
+	getUserCourses(@Param('id') id: number, @Query() queryCourses: QueryUserCoursesDto): Promise<UserToCourse[]> {
+		return this.userService.getUserCourses(queryCourses , id);
+	}
+
+	@Auth()
+	@Get(':id/groups')
+	getUserGroups(@Param('id') id: number, @Query() queryGroups: QueryUserGroupsDto): Promise<UserToGroup[]> {
+		return this.userService.getUserGroups(queryGroups , id);
 	}
 }

@@ -45,7 +45,7 @@ export class Lesson {
 	author: User;
 	@OneToMany(() => Question, (question) => question.lesson)
 	questions: Question[];
-	@OneToMany(() => Answer, (answer) => answer.group)
+	@OneToMany(() => Answer, (answer) => answer.lesson)
 	answers: Answer[];
 	@Column({ nullable: false })
 	exist: boolean;

@@ -29,7 +29,7 @@ export class AnswersService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getAnswers(queryAnswer: QueryAnswerDto): Promise<Answer[]> {
+	async getAnswers(queryAnswer: QueryAnswerDto, user: User): Promise<Answer[]> {
 		if (queryAnswer) {
 			return await this.answerRepository.find({
 				where: {
@@ -38,7 +38,7 @@ export class AnswersService {
 					group: { id: queryAnswer.groupId },
 					lesson: { id: queryAnswer.lessonId },
 					exist: queryAnswer.exist,
-					institute: { id: queryAnswer.instituteId }
+					institute: { id: user.rol == Role.Admin ? queryAnswer.instituteId : user.institute.id }
 				},
 				relations: ['option', 'question', 'group', 'lesson', 'institute'],
 			});

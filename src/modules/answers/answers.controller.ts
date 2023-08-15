@@ -20,11 +20,11 @@ import { User as UserEntity } from '../users/user.entity';
 @Controller('answers')
 export class AnswersController {
 	constructor(private readonly answerService: AnswersService) {}
-	@Roles(Role.Admin)
+
 	@Auth()
 	@Get()
-	getAnswers(@Query() queryAnswer: QueryAnswerDto): Promise<Answer[]> {
-		return this.answerService.getAnswers(queryAnswer);
+	getAnswers(@Query() queryAnswer: QueryAnswerDto, @User() user: UserEntity,): Promise<Answer[]> {
+		return this.answerService.getAnswers(queryAnswer, user);
 	}
 	@Auth()
 	@Get(':id')
