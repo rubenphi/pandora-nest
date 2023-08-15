@@ -233,8 +233,9 @@ export class LessonsService {
 	): Promise<Partial<Question>[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id },
+				where: { id, questions: { exist: true } },
 				relations: ['questions'],
+				order: { questions: { id: 'asc' } },
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');

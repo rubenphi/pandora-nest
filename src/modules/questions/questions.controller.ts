@@ -30,7 +30,7 @@ import { Answer } from '../answers/answer.entity';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
-import { User as UserEntity  } from '../users/user.entity';
+import { User as UserEntity } from '../users/user.entity';
 
 @ApiTags('Questions Routes')
 @Controller('questions')
@@ -64,8 +64,8 @@ export class QuestionsController {
 	createQuestion(
 		@Body() question: CreateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
-		@User() user: UserEntity)
-	: Promise<Question> {
+		@User() user: UserEntity,
+	): Promise<Question> {
 		if (file) {
 			question.photo = 'uploads/' + file.filename;
 		} else if (question.photo == '') {
@@ -91,10 +91,10 @@ export class QuestionsController {
 		@Param('id') id: number,
 		@Body() question: UpdateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
-		@User() user: UserEntity
+		@User() user: UserEntity,
 	): Promise<Question> {
 		if (file) {
-			question.photo = 'uploads/' + file.filename;
+			question.photo = 'files/uploads/' + file.filename;
 		}
 		return this.questionService.updateQuestion(id, question, user);
 	}
@@ -106,12 +106,18 @@ export class QuestionsController {
 	}
 	@Auth()
 	@Get(':id/options')
-	getOptionByQuestion(@Param('id') id: number, @User() user: UserEntity): Promise<Partial<Option>[]> {
+	getOptionByQuestion(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Partial<Option>[]> {
 		return this.questionService.getOptionsByQuestion(id, user);
 	}
 	@Auth()
 	@Get(':id/answers')
-	getAnswersByQuestion(@Param('id') id: number, @User() user: UserEntity): Promise<Answer[]> {
+	getAnswersByQuestion(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Answer[]> {
 		return this.questionService.getAnswersByQuestion(id, user);
 	}
 	@Auth()
