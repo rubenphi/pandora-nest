@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	ForbiddenException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -38,7 +43,12 @@ export class AnswersService {
 					group: { id: queryAnswer.groupId },
 					lesson: { id: queryAnswer.lessonId },
 					exist: queryAnswer.exist,
-					institute: { id: user.rol == Role.Admin ? queryAnswer.instituteId : user.institute.id }
+					institute: {
+						id:
+							user.rol == Role.Admin
+								? queryAnswer.instituteId
+								: user.institute.id,
+					},
 				},
 				relations: ['option', 'question', 'group', 'lesson', 'institute'],
 			});
@@ -72,7 +82,10 @@ export class AnswersService {
 		return answer;
 	}
 	async createAnswer(answerDto: CreateAnswerDto, user: User): Promise<Answer> {
-		if (user.rol !== Role.Admin && user.institute.id !== answerDto.instituteId) {
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== answerDto.instituteId
+		) {
 			throw new ForbiddenException('You are not allowed to create this answer');
 		}
 		if (user.rol === Role.Student) {
@@ -94,7 +107,7 @@ export class AnswersService {
 				},
 			})
 		) {
-			throw new BadRequestException('This group already answered this question');
+			throw new BadRequestException('Este grupo ya respondió la pregunta');
 		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
@@ -110,9 +123,11 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-			if (!question.available){
-				throw new ForbiddenException('Debe esperar que la pregunta esté disponible')
-			}
+		if (!question.available) {
+			throw new ForbiddenException(
+				'Debe esperar que la pregunta esté disponible',
+			);
+		}
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id: answerDto.groupId },
@@ -153,7 +168,10 @@ export class AnswersService {
 		answerDto: UpdateAnswerDto,
 		user: User,
 	): Promise<Answer> {
-		if (user.rol !== Role.Admin && user.institute.id !== answerDto.instituteId) {
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== answerDto.instituteId
+		) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 		if (
@@ -165,7 +183,9 @@ export class AnswersService {
 				},
 			})
 		) {
-			throw new BadRequestException('This group already answered this question');
+			throw new BadRequestException(
+				'This group already answered this question',
+			);
 		}
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
@@ -212,7 +232,7 @@ export class AnswersService {
 			institute,
 			exist: answerDto.exist,
 		});
-		answer.points = option.correct ? question.points : 0
+		answer.points = option.correct ? question.points : 0;
 		if (!answer) {
 			throw new NotFoundException(
 				'The answer you want to update does not exist',
@@ -247,7 +267,7 @@ export class AnswersService {
 			.findOneOrFail({
 				where: { question: { id: id }, option: { id: option.id } },
 				order: { id: 'ASC' },
-				relations: ['institute', 'question']
+				relations: ['institute', 'question'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');

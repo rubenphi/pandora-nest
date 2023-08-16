@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	ForbiddenException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
@@ -40,7 +44,12 @@ export class GroupsService {
 					period: { id: queryGroup.periodId },
 					year: queryGroup.year,
 					exist: queryGroup.exist,
-					institute: { id: user.rol == Role.Admin ? queryGroup.instituteId : user.institute.id }
+					institute: {
+						id:
+							user.rol == Role.Admin
+								? queryGroup.instituteId
+								: user.institute.id,
+					},
 				},
 				relations: ['course', 'institute', 'period'],
 			});
@@ -106,7 +115,7 @@ export class GroupsService {
 			period,
 			year: groupDto.year,
 			exist: groupDto.exist,
-			active: groupDto.active
+			active: groupDto.active,
 		});
 		return this.groupRepository.save(group);
 	}
@@ -148,7 +157,7 @@ export class GroupsService {
 			year: groupDto.year,
 			period,
 			exist: groupDto.exist,
-			active: groupDto.active
+			active: groupDto.active,
 		});
 		if (!group) {
 			throw new NotFoundException(
@@ -197,7 +206,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['users'],
+				relations: ['usersToGroup', 'usersToGroup.user'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -213,7 +222,7 @@ export class GroupsService {
 				throw new ForbiddenException('You are not allowed to see this group');
 			}
 		}
-		return group.userToGroups;
+		return group.usersToGroup;
 	}
 
 	async addUserToGroup(

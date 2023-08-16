@@ -40,7 +40,7 @@ export class Group {
 	@Column({ nullable: false })
 	exist: boolean;
 	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.group)
-	userToGroups: UserToGroup[];
+	usersToGroup: UserToGroup[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

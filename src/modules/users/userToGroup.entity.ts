@@ -13,7 +13,7 @@ import { User } from './user.entity';
 export class UserToGroup {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
-	@ManyToOne(() => Group, (group) => group.userToGroups)
+	@ManyToOne(() => Group, (group) => group.usersToGroup)
 	@JoinColumn({ name: 'groupId' })
 	group: Group;
 	@ManyToOne(() => User, (user) => user.groups)
