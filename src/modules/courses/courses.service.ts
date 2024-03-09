@@ -307,11 +307,12 @@ export class CoursesService {
 			await this.userToCourseRepository.findOne({
 				where: usersToAdd.map((userToAdd) => ({
 					user: { id: userToAdd.userId },
+					course: { id },
 					year: userToAdd.year,
 				})),
 			})
 		) {
-			throw new BadRequestException('User already belongs to this group');
+			throw new BadRequestException('User already belongs to this course');
 		}
 
 		const usersToAddIncourse: User[] = await this.userRepository.find({

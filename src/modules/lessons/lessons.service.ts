@@ -62,7 +62,7 @@ export class LessonsService {
 			});
 		} else {
 			return await this.lessonRepository.find({
-				relations: ['course', 'area'],
+				relations: ['course', 'area', 'institute'],
 			});
 		}
 	}
@@ -71,7 +71,7 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course', 'area', 'author', 'period'],
+				relations: ['course', 'area', 'author', 'period', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
@@ -209,13 +209,14 @@ export class LessonsService {
 	async getAnswersByLesson(id: number, user: User): Promise<Answer[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id },
+				where: { id , exist: true},
 				relations: [
 					'answers',
 					'answers.option',
 					'answers.question',
 					'answers.group',
 					'answers.option',
+					'institute',
 				],
 			})
 			.catch(() => {
@@ -233,7 +234,7 @@ export class LessonsService {
 	): Promise<Partial<Question>[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id, questions: { exist: true } },
+				where: { id, exist: true },
 				relations: ['questions'],
 				order: { questions: { id: 'asc' } },
 			})
