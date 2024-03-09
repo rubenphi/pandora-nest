@@ -206,7 +206,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['usersToGroup', 'usersToGroup.user'],
+				relations: ['usersToGroup', 'usersToGroup.user', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');

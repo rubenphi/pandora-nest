@@ -52,7 +52,7 @@ export class InstitutesService {
 	
 	async createInstitute(instituteDto: CreateInstituteDto, user: User): Promise<Institute> {
 		const { institute, ...userWithoutInstitute } = user
-		console.log(user);
+
 		
 		const instituteToSave: Institute = await this.instituteRepository.create({
 			name: instituteDto.name,

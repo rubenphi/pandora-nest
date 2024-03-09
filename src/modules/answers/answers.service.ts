@@ -35,6 +35,7 @@ export class AnswersService {
 	) {}
 
 	async getAnswers(queryAnswer: QueryAnswerDto, user: User): Promise<Answer[]> {
+		
 		if (queryAnswer) {
 			return await this.answerRepository.find({
 				where: {

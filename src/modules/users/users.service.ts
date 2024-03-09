@@ -16,6 +16,7 @@ import { UserToCourse } from './userToCourse.entity';
 import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
 import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 import { UserToGroup } from './userToGroup.entity';
+import { Role } from '../auth/roles.decorator';
 
 @Injectable()
 export class UsersService {
@@ -80,13 +81,16 @@ export class UsersService {
 		}
 		return userToReturn;
 	}
-	async createUser(userDto: CreateUserDto): Promise<User> {
+	async createUser(userDto: CreateUserDto, userLoged: User): Promise<User> {
+		const countUsers = await this.userRepository.count()
+
 		const sameEmail = await this.userRepository.findOne({
 			where: { email: userDto.email },
 		});
 		const sameCode = await this.userRepository.findOne({
 			where: { code: userDto.code },
 		});
+		
 
 		if (sameEmail && userDto.email) {
 			throw new BadRequestException(
@@ -97,11 +101,30 @@ export class UsersService {
 				'You cannot create two users with the same code',
 			);
 		}
+
+
+
 		const invitation: Invitation = await this.invitationRepository.findOne({
 			where: { code: userDto.instituteInvitation, valid: true },
 			relations: ['institute'],
 		});
-		const institute = invitation.institute;
+		
+
+	
+
+			let institute = invitation?.institute ?? null;
+			if(institute === null && userLoged?.rol !== Role.Admin && userLoged?.rol !== Role.Director  && userLoged?.rol !== Role.Coordinator && countUsers != 0) {
+				throw new BadRequestException(
+					'Invalid invitation',
+				);
+			}
+
+			if (institute === null && userLoged?.rol === Role.Admin || userLoged?.rol === Role.Director || userLoged?.rol === Role.Coordinator) {
+				institute = userLoged.institute
+			}
+
+
+	
 		const user: User = await this.userRepository.create({
 			name: userDto.name,
 			lastName: userDto.lastName,
@@ -115,7 +138,9 @@ export class UsersService {
 		const returnUser = await this.userRepository
 			.save(user)
 			.then(async (user) => {
-				await this.invitationRepository.update(invitation.id, { valid: false });
+				if (invitation) {
+					await this.invitationRepository.update(invitation.id, { valid: false });
+				}
 				return user;
 			});
 		delete returnUser.password;

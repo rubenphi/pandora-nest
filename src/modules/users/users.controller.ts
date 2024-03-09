@@ -21,6 +21,7 @@ import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
 import { UserToGroup } from './userToGroup.entity';
 import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 
+
 @ApiTags('Users Routes')
 @Controller('users')
 export class UsersController {
@@ -36,13 +37,15 @@ export class UsersController {
 	getUser(@Param('id') id: number, @UserDecorator() user: User): Promise<User> {
 		return this.userService.getUser(id, user );
 	}
-
+	
+	@Auth()
 	@Post()
-	createUser(@Body() user: CreateUserDto): Promise<User> {
-		return this.userService.createUser(user);
+	createUser(@Body() user: CreateUserDto,  @UserDecorator() userLoged: User): Promise<User> {
+		
+		return this.userService.createUser(user, userLoged);
 	}
 
-	@Auth()
+
 	@Patch(':id')
 	updateUser(
 		@Param('id') id: number,
