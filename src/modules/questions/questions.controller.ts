@@ -67,7 +67,7 @@ export class QuestionsController {
 		@User() user: UserEntity,
 	): Promise<Question> {
 		if (file) {
-			question.photo = 'uploads/' + file.filename;
+			question.photo = 'files/uploads/' + file.filename;
 		} else if (question.photo == '') {
 			question.photo = null;
 		}
