@@ -269,6 +269,10 @@ export class LessonsService {
 		if (user.institute.id !== lesson.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this lesson');
 		}
+
+
+		
+		
 		const resultLesson = [];
 
 		lesson.answers.reduce((res, value) => {
@@ -276,7 +280,15 @@ export class LessonsService {
 				res[value.group.id] = { group: value.group, points: 0 };
 				resultLesson.push(res[value.group.id]);
 			}
-			res[value.group.id].points += value.points;
+			if(typeof value.points === 'number') {
+				value.points = value.points
+			} else 
+			{
+				value.points = parseFloat(value.points)
+			}
+			res[value.group.id].points += (value.points);
+		
+			
 			return res;
 		}, {});
 		return resultLesson.sort((a, b) => b.points - a.points);

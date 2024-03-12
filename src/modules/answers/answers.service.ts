@@ -52,6 +52,7 @@ export class AnswersService {
 					},
 				},
 				relations: ['option', 'question', 'group', 'lesson', 'institute'],
+				
 			});
 		} else {
 			return await this.answerRepository.find({
@@ -124,6 +125,8 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+	
+			
 		if (!question.available) {
 			throw new ForbiddenException(
 				'Debe esperar que la pregunta esté disponible',
@@ -273,10 +276,14 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
+			console.log(answer);
+			
 
 		if (user.rol !== Role.Admin && user.institute.id !== answer.institute.id) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
+
+		
 
 		const answerUpdated: Answer = await this.answerRepository.preload({
 			id: answer.id,

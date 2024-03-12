@@ -214,15 +214,34 @@ export class QuestionsService {
 	}
 
 	async getAnswersByQuestion(id: number, user: User): Promise<Answer[]> {
+		function comparar(objetoA, objetoB) {
+			if (objetoA.points > objetoB.points) {
+				return -1; // Si el puntaje de A es mayor, A va antes
+			} else if (objetoA.points < objetoB.points) {
+				return 1; // Si el puntaje de B es mayor, B va antes
+			} else {
+				// Si los puntajes son iguales, ordena por fecha ascendente
+				if (objetoA.createdAt < objetoB.createdAt) {
+					return -1; // A va antes si su fecha es menor
+				} else if (objetoA.createdAt > objetoB.createdAt) {
+					return 1; // B va antes si su fecha es menor
+				} else {
+					return 0; // Si son iguales, no se cambian de posición
+				}
+			}
+		}
 		const question: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['answers', 'answers.option', 'answers.group', 'institute'], where: { id } })
+			.findOneOrFail({ relations: ['answers', 'answers.option', 'answers.group', 'institute'], where: { id } 
+		})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
 		if (user.institute.id !== question.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this question');
 		}
-		return question.answers;
+		//order Answers by created (DESC) and points (ASC)
+		return question.answers.sort(comparar);
+
 	}
 
 	async importOptionsToQuestion(
@@ -231,7 +250,7 @@ export class QuestionsService {
 	): Promise<Option[]> {
 		const fromQuestion: Question = await this.questionRepository
 			.findOneOrFail({
-				relations: ['options'],
+				relations: ['options', 'options.institute'],
 				where: { id: ImportFromQuestionDto.fromQuestionId },
 			})
 			.catch(() => {
@@ -239,7 +258,7 @@ export class QuestionsService {
 			});
 
 		const toQuestion: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['options'], where: { id } })
+			.findOneOrFail({ relations: ['options', 'institute'], where: { id } })
 			.catch(() => {
 				throw new NotFoundException('Question destiny not found');
 			});
@@ -255,6 +274,7 @@ export class QuestionsService {
 					correct: option.correct,
 					identifier: option.identifier,
 					question: toQuestion,
+					institute: toQuestion.institute,
 					exist: option.exist,
 				});
 				await this.optionRepository.save(optionToSave);

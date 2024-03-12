@@ -50,6 +50,8 @@ export class OptionsService {
 	}
 
 	async getOption(id: number, user: User): Promise<Option> {
+
+		
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id },
