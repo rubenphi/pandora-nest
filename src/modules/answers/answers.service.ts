@@ -267,6 +267,9 @@ export class AnswersService {
 				throw new NotFoundException('Option not found');
 			});
 
+
+			
+
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { question: { id: id }, option: { id: option.id } },

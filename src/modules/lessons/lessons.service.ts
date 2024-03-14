@@ -190,6 +190,7 @@ export class LessonsService {
 	async deleteLesson(id: number, user: User): Promise<void> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
+				relations: ['institute', 'author'],
 				where: { id },
 			})
 			.catch(() => {
@@ -320,7 +321,10 @@ export class LessonsService {
 				`You can only import options to a question that doesn't have them`,
 			);
 		} else {
-			for (const question of fromLesson.questions) {
+			const questionsPromises : Promise<Question>[] = []
+			for (const question of fromLesson.questions.sort(
+				(a, b) => a.id - b.id,
+			)) {
 				const questionToSave: Question = this.questionRepository.create({
 					available: question.available,
 					exist: question.exist,
@@ -333,21 +337,27 @@ export class LessonsService {
 					visible: question.visible,
 				});
 
-				const savedQuestion = await this.questionRepository.save(
+				questionsPromises.push( await this.questionRepository.save(
 					questionToSave,
-				);
-				question.options.forEach(async (option) => {
-					const optionToSave: Option = this.optionRepository.create({
-						correct: option.correct,
-						exist: option.exist,
-						question: savedQuestion,
-						sentence: option.sentence,
-						identifier: option.identifier,
-						institute: toLesson.institute,
+				).then((savedQuestion) => {
+					question.options.sort((a, b) => a.id - b.id).forEach(async (option) => {
+						const optionToSave: Option = this.optionRepository.create({
+							correct: option.correct,
+							exist: option.exist,
+							question: savedQuestion,
+							sentence: option.sentence,
+							identifier: option.identifier,
+							institute: toLesson.institute,
+						});
+						 await this.optionRepository.save(optionToSave);
 					});
-					await this.optionRepository.save(optionToSave);
-				});
+
+				}).catch((error)=> error))
+
+				
 			}
+
+			await Promise.all(questionsPromises)
 
 			return (
 				await this.lessonRepository.findOne({
