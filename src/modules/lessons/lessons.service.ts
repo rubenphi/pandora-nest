@@ -322,6 +322,8 @@ export class LessonsService {
 			);
 		} else {
 			const questionsPromises : Promise<Question>[] = []
+		
+			
 			for (const question of fromLesson.questions.sort(
 				(a, b) => a.id - b.id,
 			)) {
@@ -337,7 +339,10 @@ export class LessonsService {
 					visible: question.visible,
 				});
 
-				questionsPromises.push( await this.questionRepository.save(
+		
+				
+
+				questionsPromises.push(await this.questionRepository.save(
 					questionToSave,
 				).then((savedQuestion) => {
 					question.options.sort((a, b) => a.id - b.id).forEach(async (option) => {
@@ -351,6 +356,8 @@ export class LessonsService {
 						});
 						 await this.optionRepository.save(optionToSave);
 					});
+			
+					
 
 				}).catch((error)=> error))
 
