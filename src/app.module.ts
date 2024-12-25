@@ -17,6 +17,7 @@ import { PeriodsModule } from './modules/periods/periods.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { InstitutesModule } from './modules/institutes/institutes.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
+import { GradesModule } from './modules/grades/grades.module';
 
 import * as dotenv from 'dotenv';
 
@@ -49,6 +50,7 @@ dotenv.config();
 		AuthModule,
 		InstitutesModule,
 		InvitationsModule,
+		GradesModule,
 	],
 })
 export class AppModule {

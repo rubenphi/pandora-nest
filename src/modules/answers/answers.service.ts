@@ -35,7 +35,6 @@ export class AnswersService {
 	) {}
 
 	async getAnswers(queryAnswer: QueryAnswerDto, user: User): Promise<Answer[]> {
-		
 		if (queryAnswer) {
 			return await this.answerRepository.find({
 				where: {
@@ -52,7 +51,6 @@ export class AnswersService {
 					},
 				},
 				relations: ['option', 'question', 'group', 'lesson', 'institute'],
-				
 			});
 		} else {
 			return await this.answerRepository.find({
@@ -114,6 +112,7 @@ export class AnswersService {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.optionId },
+				relations: ['question'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Option not found');
@@ -125,9 +124,8 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-	
-			
-		if (!question.available) {
+
+		if (!question.available || option.question.id !== question.id) {
 			throw new ForbiddenException(
 				'Debe esperar que la pregunta esté disponible',
 			);
@@ -258,7 +256,7 @@ export class AnswersService {
 		this.answerRepository.remove(answer);
 	}
 
-	async bonusToAnswer(id: number, user: User): Promise<Answer> {
+	async bonusToAnswer(id: number, user: User): Promise<void> {
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { question: { id: id }, correct: true },
@@ -266,9 +264,6 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
-
-
-			
 
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
@@ -279,20 +274,17 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
-			console.log(answer);
-			
+		console.log(answer);
 
 		if (user.rol !== Role.Admin && user.institute.id !== answer.institute.id) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 
-		
-
-		const answerUpdated: Answer = await this.answerRepository.preload({
+		/* 	const answerUpdated: Answer = await this.answerRepository.preload({
 			id: answer.id,
 			points: answer.question.points * 1.5,
 		});
-
+ */
 		const questionUpdated: Question = await this.questionRepository.preload({
 			id: id,
 			available: false,
@@ -304,6 +296,5 @@ export class AnswersService {
 				'The answer you want to update does not exist',
 			);
 		}
-		return this.answerRepository.save(answerUpdated);
 	}
 }

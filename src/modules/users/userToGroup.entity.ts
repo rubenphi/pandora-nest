@@ -5,6 +5,7 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinColumn,
+	Column,
 } from 'typeorm';
 import { Group } from '../groups/group.entity';
 import { User } from './user.entity';
@@ -23,4 +24,6 @@ export class UserToGroup {
 	createdAt: Date;
 	@UpdateDateColumn()
 	updatedAt: Date;
+	@Column({ nullable: false, default: true })
+	active: boolean;
 }

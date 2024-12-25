@@ -23,7 +23,10 @@ export class AnswersController {
 
 	@Auth()
 	@Get()
-	getAnswers(@Query() queryAnswer: QueryAnswerDto, @User() user: UserEntity,): Promise<Answer[]> {
+	getAnswers(
+		@Query() queryAnswer: QueryAnswerDto,
+		@User() user: UserEntity,
+	): Promise<Answer[]> {
 		return this.answerService.getAnswers(queryAnswer, user);
 	}
 	@Auth()
@@ -40,7 +43,7 @@ export class AnswersController {
 	bonusToAnswer(
 		@Param('id') id: number,
 		@User() user: UserEntity,
-	): Promise<Answer> {
+	): Promise<void> {
 		return this.answerService.bonusToAnswer(id, user);
 	}
 

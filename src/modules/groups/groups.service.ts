@@ -205,7 +205,7 @@ export class GroupsService {
 	async getUsersByGroup(id: number, user: User): Promise<UserToGroup[]> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id },
+				where: { id, usersToGroup: { active: true } },
 				relations: ['usersToGroup', 'usersToGroup.user', 'institute'],
 			})
 			.catch(() => {

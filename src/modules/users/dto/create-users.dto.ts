@@ -7,7 +7,7 @@ import {
 	ValidateIf,
 	isNotEmpty,
 	IsNotEmpty,
-	IsInt
+	IsInt,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -37,7 +37,6 @@ export class CreateUserDto {
 		description: 'Institute invitation of user',
 	})
 	@IsOptional()
-	@IsInt()
 	readonly instituteInvitation: string;
 	@ApiProperty({
 		description: 'Password of user',

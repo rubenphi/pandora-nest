@@ -14,11 +14,6 @@ export class QueryUserGroupsDto {
 		description: 'Period of assignament',
 		required: false,
 	})
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	readonly periodId: number;
-
 	@ApiProperty({
 		description: 'Search the assignament if exist or not',
 		required: false,

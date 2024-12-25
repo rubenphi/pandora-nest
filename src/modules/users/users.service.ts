@@ -17,6 +17,8 @@ import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
 import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 import { UserToGroup } from './userToGroup.entity';
 import { Role } from '../auth/roles.decorator';
+import { UserToGroupDto } from './dto/user-to-group.dto';
+import { log } from 'console';
 
 @Injectable()
 export class UsersService {
@@ -82,7 +84,7 @@ export class UsersService {
 		return userToReturn;
 	}
 	async createUser(userDto: CreateUserDto, userLoged: User): Promise<User> {
-		const countUsers = await this.userRepository.count()
+		const countUsers = await this.userRepository.count();
 
 		const sameEmail = await this.userRepository.findOne({
 			where: { email: userDto.email },
@@ -90,7 +92,6 @@ export class UsersService {
 		const sameCode = await this.userRepository.findOne({
 			where: { code: userDto.code },
 		});
-		
 
 		if (sameEmail && userDto.email) {
 			throw new BadRequestException(
@@ -102,29 +103,30 @@ export class UsersService {
 			);
 		}
 
-
-
 		const invitation: Invitation = await this.invitationRepository.findOne({
 			where: { code: userDto.instituteInvitation, valid: true },
 			relations: ['institute'],
 		});
-		
 
-	
+		let institute = invitation?.institute ?? null;
+		if (
+			institute === null &&
+			userLoged?.rol !== Role.Admin &&
+			userLoged?.rol !== Role.Director &&
+			userLoged?.rol !== Role.Coordinator &&
+			countUsers != 0
+		) {
+			throw new BadRequestException('Invalid invitation');
+		}
 
-			let institute = invitation?.institute ?? null;
-			if(institute === null && userLoged?.rol !== Role.Admin && userLoged?.rol !== Role.Director  && userLoged?.rol !== Role.Coordinator && countUsers != 0) {
-				throw new BadRequestException(
-					'Invalid invitation',
-				);
-			}
+		if (
+			(institute === null && userLoged?.rol === Role.Admin) ||
+			userLoged?.rol === Role.Director ||
+			userLoged?.rol === Role.Coordinator
+		) {
+			institute = userLoged.institute;
+		}
 
-			if (institute === null && userLoged?.rol === Role.Admin || userLoged?.rol === Role.Director || userLoged?.rol === Role.Coordinator) {
-				institute = userLoged.institute
-			}
-
-
-	
 		const user: User = await this.userRepository.create({
 			name: userDto.name,
 			lastName: userDto.lastName,
@@ -139,7 +141,9 @@ export class UsersService {
 			.save(user)
 			.then(async (user) => {
 				if (invitation) {
-					await this.invitationRepository.update(invitation.id, { valid: false });
+					await this.invitationRepository.update(invitation.id, {
+						valid: false,
+					});
 				}
 				return user;
 			});
@@ -238,10 +242,8 @@ export class UsersService {
 		if (id) {
 			return await this.userToGroupsRepository.find({
 				where: {
-					group: {
-						period: { id: queryGroups.periodId },
-						active: queryGroups.active,
-					},
+					active: queryGroups.active,
+
 					user: { id },
 				},
 				relations: ['group'],
@@ -249,5 +251,38 @@ export class UsersService {
 		} else {
 			throw new ForbiddenException('userId is required');
 		}
+	}
+	async addUserToGroup(
+		userToGroup: UserToGroupDto,
+		userLoged: User,
+	): Promise<UserToGroup> {
+		if (userLoged?.rol !== Role.Admin) {
+			const autorizacion = await this.invitationRepository.findOne({
+				where: { code: userToGroup.code, valid: true },
+			});
+			if (!autorizacion) {
+				throw new BadRequestException('Invalid autorization code');
+			}
+			await this.invitationRepository.update(autorizacion.id, { valid: false });
+		}
+		const actualGroup: UserToGroup =
+			await this.userToGroupsRepository.findOneByOrFail({
+				user: { id: userToGroup.userId },
+				active: true,
+			});
+
+		const userToGroupSave: UserToGroup = this.userToGroupsRepository.create({
+			group: { id: userToGroup.groupId },
+			user: { id: userToGroup.userId },
+			active: true,
+		});
+
+		return this.userToGroupsRepository.save(userToGroupSave).then(() => {
+			console.log(actualGroup);
+			actualGroup.active = false;
+			console.log(actualGroup);
+			this.userToGroupsRepository.save(actualGroup);
+			return userToGroupSave;
+		});
 	}
 }

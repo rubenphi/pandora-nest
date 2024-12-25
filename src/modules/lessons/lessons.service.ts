@@ -210,7 +210,7 @@ export class LessonsService {
 	async getAnswersByLesson(id: number, user: User): Promise<Answer[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id , exist: true},
+				where: { id, exist: true },
 				relations: [
 					'answers',
 					'answers.option',
@@ -236,7 +236,7 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id, exist: true },
-				relations: ['questions'],
+				relations: ['questions', 'questions.options'],
 				order: { questions: { id: 'asc' } },
 			})
 			.catch(() => {
@@ -246,6 +246,8 @@ export class LessonsService {
 		return lesson.questions.map((question) => ({
 			id: question.id,
 			title: question.title,
+			sentence: question.sentence,
+			options: question.options,
 			available: question.available,
 			visible: question.visible,
 		}));
@@ -271,9 +273,6 @@ export class LessonsService {
 			throw new ForbiddenException('You are not allowed to see this lesson');
 		}
 
-
-		
-		
 		const resultLesson = [];
 
 		lesson.answers.reduce((res, value) => {
@@ -281,15 +280,13 @@ export class LessonsService {
 				res[value.group.id] = { group: value.group, points: 0 };
 				resultLesson.push(res[value.group.id]);
 			}
-			if(typeof value.points === 'number') {
-				value.points = value.points
-			} else 
-			{
-				value.points = parseFloat(value.points)
+			if (typeof value.points === 'number') {
+				value.points = value.points;
+			} else {
+				value.points = parseFloat(value.points);
 			}
-			res[value.group.id].points += (value.points);
-		
-			
+			res[value.group.id].points += value.points;
+
 			return res;
 		}, {});
 		return resultLesson.sort((a, b) => b.points - a.points);
@@ -321,12 +318,12 @@ export class LessonsService {
 				`You can only import options to a question that doesn't have them`,
 			);
 		} else {
-			const questionsPromises : Promise<Question>[] = []
-		
-			
-			for (const question of fromLesson.questions.sort(
-				(a, b) => a.id - b.id,
-			)) {
+			// Copiar y ordenar las preguntas por ID
+			const questions = [...fromLesson.questions].sort((a, b) => a.id - b.id);
+
+			for (const question of questions) {
+				console.log('Original:', question.id, '-', question.title);
+
 				const questionToSave: Question = this.questionRepository.create({
 					available: question.available,
 					exist: question.exist,
@@ -339,33 +336,26 @@ export class LessonsService {
 					visible: question.visible,
 				});
 
-		
-				
-
-				questionsPromises.push(await this.questionRepository.save(
+				const questionSaved = await this.questionRepository.save(
 					questionToSave,
-				).then((savedQuestion) => {
-					question.options.sort((a, b) => a.id - b.id).forEach(async (option) => {
-						const optionToSave: Option = this.optionRepository.create({
-							correct: option.correct,
-							exist: option.exist,
-							question: savedQuestion,
-							sentence: option.sentence,
-							identifier: option.identifier,
-							institute: toLesson.institute,
-						});
-						 await this.optionRepository.save(optionToSave);
+				);
+				console.log('Saved:', questionSaved.id, '-', questionSaved.title);
+
+				for (const option of question.options.sort((a, b) => a.id - b.id)) {
+					const optionToSave: Option = this.optionRepository.create({
+						correct: option.correct,
+						exist: option.exist,
+						question: questionSaved,
+						sentence: option.sentence,
+						identifier: option.identifier,
+						institute: toLesson.institute,
 					});
-			
-					
 
-				}).catch((error)=> error))
-
-				
+					await this.optionRepository.save(optionToSave);
+				}
 			}
 
-			await Promise.all(questionsPromises)
-
+			// Devuelve las preguntas de la nueva lección
 			return (
 				await this.lessonRepository.findOne({
 					relations: ['questions.lesson'],
