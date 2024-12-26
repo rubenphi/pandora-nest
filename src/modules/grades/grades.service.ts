@@ -54,7 +54,7 @@ export class GradesService {
 						? Between(queryGrades.gradeMin, queryGrades.gradeMax)
 						: undefined,
 			},
-			relations: ['user', 'lesson', 'period', 'institute'],
+			relations: ['user', 'lesson', 'lesson.area', 'period', 'institute'],
 		});
 	}
 

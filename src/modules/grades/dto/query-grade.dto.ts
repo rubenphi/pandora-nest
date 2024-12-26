@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 import { IsInt, IsOptional } from 'class-validator';
 
@@ -9,6 +10,7 @@ export class QueryGradeDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly userId: number;
 	@ApiProperty({
@@ -17,6 +19,7 @@ export class QueryGradeDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly lessonId: number;
 	@ApiProperty({
@@ -25,6 +28,7 @@ export class QueryGradeDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly periodId: number;
 
@@ -36,6 +40,7 @@ export class QueryGradeDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly gradeMin: number;
 
@@ -45,6 +50,7 @@ export class QueryGradeDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly gradeMax: number;
 
@@ -55,6 +61,7 @@ export class QueryGradeDto {
 		required: false,
 	})
 	@IsOptional()
+	@Type(() => Number)
 	@IsInt()
 	readonly instituteId: number;
 }
