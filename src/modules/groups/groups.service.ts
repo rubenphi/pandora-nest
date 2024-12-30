@@ -17,6 +17,7 @@ import { UserToGroup } from '../users/userToGroup.entity';
 import { Period } from '../periods/period.entity';
 import { AddUserToGroupDto } from './dto/add-user.dto';
 import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
+import { UpdateUserFromGroupDto } from './dto/update-users.dto';
 
 @Injectable()
 export class GroupsService {
@@ -205,7 +206,7 @@ export class GroupsService {
 	async getUsersByGroup(id: number, user: User): Promise<UserToGroup[]> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
-				where: { id, usersToGroup: { active: true } },
+				where: { id },
 				relations: ['usersToGroup', 'usersToGroup.user', 'institute'],
 			})
 			.catch(() => {
@@ -222,7 +223,7 @@ export class GroupsService {
 				throw new ForbiddenException('You are not allowed to see this group');
 			}
 		}
-		return group.usersToGroup;
+		return group.usersToGroup.filter((userToGroup) => userToGroup.active);
 	}
 
 	async addUserToGroup(
@@ -257,6 +258,48 @@ export class GroupsService {
 			}),
 		);
 		return this.userToGroupRepository.save(usersToGroup);
+	}
+
+	async updateUserFromGroup(
+		id: number,
+		usersToRemove: UpdateUserFromGroupDto,
+		user: User,
+	) {
+		const group: Group = await this.groupRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['institute'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Group not found');
+			});
+
+		if (user.rol !== Role.Admin && user.institute.id !== group.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this group');
+		}
+
+		const userToRemove: User = await this.userRepository
+			.findOneOrFail({
+				where: { id: usersToRemove.userIdToRemove },
+			})
+			.catch(() => {
+				throw new NotFoundException('User not found');
+			});
+
+		const userToRemoveFromGroup: UserToGroup =
+			await this.userToGroupRepository.findOneOrFail({
+				where: {
+					user: { id: userToRemove.id },
+					group: { id: group.id },
+				},
+				order: { createdAt: 'DESC' },
+			});
+
+		userToRemoveFromGroup.active = usersToRemove.active;
+
+		await this.userToGroupRepository.save(userToRemoveFromGroup);
+
+		return userToRemoveFromGroup;
 	}
 
 	async removeUserFromGroup(

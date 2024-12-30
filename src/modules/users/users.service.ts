@@ -229,7 +229,7 @@ export class UsersService {
 					year: queryCourses.year,
 					user: { id },
 				},
-				relations: ['course'],
+				relations: ['course', 'course.areas'],
 			});
 		} else {
 			throw new ForbiddenException('userId is required');
@@ -278,9 +278,8 @@ export class UsersService {
 		});
 
 		return this.userToGroupsRepository.save(userToGroupSave).then(() => {
-			console.log(actualGroup);
 			actualGroup.active = false;
-			console.log(actualGroup);
+
 			this.userToGroupsRepository.save(actualGroup);
 			return userToGroupSave;
 		});

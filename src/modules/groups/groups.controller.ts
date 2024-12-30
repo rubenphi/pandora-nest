@@ -20,6 +20,7 @@ import { User as UserEntity } from '../users/user.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { AddUserToGroupDto } from './dto/add-user.dto';
 import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
+import { UpdateUserFromGroupDto } from './dto/update-users.dto';
 
 @ApiTags('Groups Routes')
 @Controller('groups')
@@ -28,7 +29,10 @@ export class GroupsController {
 
 	@Auth()
 	@Get()
-	getGroups(@Query() queryGroupDto: QueryGroupDto, @User() user: UserEntity): Promise<Group[]> {
+	getGroups(
+		@Query() queryGroupDto: QueryGroupDto,
+		@User() user: UserEntity,
+	): Promise<Group[]> {
 		return this.groupService.getGroups(queryGroupDto, user);
 	}
 	@Auth()
@@ -82,7 +86,7 @@ export class GroupsController {
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
-	@ApiBody({type: [AddUserToGroupDto]})
+	@ApiBody({ type: [AddUserToGroupDto] })
 	@Post(':id/users')
 	addUserToGroup(
 		@Param('id') id: number,
@@ -90,6 +94,17 @@ export class GroupsController {
 		@User() user: UserEntity,
 	): Promise<UserToGroup[]> {
 		return this.groupService.addUserToGroup(id, usersToAdd, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Patch(':id/users')
+	updateUserFromGroup(
+		@Param('id') id: number,
+		@Body() usersToRemove: UpdateUserFromGroupDto,
+		@User() user: UserEntity,
+	): Promise<UserToGroup> {
+		return this.groupService.updateUserFromGroup(id, usersToRemove, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)

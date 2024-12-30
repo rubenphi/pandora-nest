@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,8 +30,20 @@ export class GradesService {
 	) {}
 	async create(createGradeDto: CreateGradeDto): Promise<Grade> {
 		const grade = new Grade();
+		//search grade with same user and lesson
+		const gradeExist = await this.gradeRepository.findOne({
+			where: {
+				user: { id: createGradeDto.userId },
+				lesson: { id: createGradeDto.lessonId },
+			},
+		});
+
+		if (gradeExist) {
+			return gradeExist;
+		}
+
 		grade.grade = createGradeDto.grade;
-		grade.user = await this.userRepository.findOneBy({
+		grade.user = await this.userRepository.findOneByOrFail({
 			id: createGradeDto.userId,
 		});
 		grade.lesson = await this.lessonRepository.findOneBy({
@@ -46,7 +62,12 @@ export class GradesService {
 		return this.gradeRepository.find({
 			where: {
 				user: { id: queryGrades.userId },
-				lesson: { id: queryGrades.lessonId },
+				lesson: {
+					id: queryGrades.lessonId,
+					area: { id: queryGrades.areaId },
+					year: queryGrades.year,
+					course: { id: queryGrades.courseId },
+				},
 				period: { id: queryGrades.periodId },
 				institute: { id: queryGrades.instituteId },
 				grade:

@@ -13,6 +13,36 @@ export class QueryGradeDto {
 	@Type(() => Number)
 	@IsInt()
 	readonly userId: number;
+
+	@ApiProperty({
+		type: Number,
+		description: 'year to search',
+		required: false,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly year: number;
+
+	@ApiProperty({
+		type: Number,
+		description: 'course to search',
+		required: false,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly courseId: number;
+
+	@ApiProperty({
+		type: Number,
+		description: 'Area to search',
+		required: false,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly areaId: number;
 	@ApiProperty({
 		type: Number,
 		description: 'Lesson to search',
@@ -31,9 +61,6 @@ export class QueryGradeDto {
 	@Type(() => Number)
 	@IsInt()
 	readonly periodId: number;
-
-	//two numbers to search grades in a range
-
 	@ApiProperty({
 		type: Number,
 		description: 'Grade min',
