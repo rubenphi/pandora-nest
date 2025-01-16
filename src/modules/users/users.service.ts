@@ -18,7 +18,6 @@ import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 import { UserToGroup } from './userToGroup.entity';
 import { Role } from '../auth/roles.decorator';
 import { UserToGroupDto } from './dto/user-to-group.dto';
-import { log } from 'console';
 
 @Injectable()
 export class UsersService {
@@ -266,7 +265,7 @@ export class UsersService {
 			await this.invitationRepository.update(autorizacion.id, { valid: false });
 		}
 		const actualGroup: UserToGroup =
-			await this.userToGroupsRepository.findOneByOrFail({
+			await this.userToGroupsRepository.findOneBy({
 				user: { id: userToGroup.userId },
 				active: true,
 			});
@@ -274,13 +273,16 @@ export class UsersService {
 		const userToGroupSave: UserToGroup = this.userToGroupsRepository.create({
 			group: { id: userToGroup.groupId },
 			user: { id: userToGroup.userId },
+			year: userToGroup.year,
 			active: true,
 		});
 
 		return this.userToGroupsRepository.save(userToGroupSave).then(() => {
-			actualGroup.active = false;
+			if (actualGroup) {
+				actualGroup.active = false;
+				this.userToGroupsRepository.save(actualGroup);
+			}
 
-			this.userToGroupsRepository.save(actualGroup);
 			return userToGroupSave;
 		});
 	}

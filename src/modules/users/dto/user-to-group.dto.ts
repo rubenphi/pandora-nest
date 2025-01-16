@@ -14,6 +14,11 @@ export class UserToGroupDto {
 	@IsInt()
 	readonly userId: number;
 	@ApiProperty({
+		description: 'year',
+	})
+	@IsInt()
+	readonly year: number;
+	@ApiProperty({
 		description: 'Autorization code',
 	})
 	@IsString()

@@ -12,11 +12,7 @@ export class CreateGroupDto {
 	})
 	@IsInt()
 	readonly courseId: number;
-	@ApiProperty({
-		description: 'Year of the group',
-	})
-	@IsInt()
-	readonly year: number;
+
 	@ApiProperty({
 		description: 'Institute id of group',
 	})

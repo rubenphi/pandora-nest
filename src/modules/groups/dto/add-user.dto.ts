@@ -8,6 +8,8 @@ export class AddUserToGroupDto {
 	})
 	@IsInt()
 	readonly userId: number;
+	@IsInt()
+	readonly year: number;
 	@ApiProperty({
 		type: Number,
 		description: 'period Id',

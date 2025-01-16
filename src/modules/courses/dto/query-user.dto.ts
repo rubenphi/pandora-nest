@@ -5,9 +5,8 @@ import { IsOptional, IsInt } from 'class-validator';
 export class QueryUsersOfCourseDto {
 	@ApiProperty({
 		description: 'Year',
-		required: false,
+		required: true,
 	})
-	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
 	readonly year: number;

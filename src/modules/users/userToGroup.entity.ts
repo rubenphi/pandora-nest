@@ -20,6 +20,8 @@ export class UserToGroup {
 	@ManyToOne(() => User, (user) => user.groups)
 	@JoinColumn({ name: 'userId' })
 	user: User;
+	@Column({ type: 'int', nullable: false })
+	year: number;
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

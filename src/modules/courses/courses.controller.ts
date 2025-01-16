@@ -31,10 +31,12 @@ import { UserToCourse } from '../users/userToCourse.entity';
 export class CoursesController {
 	constructor(private readonly courseService: CoursesService) {}
 
-
 	@Auth()
 	@Get()
-	getCourses(@Query() queryCourse: QueryCourseDto, @User() user: UserEntity): Promise<Course[]> {
+	getCourses(
+		@Query() queryCourse: QueryCourseDto,
+		@User() user: UserEntity,
+	): Promise<Course[]> {
 		return this.courseService.getCourses(queryCourse, user);
 	}
 	@Auth()
@@ -123,6 +125,16 @@ export class CoursesController {
 		@Query() queryUser: QueryUsersOfCourseDto,
 	): Promise<any> {
 		return this.courseService.getUsersByCourse(id, user, queryUser);
+	}
+
+	@Auth()
+	@Get(':id/usersNoGroup')
+	getUsersWhithoutGroup(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+		@Query() queryUser: QueryUsersOfCourseDto,
+	): Promise<any> {
+		return this.courseService.getUsersWhithoutGroup(id, user, queryUser);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)

@@ -25,6 +25,7 @@ import { AddUserToCourseDto } from './dto/add-user.dto';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
 import { QueryUsersOfCourseDto } from './dto/query-user.dto';
+import { UserToGroup } from '../users/userToGroup.entity';
 
 @Injectable()
 export class CoursesService {
@@ -41,12 +42,19 @@ export class CoursesService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getCourses(queryCourse: QueryCourseDto, user : User): Promise<Course[]> {
+	async getCourses(queryCourse: QueryCourseDto, user: User): Promise<Course[]> {
 		if (queryCourse) {
 			return await this.courseRepository.find({
-				where: { name: queryCourse.name, exist: queryCourse.exist,
-					institute: { id: user.rol == Role.Admin ? queryCourse.instituteId : user.institute.id }
-					  },
+				where: {
+					name: queryCourse.name,
+					exist: queryCourse.exist,
+					institute: {
+						id:
+							user.rol == Role.Admin
+								? queryCourse.instituteId
+								: user.institute.id,
+					},
+				},
 				relations: ['institute'],
 			});
 		} else {
@@ -69,7 +77,10 @@ export class CoursesService {
 		return course;
 	}
 	async createCourse(courseDto: CreateCourseDto, user: User): Promise<Course> {
-		if (user.rol !== Role.Admin && user.institute.id !== courseDto.instituteId) {
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== courseDto.instituteId
+		) {
 			throw new ForbiddenException('You are not allowed to create this course');
 		}
 		const institute: Institute = await this.instituteRepository
@@ -91,7 +102,10 @@ export class CoursesService {
 		courseDto: UpdateCourseDto,
 		user: User,
 	): Promise<Course> {
-		if (user.rol !== Role.Admin && user.institute.id !== courseDto.instituteId) {
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== courseDto.instituteId
+		) {
 			throw new ForbiddenException('You are not allowed to update this course');
 		}
 		const institute: Institute = await this.instituteRepository
@@ -136,13 +150,14 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['areas','institute']
+				relations: ['areas', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to add areas to this course',
+			throw new ForbiddenException(
+				'You are not allowed to add areas to this course',
 			);
 		}
 		const areas: Area[] = await this.areaRepository.find({
@@ -168,7 +183,8 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to delete areas to this course',
+			throw new ForbiddenException(
+				'You are not allowed to delete areas to this course',
 			);
 		}
 
@@ -191,7 +207,8 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to see areas of this course',
+			throw new ForbiddenException(
+				'You are not allowed to see areas of this course',
 			);
 		}
 		if (user.rol === Role.Student) {
@@ -216,7 +233,8 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to see lessons of this course',
+			throw new ForbiddenException(
+				'You are not allowed to see lessons of this course',
 			);
 		}
 		if (user.rol === Role.Student) {
@@ -241,7 +259,8 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to see groups of this course',
+			throw new ForbiddenException(
+				'You are not allowed to see groups of this course',
 			);
 		}
 		if (user.rol === Role.Student) {
@@ -284,6 +303,57 @@ export class CoursesService {
 		}
 		return users;
 	}
+
+	async getUsersWhithoutGroup(
+		id: number,
+		user: User,
+		queryUser: QueryUsersOfCourseDto,
+	): Promise<UserToCourse[]> {
+		const course: Course = await this.courseRepository.findOneOrFail({
+			where: { id },
+			relations: [
+				'institute',
+				'groups',
+				'groups.usersToGroup',
+				'groups.usersToGroup.user',
+			],
+		});
+
+		const usersWhitGroupInSameYearAndActive: UserToGroup[] = course.groups
+			.flatMap((group) => group.usersToGroup)
+			.filter(
+				(userToGroup) =>
+					userToGroup.year === queryUser.year && userToGroup.active,
+			);
+
+		const usersToCourse: UserToCourse[] =
+			await this.userToCourseRepository.find({
+				where: { course: { id }, year: queryUser.year },
+				relations: ['user'],
+			});
+
+		const usersWhitoutGroupInSameYear = usersToCourse.filter(
+			(userToCourse) =>
+				!usersWhitGroupInSameYearAndActive.find(
+					(userToGroup) => userToGroup.user.id === userToCourse.user.id,
+				),
+		);
+
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this course');
+		}
+		if (user.rol === Role.Student) {
+			const studentInSameCourse = user.courses.find(
+				(course) =>
+					course.id === course.course.id && course.year === course.year,
+			);
+			if (!studentInSameCourse) {
+				throw new ForbiddenException('You are not allowed to see this course');
+			}
+		}
+		return usersWhitoutGroupInSameYear;
+	}
+
 	async addUserToCourse(
 		id: number,
 		usersToAdd: AddUserToCourseDto[],
@@ -299,19 +369,20 @@ export class CoursesService {
 			});
 
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to add users to this course',
+			throw new ForbiddenException(
+				'You are not allowed to add users to this course',
 			);
 		}
 
-		if (
-			await this.userToCourseRepository.findOne({
-				where: usersToAdd.map((userToAdd) => ({
-					user: { id: userToAdd.userId },
-					course: { id },
-					year: userToAdd.year,
-				})),
-			})
-		) {
+		const usuarioExistente = await this.userToCourseRepository.findOne({
+			where: usersToAdd.map((userToAdd) => ({
+				user: { id: userToAdd.userId },
+				course: { id },
+				year: userToAdd.year,
+			})),
+		});
+
+		if (usuarioExistente) {
 			throw new BadRequestException('User already belongs to this course');
 		}
 
@@ -341,13 +412,14 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['institute']
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException('You are not allowed to delete users to this course',
+			throw new ForbiddenException(
+				'You are not allowed to delete users to this course',
 			);
 		}
 

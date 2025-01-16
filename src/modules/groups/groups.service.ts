@@ -43,7 +43,7 @@ export class GroupsService {
 					name: queryGroup.name,
 					course: { id: queryGroup.courseId },
 					period: { id: queryGroup.periodId },
-					year: queryGroup.year,
+
 					exist: queryGroup.exist,
 					institute: {
 						id:
@@ -75,7 +75,7 @@ export class GroupsService {
 		}
 		if (user.rol === Role.Student) {
 			const studentInSameCourse = user.courses.find(
-				(course) => course.id === group.course.id && course.year === group.year,
+				(course) => course.id === group.course.id,
 			);
 			if (!studentInSameCourse) {
 				throw new ForbiddenException('You are not allowed to see this group');
@@ -114,7 +114,7 @@ export class GroupsService {
 			institute,
 			course,
 			period,
-			year: groupDto.year,
+
 			exist: groupDto.exist,
 			active: groupDto.active,
 		});
@@ -155,7 +155,7 @@ export class GroupsService {
 			name: groupDto.name,
 			institute,
 			course,
-			year: groupDto.year,
+
 			period,
 			exist: groupDto.exist,
 			active: groupDto.active,
@@ -194,7 +194,7 @@ export class GroupsService {
 		}
 		if (user.rol === Role.Student) {
 			const studentInSameCourse = user.courses.find(
-				(course) => course.id === group.course.id && course.year === group.year,
+				(course) => course.id === group.course.id && course.year,
 			);
 			if (!studentInSameCourse) {
 				throw new ForbiddenException('You are not allowed to see this group');
@@ -203,7 +203,11 @@ export class GroupsService {
 		return group.answers;
 	}
 
-	async getUsersByGroup(id: number, user: User): Promise<UserToGroup[]> {
+	async getUsersByGroup(
+		id: number,
+		year: number,
+		user: User,
+	): Promise<UserToGroup[]> {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
@@ -217,13 +221,15 @@ export class GroupsService {
 		}
 		if (user.rol === Role.Student) {
 			const studentInSameCourse = user.courses.find(
-				(course) => course.id === group.course.id && course.year === group.year,
+				(course) => course.id === group.course.id && course.year,
 			);
 			if (!studentInSameCourse) {
 				throw new ForbiddenException('You are not allowed to see this group');
 			}
 		}
-		return group.usersToGroup.filter((userToGroup) => userToGroup.active);
+		return group.usersToGroup.filter(
+			(userToGroup) => userToGroup.active && userToGroup.year == year,
+		);
 	}
 
 	async addUserToGroup(
@@ -253,6 +259,7 @@ export class GroupsService {
 				const userToGroup: UserToGroup = this.userToGroupRepository.create({
 					user: usersToAddInGroup.find((user) => user.id === userToAdd.userId),
 					group,
+					year: userToAdd.year,
 				});
 				return userToGroup;
 			}),

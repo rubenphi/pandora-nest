@@ -76,12 +76,13 @@ export class GroupsController {
 	}
 
 	@Auth()
-	@Get(':id/users')
+	@Get(':id/:year/users')
 	getUsersByGroup(
 		@Param('id') id: number,
+		@Param('year') year: number,
 		@User() user: UserEntity,
 	): Promise<UserToGroup[]> {
-		return this.groupService.getUsersByGroup(id, user);
+		return this.groupService.getUsersByGroup(id, year, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
