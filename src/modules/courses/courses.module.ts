@@ -8,10 +8,18 @@ import { Course } from './course.entity';
 import { Institute } from '../institutes/institute.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { User } from '../users/user.entity';
+import { UserToGroup } from '../users/userToGroup.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Course, Area, Institute, UserToCourse, User]),
+		TypeOrmModule.forFeature([
+			Course,
+			Area,
+			Institute,
+			UserToGroup,
+			UserToCourse,
+			User,
+		]),
 	],
 	controllers: [CoursesController],
 	providers: [CoursesService],

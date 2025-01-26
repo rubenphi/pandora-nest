@@ -250,6 +250,7 @@ export class LessonsService {
 			options: question.options,
 			available: question.available,
 			visible: question.visible,
+			exist: question.exist,
 		}));
 	}
 
@@ -322,8 +323,6 @@ export class LessonsService {
 			const questions = [...fromLesson.questions].sort((a, b) => a.id - b.id);
 
 			for (const question of questions) {
-				console.log('Original:', question.id, '-', question.title);
-
 				const questionToSave: Question = this.questionRepository.create({
 					available: question.available,
 					exist: question.exist,
@@ -339,7 +338,6 @@ export class LessonsService {
 				const questionSaved = await this.questionRepository.save(
 					questionToSave,
 				);
-				console.log('Saved:', questionSaved.id, '-', questionSaved.title);
 
 				for (const option of question.options.sort((a, b) => a.id - b.id)) {
 					const optionToSave: Option = this.optionRepository.create({

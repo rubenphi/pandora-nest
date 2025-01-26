@@ -36,6 +36,8 @@ export class CoursesService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(UserToCourse)
 		private readonly userToCourseRepository: Repository<UserToCourse>,
+		@InjectRepository(UserToGroup)
+		private readonly userToGroupRepository: Repository<UserToGroup>,
 		@InjectRepository(Area)
 		private readonly areaRepository: Repository<Area>,
 		@InjectRepository(Institute)
@@ -311,46 +313,41 @@ export class CoursesService {
 	): Promise<UserToCourse[]> {
 		const course: Course = await this.courseRepository.findOneOrFail({
 			where: { id },
-			relations: [
-				'institute',
-				'groups',
-				'groups.usersToGroup',
-				'groups.usersToGroup.user',
-			],
+			relations: ['institute', 'groups'],
 		});
 
-		const usersWhitGroupInSameYearAndActive: UserToGroup[] = course.groups
-			.flatMap((group) => group.usersToGroup)
-			.filter(
-				(userToGroup) =>
-					userToGroup.year === queryUser.year && userToGroup.active,
-			);
-
-		const usersToCourse: UserToCourse[] =
-			await this.userToCourseRepository.find({
-				where: { course: { id }, year: queryUser.year },
-				relations: ['user'],
-			});
-
-		const usersWhitoutGroupInSameYear = usersToCourse.filter(
-			(userToCourse) =>
-				!usersWhitGroupInSameYearAndActive.find(
-					(userToGroup) => userToGroup.user.id === userToCourse.user.id,
-				),
-		);
-
+		// Verificar permisos
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this course');
 		}
 		if (user.rol === Role.Student) {
 			const studentInSameCourse = user.courses.find(
-				(course) =>
-					course.id === course.course.id && course.year === course.year,
+				(c) => c.id === course.id && c.year === queryUser.year,
 			);
 			if (!studentInSameCourse) {
 				throw new ForbiddenException('You are not allowed to see this course');
 			}
 		}
+
+		// Subquery para obtener usuarios que están en grupos activos en el mismo año
+		const subQuery = this.userToGroupRepository
+			.createQueryBuilder('userToGroup')
+			.select('userToGroup.userId')
+			.innerJoin('userToGroup.group', 'group')
+			.where('group.courseId = :courseId', { courseId: id })
+			.andWhere('userToGroup.year = :year', { year: queryUser.year })
+			.andWhere('userToGroup.active = true');
+
+		// Query principal para obtener los usuarios sin grupo
+		const usersWhitoutGroupInSameYear = await this.userToCourseRepository
+			.createQueryBuilder('userToCourse')
+			.innerJoinAndSelect('userToCourse.user', 'user')
+			.where('userToCourse.courseId = :courseId', { courseId: id })
+			.andWhere('userToCourse.year = :year', { year: queryUser.year })
+			.andWhere(`userToCourse.userId NOT IN (${subQuery.getQuery()})`)
+			.setParameters(subQuery.getParameters())
+			.getMany();
+
 		return usersWhitoutGroupInSameYear;
 	}
 

@@ -104,6 +104,9 @@ export class QuestionsService {
 			available: questionDto.available,
 			exist: questionDto.exist,
 		});
+
+		console.log(question.id);
+
 		return this.questionRepository.save(question);
 	}
 	async updateQuestion(
@@ -231,8 +234,10 @@ export class QuestionsService {
 			}
 		}
 		const question: Question = await this.questionRepository
-			.findOneOrFail({ relations: ['answers', 'answers.option', 'answers.group', 'institute'], where: { id } 
-		})
+			.findOneOrFail({
+				relations: ['answers', 'answers.option', 'answers.group', 'institute'],
+				where: { id },
+			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
@@ -241,7 +246,6 @@ export class QuestionsService {
 		}
 		//order Answers by created (DESC) and points (ASC)
 		return question.answers.sort(comparar);
-
 	}
 
 	async importOptionsToQuestion(

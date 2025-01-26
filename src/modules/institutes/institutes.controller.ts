@@ -23,6 +23,7 @@ import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
+import { QueryUsersOfCourseDto } from '../courses/dto/query-user.dto';
 
 @ApiTags('Institutes Routes')
 @Controller('institutes')
@@ -43,7 +44,10 @@ export class InstitutesController {
 	}
 	@Auth()
 	@Post()
-	createInstitute(@Body() institute: CreateInstituteDto, @User() user: UserEntity,): Promise<Institute> {
+	createInstitute(
+		@Body() institute: CreateInstituteDto,
+		@User() user: UserEntity,
+	): Promise<Institute> {
 		return this.instituteService.createInstitute(institute, user);
 	}
 	@Roles(Role.Admin, Role.Director)
@@ -78,6 +82,17 @@ export class InstitutesController {
 	): Promise<Course[]> {
 		return this.instituteService.getCoursesByInstitute(id, user);
 	}
+
+	@Auth()
+	@Get(':id/usersNoCourse')
+	getUsersWhithoutCourse(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+		@Query() queryUser: QueryUsersOfCourseDto,
+	): Promise<any> {
+		return this.instituteService.getUsersWhithoutCourse(id, user, queryUser);
+	}
+
 	@Auth()
 	@Get(':id/groups')
 	getGroupsByInstitute(
