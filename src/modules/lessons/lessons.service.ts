@@ -1,11 +1,13 @@
 import {
 	BadRequestException,
+	ConflictException,
 	ForbiddenException,
 	Injectable,
+	InternalServerErrorException,
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
 import {
 	CreateLessonDto,
@@ -305,7 +307,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Question origin not found');
 			});
-
+	
 		const toLesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				relations: ['questions', 'institute'],
@@ -314,6 +316,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Question destiny not found');
 			});
+	
 		if (toLesson.questions.length) {
 			throw new BadRequestException(
 				`You can only import options to a question that doesn't have them`,
@@ -321,38 +324,54 @@ export class LessonsService {
 		} else {
 			// Copiar y ordenar las preguntas por ID
 			const questions = [...fromLesson.questions].sort((a, b) => a.id - b.id);
-
+	
 			for (const question of questions) {
-				const questionToSave: Question = this.questionRepository.create({
-					available: question.available,
-					exist: question.exist,
-					institute: toLesson.institute,
-					lesson: toLesson,
-					sentence: question.sentence,
-					photo: question.photo,
-					points: question.points,
-					title: question.title,
-					visible: question.visible,
-				});
-
-				const questionSaved = await this.questionRepository.save(
-					questionToSave,
-				);
-
-				for (const option of question.options.sort((a, b) => a.id - b.id)) {
-					const optionToSave: Option = this.optionRepository.create({
-						correct: option.correct,
-						exist: option.exist,
-						question: questionSaved,
-						sentence: option.sentence,
-						identifier: option.identifier,
+				try {
+					const questionToSave: Question = this.questionRepository.create({
+						available: false,
+						exist: question.exist,
 						institute: toLesson.institute,
+						lesson: toLesson,
+						sentence: question.sentence,
+						photo: question.photo,
+						points: question.points,
+						title: question.title,
+						visible: false,
 					});
-
-					await this.optionRepository.save(optionToSave);
+	
+					const questionSaved = await this.questionRepository.save(
+						questionToSave,
+					);
+	
+					for (const option of question.options.sort((a, b) => a.id - b.id)) {
+						const optionToSave: Option = this.optionRepository.create({
+							correct: option.correct,
+							exist: option.exist,
+							question: questionSaved,
+							sentence: option.sentence,
+							identifier: option.identifier,
+							institute: toLesson.institute,
+						});
+	
+						await this.optionRepository.save(optionToSave);
+					}
+				} catch (error) {
+					if (error instanceof QueryFailedError) {
+						const errorCode = (error as any).code;
+	
+						switch (errorCode) {
+							case '23505': // PostgreSQL
+							case '1062':  // MySQL y MariaDB
+								throw new ConflictException('A duplicate question or option exists.');
+							default:
+								throw new InternalServerErrorException('Database error.');
+						}
+					} else {
+						throw new InternalServerErrorException('Unknown error.');
+					}
 				}
 			}
-
+	
 			// Devuelve las preguntas de la nueva lección
 			return (
 				await this.lessonRepository.findOne({
@@ -362,4 +381,5 @@ export class LessonsService {
 			).questions;
 		}
 	}
+	
 }
