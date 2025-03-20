@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsInt } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber } from 'class-validator';
 
 export class UpdateGradeDto {
 	@ApiProperty({
@@ -24,7 +24,7 @@ export class UpdateGradeDto {
 		type: Number,
 		description: 'Grade',
 	})
-	@IsInt()
+	@IsNumber()
 	readonly grade: number;
 	@ApiProperty({
 		type: Number,

@@ -307,7 +307,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Question origin not found');
 			});
-	
+
 		const toLesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				relations: ['questions', 'institute'],
@@ -316,7 +316,7 @@ export class LessonsService {
 			.catch(() => {
 				throw new NotFoundException('Question destiny not found');
 			});
-	
+
 		if (toLesson.questions.length) {
 			throw new BadRequestException(
 				`You can only import options to a question that doesn't have them`,
@@ -324,7 +324,7 @@ export class LessonsService {
 		} else {
 			// Copiar y ordenar las preguntas por ID
 			const questions = [...fromLesson.questions].sort((a, b) => a.id - b.id);
-	
+
 			for (const question of questions) {
 				try {
 					const questionToSave: Question = this.questionRepository.create({
@@ -338,11 +338,11 @@ export class LessonsService {
 						title: question.title,
 						visible: false,
 					});
-	
+
 					const questionSaved = await this.questionRepository.save(
 						questionToSave,
 					);
-	
+
 					for (const option of question.options.sort((a, b) => a.id - b.id)) {
 						const optionToSave: Option = this.optionRepository.create({
 							correct: option.correct,
@@ -352,17 +352,17 @@ export class LessonsService {
 							identifier: option.identifier,
 							institute: toLesson.institute,
 						});
-	
+
 						await this.optionRepository.save(optionToSave);
 					}
 				} catch (error) {
 					if (error instanceof QueryFailedError) {
 						const errorCode = (error as any).code;
-	
+
 						switch (errorCode) {
 							case '23505': // PostgreSQL
-							case '1062':  // MySQL y MariaDB
-								throw new ConflictException('A duplicate question or option exists.');
+							case '1062': // MySQL y MariaDB
+								throw new ConflictException('Este registro ya existe.');
 							default:
 								throw new InternalServerErrorException('Database error.');
 						}
@@ -371,7 +371,7 @@ export class LessonsService {
 					}
 				}
 			}
-	
+
 			// Devuelve las preguntas de la nueva lección
 			return (
 				await this.lessonRepository.findOne({
@@ -381,5 +381,4 @@ export class LessonsService {
 			).questions;
 		}
 	}
-	
 }

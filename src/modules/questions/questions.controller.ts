@@ -146,7 +146,7 @@ export class QuestionsController {
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
     @Auth()
-    @Get('index')
+    @Get('reset/index')
     async resetIndex(): Promise<{ message: string }> {
         await this.questionService.resetIndex();
         return { message: 'Question index reset successfully' };

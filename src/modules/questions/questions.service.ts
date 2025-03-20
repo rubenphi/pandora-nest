@@ -9,7 +9,10 @@ import { Repository, Not, ILike } from 'typeorm';
 import * as fs from 'fs';
 
 import { QueryFailedError } from 'typeorm';
-import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import {
+	ConflictException,
+	InternalServerErrorException,
+} from '@nestjs/common';
 
 import { Question } from './question.entity';
 import {
@@ -84,7 +87,7 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-	
+
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id: questionDto.lessonId },
@@ -93,11 +96,11 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
-	
+
 		if (user.id !== lesson.author.id) {
 			throw new ForbiddenException('You are not the author of this lesson');
 		}
-	
+
 		try {
 			const question: Question = this.questionRepository.create({
 				title: questionDto.title,
@@ -110,26 +113,27 @@ export class QuestionsService {
 				available: questionDto.available,
 				exist: questionDto.exist,
 			});
-	
+
 			return await this.questionRepository.save(question);
 		} catch (error) {
 			if (error instanceof QueryFailedError) {
 				const errorCode = (error as any).code;
-		
+
 				switch (errorCode) {
 					case '23505': // PostgreSQL
-					case '1062':  // MySQL
-					case '2627':  // SQL Server
+					case '1062': // MySQL
+					case '2627': // SQL Server
 					case 'ORA-00001': // Oracle
 						throw new ConflictException('Este registro ya existe.');
 					default:
-						throw new InternalServerErrorException('Error en la base de datos.');
+						throw new InternalServerErrorException(
+							'Error en la base de datos.',
+						);
 				}
 			} else {
 				throw new InternalServerErrorException('Error desconocido.');
 			}
 		}
-		
 	}
 
 	async updateQuestion(
@@ -341,8 +345,9 @@ export class QuestionsService {
 	}
 
 	async resetIndex(): Promise<string> {
-		const queryRunner = this.questionRepository.manager.connection.createQueryRunner();
-	
+		const queryRunner =
+			this.questionRepository.manager.connection.createQueryRunner();
+
 		try {
 			// Ejecutamos el script completo como una única query raw
 			const query = `
@@ -371,14 +376,12 @@ export class QuestionsService {
 					END LOOP;
 				END $$;
 			`;
-	
+
 			await queryRunner.query(query);
-			
+
 			return 'Secuencias reiniciadas exitosamente';
-			
 		} catch (error) {
 			throw new Error(`Error al reiniciar las secuencias: ${error.message}`);
-			
 		} finally {
 			// Siempre liberamos el queryRunner
 			await queryRunner.release();
