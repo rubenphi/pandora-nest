@@ -360,7 +360,7 @@ export class LessonsService {
 						const errorCode = (error as any).code;
 
 						switch (errorCode) {
-							case '23505': // PostgreSQ
+							case '23505': // PostgreSQL
 							case '1062': // MySQL y MariaDB
 								throw new ConflictException('Este registro ya existe.');
 							default:
