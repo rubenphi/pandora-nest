@@ -46,6 +46,7 @@ export class UsersController {
 		return this.userService.createUser(user, userLoged);
 	}
 
+	@Auth()
 	@Patch(':id')
 	updateUser(
 		@Param('id') id: number,

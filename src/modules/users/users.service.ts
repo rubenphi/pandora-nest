@@ -154,7 +154,12 @@ export class UsersService {
 		userDto: UpdateUserDto,
 		user: User,
 	): Promise<User> {
-		if (user.id !== id) {
+		if (
+			user.id !== id &&
+			user.rol !== Role.Admin &&
+			user.rol !== Role.Director &&
+			user.rol !== Role.Coordinator
+		) {
 			throw new ForbiddenException('You are not allowed to update this user');
 		}
 
@@ -198,7 +203,11 @@ export class UsersService {
 		const returnUser = await this.userRepository
 			.save(userToUpdate)
 			.then(async (user) => {
-				await this.invitationRepository.update(invitation.id, { valid: false });
+				if (invitation) {
+					await this.invitationRepository.update(invitation.id, {
+						valid: false,
+					});
+				}
 				return user;
 			});
 		delete returnUser.password;

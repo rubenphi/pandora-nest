@@ -24,9 +24,9 @@ import { Institute } from '../institutes/institute.entity';
 import { ImportFromLessonDto } from './dto/import-from-lesson.dto';
 import { Option } from '../options/option.entity';
 import { User } from '../users/user.entity';
-import { userInfo } from 'os';
 import { Role } from '../auth/roles.decorator';
 import { Period } from '../periods/period.entity';
+import { ImportQuestionsMixDto } from './dto/import-from-lesson-mix.dto';
 
 @Injectable()
 export class LessonsService {
@@ -380,5 +380,71 @@ export class LessonsService {
 				})
 			).questions;
 		}
+	}
+
+	async importQuestionsToLessonMix(
+		dto: ImportQuestionsMixDto,
+	): Promise<Question[]> {
+		const toLesson = await this.lessonRepository.findOneOrFail({
+			where: { id: dto.toLessonId },
+			relations: ['questions', 'institute'],
+		});
+
+		for (const { id, title } of dto.questions) {
+			// Verifica si ya existe una pregunta con el mismo título en la lección destino
+			const alreadyExists = await this.questionRepository.findOne({
+				where: {
+					lesson: { id: dto.toLessonId },
+					title,
+				},
+			});
+
+			if (alreadyExists) {
+				continue; // Evita duplicación
+			}
+
+			// Consulta la pregunta original con sus opciones
+			const question = await this.questionRepository.findOneOrFail({
+				where: { id },
+				relations: ['options'],
+			});
+
+			// Crea una nueva pregunta con campos válidos
+			const newQuestion = this.questionRepository.create({
+				title,
+				sentence: question.sentence,
+				points: question.points,
+				photo: question.photo,
+				lesson: toLesson,
+				institute: toLesson.institute,
+				visible: false,
+				available: false,
+				exist: true,
+			});
+
+			const savedQuestion = await this.questionRepository.save(newQuestion);
+
+			// Crea nuevas opciones solo con campos válidos
+			for (const option of question.options) {
+				const newOption = this.optionRepository.create({
+					identifier: option.identifier,
+					sentence: option.sentence,
+					correct: option.correct,
+					exist: true,
+					question: savedQuestion,
+					institute: toLesson.institute,
+				});
+
+				await this.optionRepository.save(newOption);
+			}
+		}
+
+		// Cargar las preguntas con sus opciones asociadas
+		const updatedLesson = await this.lessonRepository.findOneOrFail({
+			where: { id: dto.toLessonId },
+			relations: ['questions', 'questions.options'],
+		});
+
+		return updatedLesson.questions;
 	}
 }

@@ -22,7 +22,8 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
-import { User as UserEntity  } from '../users/user.entity';
+import { User as UserEntity } from '../users/user.entity';
+import { ImportQuestionsMixDto } from './dto/import-from-lesson-mix.dto';
 
 @ApiTags('Lessons Routes')
 @Controller('lessons')
@@ -36,14 +37,20 @@ export class LessonsController {
 
 	@Auth()
 	@Get(':id')
-	getLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Lesson> {
+	getLesson(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Lesson> {
 		return this.lessonService.getLesson(id, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
-	createLesson(@Body() lesson: CreateLessonDto,@User() user: UserEntity ): Promise<Lesson> {
+	createLesson(
+		@Body() lesson: CreateLessonDto,
+		@User() user: UserEntity,
+	): Promise<Lesson> {
 		return this.lessonService.createLesson(lesson, user);
 	}
 
@@ -53,7 +60,7 @@ export class LessonsController {
 	updateLesson(
 		@Param('id') id: number,
 		@Body() lesson: UpdateLessonDto,
-		@User() user: UserEntity
+		@User() user: UserEntity,
 	): Promise<Lesson> {
 		return this.lessonService.updateLesson(id, lesson, user);
 	}
@@ -61,30 +68,44 @@ export class LessonsController {
 	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
-	deleteLesson(@Param('id') id: number, @User() user: UserEntity): Promise<void> {
+	deleteLesson(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<void> {
 		return this.lessonService.deleteLesson(id, user);
 	}
 
 	@Auth()
 	@Get(':id')
-	getLessonResult(@Param('id') id: number, @User() user: UserEntity): Promise<ResultLessonDto[]> {
+	getLessonResult(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<ResultLessonDto[]> {
 		return this.lessonService.getResultLesson(id, user);
 	}
 
 	@Auth()
 	@Get(':id/answers')
-	getAnswersByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Answer[]> {
+	getAnswersByLesson(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Answer[]> {
 		return this.lessonService.getAnswersByLesson(id, user);
 	}
 
-
-	@Auth()                                                 @Get(':id/results')                                     getResultsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<ResultLessonDto[]> {
-                return this.lessonService.getResultLesson(id, user);                                                 }
-
+	@Auth() @Get(':id/results') getResultsByLesson(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<ResultLessonDto[]> {
+		return this.lessonService.getResultLesson(id, user);
+	}
 
 	@Auth()
 	@Get(':id/questions')
-	getQuestionsByLesson(@Param('id') id: number, @User() user: UserEntity): Promise<Partial<Question>[]> {
+	getQuestionsByLesson(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Partial<Question>[]> {
 		return this.lessonService.getQuestionsByLesson(id, user);
 	}
 
@@ -96,5 +117,14 @@ export class LessonsController {
 		@Body() importFromLessonDto: ImportFromLessonDto,
 	): Promise<Question[]> {
 		return this.lessonService.importQuestionsToLesson(id, importFromLessonDto);
+	}
+
+	@Patch('questions/import-mix')
+	importQuestionsToLessonMix(
+		@Body() importFromQuestionMixDto: ImportQuestionsMixDto,
+	): Promise<Question[]> {
+		return this.lessonService.importQuestionsToLessonMix(
+			importFromQuestionMixDto,
+		);
 	}
 }
