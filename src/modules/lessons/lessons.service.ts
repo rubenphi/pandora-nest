@@ -447,4 +447,25 @@ export class LessonsService {
 
 		return updatedLesson.questions;
 	}
+
+	async getPointsByLesson(id: number, user: User): Promise<{ points: number }> {
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['institute', 'questions'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
+		if (user.institute.id !== lesson.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this lesson');
+		}
+
+		const points = lesson.questions.reduce(
+			(res, value) => res + value.points,
+			0,
+		);
+
+		return { points };
+	}
 }

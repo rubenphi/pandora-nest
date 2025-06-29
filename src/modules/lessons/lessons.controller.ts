@@ -127,4 +127,13 @@ export class LessonsController {
 			importFromQuestionMixDto,
 		);
 	}
+
+	@Auth()
+	@Get(':id/points')
+	getPointsByLesson(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<{ points: number }> {
+		return this.lessonService.getPointsByLesson(id, user);
+	}
 }

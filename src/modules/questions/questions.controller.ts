@@ -22,8 +22,9 @@ import { QuestionsService } from './questions.service';
 import {
 	CreateQuestionDto,
 	UpdateQuestionDto,
-	ImportFromQuestionDto,
 	QueryQuestionDto,
+	ImportQuestionByTypeDto,
+	ImportFromQuestionDto,
 } from './dto';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
@@ -31,6 +32,7 @@ import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
+import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
 
 @ApiTags('Questions Routes')
 @Controller('questions')
@@ -145,10 +147,32 @@ export class QuestionsController {
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
-    @Auth()
-    @Get('reset/index')
-    async resetIndex(): Promise<{ message: string }> {
-        await this.questionService.resetIndex();
-        return { message: 'Question index reset successfully' };
-    }
+	@Auth()
+	@Get('reset/index')
+	async resetIndex(): Promise<{ message: string }> {
+		await this.questionService.resetIndex();
+		return { message: 'Question index reset successfully' };
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Post('import/types')
+	importQuestionsByType(
+		@Body() importationData: ImportQuestionByTypeDto,
+		@User() user: UserEntity,
+	): Promise<Question[]> {
+		return this.questionService.importQuestionsByType(importationData, user);
+	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Post('import/variable-option')
+	importQuestionsByVariableOption(
+		@Body() importationData: ImportQuestionVariableOptionDto,
+		@User() user: UserEntity,
+	): Promise<Question[]> {
+		return this.questionService.importQuestionsByVariableOption(
+			importationData,
+			user,
+		);
+	}
 }

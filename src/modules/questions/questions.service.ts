@@ -27,6 +27,9 @@ import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
+import { ImportQuestionByTypeDto } from './dto/import-question-by-type.dto';
+import { numerosOrdinales } from 'src/common/vars/vars';
+import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
 
 @Injectable()
 export class QuestionsService {
@@ -386,5 +389,156 @@ export class QuestionsService {
 			// Siempre liberamos el queryRunner
 			await queryRunner.release();
 		}
+	}
+	async importQuestionsByType(
+		importationData: ImportQuestionByTypeDto,
+		user: User,
+	): Promise<Question[]> {
+		const options: Option[] = importationData.types.map((type, index) => {
+			return this.optionRepository.create({
+				sentence: type,
+				correct: false,
+				identifier: String.fromCharCode(65 + index), // alphabet letter using the index,
+				question: null, // Will be set later
+				institute: null, // Will be set later
+				exist: true,
+			});
+		});
+
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				where: { id: importationData.lessonId },
+				relations: ['questions'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
+
+		const lastQuestion: Question | undefined =
+			lesson.questions[lesson.questions.length - 1];
+
+		const questionsToSave: Question[] = importationData.questions.map(
+			(question, index) => {
+				if (!importationData.types.includes(question.type)) {
+					throw new BadRequestException(
+						`The question type ${question.type} is not allowed`,
+					);
+				}
+
+				//search the last title on numerosOrdinales
+				const lastTitleIndex = numerosOrdinales.findIndex(
+					(title) => title === lastQuestion?.title,
+				);
+
+				const title =
+					lastTitleIndex >= 0
+						? numerosOrdinales[lastTitleIndex + index]
+						: numerosOrdinales[index];
+
+				return this.questionRepository.create({
+					title,
+					sentence: question.sentence,
+					lesson: lesson,
+					points: 10,
+					photo: null,
+					visible: false,
+					exist: true,
+					institute: user.institute,
+					available: false,
+				});
+			},
+		);
+		const savedQuestions: Question[] = await this.questionRepository.save(
+			questionsToSave,
+		);
+
+		const optionsToSave: Option[] = savedQuestions.flatMap(
+			(questionI, index) => {
+				const optionsForQuestion: Option[] = options.map((originalOption) => {
+					const option = { ...originalOption }; // Crear una copia nueva
+					option.question = questionI;
+					option.institute = user.institute;
+					option.correct =
+						option.sentence === importationData.questions[index].type;
+					return option;
+				});
+
+				optionsForQuestion.forEach((option, optionIndex) => {
+					console.log(
+						`Option ${optionIndex + 1} for question ${option.question.id}: ${
+							option.sentence
+						}, Correct: ${option.correct}`,
+					);
+				});
+
+				return optionsForQuestion;
+			},
+		);
+
+		await this.optionRepository.save(optionsToSave);
+		return savedQuestions;
+	}
+	async importQuestionsByVariableOption(
+		importationData: ImportQuestionVariableOptionDto,
+		user: User,
+	): Promise<Question[]> {
+		const lesson: Lesson = await this.lessonRepository
+			.findOneOrFail({
+				where: { id: importationData.lessonId },
+				relations: ['questions'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Lesson not found');
+			});
+		const lastQuestion: Question | undefined =
+			lesson.questions[lesson.questions.length - 1];
+
+		const questionsToSave: Question[] = importationData.questions.map(
+			(question, index) => {
+				const lastTitleIndex = numerosOrdinales.findIndex(
+					(title) => title === lastQuestion?.title,
+				);
+
+				const title =
+					lastTitleIndex >= 0
+						? numerosOrdinales[lastTitleIndex + index]
+						: numerosOrdinales[index];
+
+				return this.questionRepository.create({
+					title,
+					sentence: question.sentence,
+					lesson: lesson,
+					points: importationData.points,
+					photo: null,
+					visible: false,
+					exist: true,
+					institute: user.institute,
+					available: false,
+				});
+			},
+		);
+
+		const savedQuestions: Question[] = await this.questionRepository.save(
+			questionsToSave,
+		);
+		const optionsToSave: Option[] = savedQuestions.flatMap(
+			(question, index) => {
+				const optionsForQuestion: Option[] = importationData.questions[
+					index
+				].options.map((optionDto) => {
+					const option = this.optionRepository.create({
+						...optionDto,
+						question: question,
+						institute: user.institute,
+						identifier: String.fromCharCode(65 + index),
+						exist: true,
+					});
+					return option;
+				});
+				return optionsForQuestion;
+			},
+		);
+		await this.optionRepository.save(optionsToSave);
+		return savedQuestions;
 	}
 }
