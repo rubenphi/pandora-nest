@@ -127,13 +127,13 @@ export class OptionsService {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id: optionsDto[0].questionId },
-				relations: ['lesson','lesson.author']
+				relations: []
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
 
-			if(user.rol !== Role.Admin && user.id !== question.lesson.author.id){
+			if(user.rol !== Role.Admin && user.institute.id !== question.institute.id){
 				throw new ForbiddenException('You are not allowed to create this option');
 			}
 
@@ -187,16 +187,16 @@ export class OptionsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-		const question: Question = await this.questionRepository
+				const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id: optionDto.questionId },
-				relations: ['lesson.author']
+				relations: []
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
 
-			if(user.rol !== Role.Admin &&  user.id !== question.lesson.author.id){
+			if(user.rol !== Role.Admin &&  user.institute.id !== question.institute.id){
 				throw new ForbiddenException('You are not allowed to update this option');
 			}
 		const option: Option = await this.optionRepository
@@ -220,14 +220,14 @@ export class OptionsService {
 	async deleteOption(id: number, user: User): Promise<void> {
 		const option: Option = await this.optionRepository.findOne({
 			where: { id },
-			relations: ['question', 'question.lesson.author'],
+			relations: ['question'],
 		});
 		if (!option) {
 			throw new NotFoundException(
 				'The option you want to delete does not exist',
 			);
 		}
-		if(user.rol !== Role.Admin && user.id !== option.question.lesson.author.id){
+		if(user.rol !== Role.Admin && user.institute.id !== option.question.institute.id){
 			throw new ForbiddenException('You are not allowed to delete this option');
 		}
 		this.optionRepository.remove(option);

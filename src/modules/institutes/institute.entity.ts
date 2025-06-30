@@ -18,6 +18,14 @@ import { Period } from '../periods/period.entity';
 import { Question } from '../questions/question.entity';
 import { User } from '../users/user.entity';
 import { Invitation } from '../invitations/invitation.entity';
+import { Quiz } from '../quizzes/quiz.entity';
+import { Material } from '../materials/material.entity';
+import { LessonItem } from '../lesson-items/lesson-item.entity';
+import { Activity } from '../activities/activity.entity';
+import { Criterion } from '../criteria/criterion.entity';
+import { Grade } from '../grades/grade.entity';
+import { UserToCourse } from '../users/userToCourse.entity';
+import { UserToGroup } from '../users/userToGroup.entity';
 
 @Entity()
 export class Institute {
@@ -41,10 +49,22 @@ export class Institute {
 	periods: Period[];
 	@OneToMany(() => Question, (question) => question.institute)
 	questions: Question[];
+	@OneToMany(() => Quiz, (quiz) => quiz.institute)
+	quizzes: Quiz[];
+	@OneToMany(() => Material, (material) => material.institute)
+	materials: Material[];
+	@OneToMany(() => LessonItem, (lessonItem) => lessonItem.institute)
+	lessonItems: LessonItem[];
 	@OneToMany(() => Invitation, (invitation) => invitation.institute)
 	invitations: Invitation[];
 	@OneToMany(() => User, (user) => user.institute)
 	users: User[];
+	@OneToMany(() => Activity, (activity) => activity.institute)
+	activities: Activity[];
+	@OneToMany(() => Criterion, (criterion) => criterion.institute)
+	criteria: Criterion[];
+	@OneToMany(() => Grade, (grade) => grade.institute)
+	grades: Grade[];
 	@ManyToOne(() => User, (user) => user.institute, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'userId' })
 	owner: User;

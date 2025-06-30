@@ -13,6 +13,6 @@ const source = new DataSource({
 	dropSchema: false,
 	synchronize: true,
 	entities: [join(__dirname, '**', '**', '*.entity.{ts,js}')],
-	migrations: [join(__dirname, 'database', 'migrations', '*.{ts,js}')],
+	migrations: [join(__dirname, 'src', 'database', 'migrations', '*.{ts,js}')],
 });
 export default source;

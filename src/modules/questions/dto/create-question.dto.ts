@@ -42,12 +42,14 @@ export class CreateQuestionDto {
 	})
 	@IsBoolean()
 	readonly available: boolean;
+
 	@ApiProperty({
-		description: 'Lesson id of question',
+		description: 'Quiz id of question',
 	})
 	@Type(() => Number)
 	@IsInt()
-	readonly lessonId: number;
+	readonly quizId: number;
+
 	@ApiProperty({
 		description: 'Institute id of question',
 	})

@@ -23,8 +23,8 @@ export class Group {
 	@Column({ nullable: false })
 	name: string;
 
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.groups)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@ManyToOne(() => Course, (course) => course.groups, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'courseId' })

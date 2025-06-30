@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Group } from '../groups/group.entity';
 import { User } from './user.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class UserToGroup {
@@ -20,6 +21,7 @@ export class UserToGroup {
 	@ManyToOne(() => User, (user) => user.groups)
 	@JoinColumn({ name: 'userId' })
 	user: User;
+
 	@Column({ type: 'int', nullable: false })
 	year: number;
 	@CreateDateColumn()

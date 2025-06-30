@@ -21,7 +21,6 @@ import {
 	ImportFromQuestionDto,
 	QueryQuestionDto,
 } from './dto';
-import { Lesson } from '../lessons/lesson.entity';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
@@ -30,18 +29,19 @@ import { Role } from '../auth/roles.decorator';
 import { ImportQuestionByTypeDto } from './dto/import-question-by-type.dto';
 import { numerosOrdinales } from 'src/common/vars/vars';
 import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
+import { Quiz } from '../quizzes/quiz.entity';
 
 @Injectable()
 export class QuestionsService {
 	constructor(
 		@InjectRepository(Question)
 		private readonly questionRepository: Repository<Question>,
-		@InjectRepository(Lesson)
-		private readonly lessonRepository: Repository<Lesson>,
 		@InjectRepository(Option)
 		private readonly optionRepository: Repository<Option>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(Quiz)
+		private readonly quizRepository: Repository<Quiz>,
 	) {}
 
 	async getQuestions(queryQuestion: QueryQuestionDto): Promise<Question[]> {
@@ -56,15 +56,15 @@ export class QuestionsService {
 					photo: queryQuestion.photo,
 					visible: queryQuestion.visible,
 					available: queryQuestion.available,
-					lesson: { id: queryQuestion.lessonId },
 					exist: queryQuestion.exist,
 					institute: { id: queryQuestion.instituteId },
+					quiz: { id: queryQuestion.quizId },
 				},
-				relations: ['lesson', 'institute'],
+				relations: ['institute', 'quiz'],
 			});
 		} else {
 			return await this.questionRepository.find({
-				relations: ['lesson', 'institute'],
+				relations: ['institute', 'quiz'],
 			});
 		}
 	}
@@ -72,7 +72,7 @@ export class QuestionsService {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['lesson', 'institute', 'options'],
+				relations: ['institute', 'options', 'quiz'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
@@ -90,26 +90,20 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-
-		const lesson: Lesson = await this.lessonRepository
+		const quiz: Quiz = await this.quizRepository
 			.findOneOrFail({
-				where: { id: questionDto.lessonId },
-				relations: ['author'],
+				where: { id: questionDto.quizId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Lesson not found');
+				throw new NotFoundException('Quiz not found');
 			});
-
-		if (user.id !== lesson.author.id) {
-			throw new ForbiddenException('You are not the author of this lesson');
-		}
 
 		try {
 			const question: Question = this.questionRepository.create({
 				title: questionDto.title,
 				sentence: questionDto.sentence,
-				lesson,
 				institute,
+				quiz,
 				points: questionDto.points,
 				photo: questionDto.photo == 'null' ? null : questionDto.photo,
 				visible: questionDto.visible,
@@ -151,17 +145,13 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-		const lesson: Lesson = await this.lessonRepository
+		const quiz: Quiz = await this.quizRepository
 			.findOneOrFail({
-				where: { id: questionDto.lessonId },
-				relations: ['author'],
+				where: { id: questionDto.quizId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Question not found');
+				throw new NotFoundException('Quiz not found');
 			});
-		if (user.id !== lesson.author.id) {
-			throw new ForbiddenException('You are not the author of this lesson');
-		}
 		const imageUrl = await (
 			await this.questionRepository.findOne({ where: { id } })
 		).photo;
@@ -171,8 +161,8 @@ export class QuestionsService {
 			id,
 			title: questionDto.title,
 			sentence: questionDto.sentence,
-			lesson,
 			institute,
+			quiz,
 			points: questionDto.points,
 			photo: questionDto.photo == 'null' ? null : questionDto.photo,
 			visible: questionDto.visible,
@@ -228,7 +218,7 @@ export class QuestionsService {
 	): Promise<Partial<Option>[]> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				relations: ['options'],
+				relations: ['options', 'quiz'],
 				where: { id },
 				order: { options: { identifier: 'asc' } },
 			})
@@ -265,7 +255,13 @@ export class QuestionsService {
 		}
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				relations: ['answers', 'answers.option', 'answers.group', 'institute'],
+				relations: [
+					'answers',
+					'answers.option',
+					'answers.group',
+					'institute',
+					'quiz',
+				],
 				where: { id },
 			})
 			.catch(() => {
@@ -405,18 +401,6 @@ export class QuestionsService {
 			});
 		});
 
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id: importationData.lessonId },
-				relations: ['questions'],
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
-
-		const lastQuestion: Question | undefined =
-			lesson.questions[lesson.questions.length - 1];
-
 		const questionsToSave: Question[] = importationData.questions.map(
 			(question, index) => {
 				if (!importationData.types.includes(question.type)) {
@@ -427,7 +411,7 @@ export class QuestionsService {
 
 				//search the last title on numerosOrdinales
 				const lastTitleIndex = numerosOrdinales.findIndex(
-					(title) => title === lastQuestion?.title,
+					(title) => title === null,
 				);
 
 				const title =
@@ -438,7 +422,6 @@ export class QuestionsService {
 				return this.questionRepository.create({
 					title,
 					sentence: question.sentence,
-					lesson: lesson,
 					points: 10,
 					photo: null,
 					visible: false,
@@ -482,21 +465,10 @@ export class QuestionsService {
 		importationData: ImportQuestionVariableOptionDto,
 		user: User,
 	): Promise<Question[]> {
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id: importationData.lessonId },
-				relations: ['questions'],
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
-		const lastQuestion: Question | undefined =
-			lesson.questions[lesson.questions.length - 1];
-
 		const questionsToSave: Question[] = importationData.questions.map(
 			(question, index) => {
 				const lastTitleIndex = numerosOrdinales.findIndex(
-					(title) => title === lastQuestion?.title,
+					(title) => title === null,
 				);
 
 				const title =
@@ -507,7 +479,6 @@ export class QuestionsService {
 				return this.questionRepository.create({
 					title,
 					sentence: question.sentence,
-					lesson: lesson,
 					points: importationData.points,
 					photo: null,
 					visible: false,

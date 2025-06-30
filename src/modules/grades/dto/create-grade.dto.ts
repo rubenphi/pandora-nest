@@ -12,10 +12,10 @@ export class CreateGradeDto {
 	@ApiProperty({
 		type: Number,
 		nullable: false,
-		description: 'Lesson to add Id',
+		description: 'Quiz to add Id',
 	})
 	@IsInt()
-	readonly lessonId: number;
+	readonly quizId: number;
 	@ApiProperty({
 		type: Number,
 		nullable: false,

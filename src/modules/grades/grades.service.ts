@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Grade } from './grade.entity';
 import { User } from '../users/user.entity';
-import { Lesson } from '../lessons/lesson.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
 import { QueryGradeDto } from './dto/query-grade.dto';
@@ -21,8 +21,8 @@ export class GradesService {
 		private readonly gradeRepository: Repository<Grade>,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
-		@InjectRepository(Lesson)
-		private readonly lessonRepository: Repository<Lesson>,
+		@InjectRepository(Quiz)
+		private readonly quizRepository: Repository<Quiz>,
 		@InjectRepository(Period)
 		private readonly periodRepository: Repository<Period>,
 		@InjectRepository(Institute)
@@ -30,11 +30,11 @@ export class GradesService {
 	) {}
 	async create(createGradeDto: CreateGradeDto): Promise<Grade> {
 		const grade = new Grade();
-		//search grade with same user and lesson
+		//search grade with same user and quiz
 		const gradeExist = await this.gradeRepository.findOne({
 			where: {
 				user: { id: createGradeDto.userId },
-				lesson: { id: createGradeDto.lessonId },
+				quiz: { id: createGradeDto.quizId },
 			},
 		});
 
@@ -46,8 +46,8 @@ export class GradesService {
 		grade.user = await this.userRepository.findOneByOrFail({
 			id: createGradeDto.userId,
 		});
-		grade.lesson = await this.lessonRepository.findOneBy({
-			id: createGradeDto.lessonId,
+		grade.quiz = await this.quizRepository.findOneBy({
+			id: createGradeDto.quizId,
 		});
 		grade.period = await this.periodRepository.findOneBy({
 			id: createGradeDto.periodId,
@@ -62,11 +62,12 @@ export class GradesService {
 		return this.gradeRepository.find({
 			where: {
 				user: { id: queryGrades.userId },
-				lesson: {
-					id: queryGrades.lessonId,
-					area: { id: queryGrades.areaId },
-					year: queryGrades.year,
-					course: { id: queryGrades.courseId },
+				quiz: {
+					id: queryGrades.quizId,
+					lesson: {
+						course: { id: queryGrades.courseId },
+						year: queryGrades.year,
+					},
 				},
 				period: { id: queryGrades.periodId },
 				institute: { id: queryGrades.instituteId },
@@ -75,7 +76,7 @@ export class GradesService {
 						? Between(queryGrades.gradeMin, queryGrades.gradeMax)
 						: undefined,
 			},
-			relations: ['user', 'lesson', 'lesson.area', 'period', 'institute'],
+			relations: ['user', 'quiz', 'quiz.lesson', 'quiz.lesson.course', 'period', 'institute'],
 		});
 	}
 
@@ -83,7 +84,7 @@ export class GradesService {
 		return await this.gradeRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['user', 'lesson', 'period', 'institute'],
+				relations: ['user', 'quiz', 'period', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Grade not found');
@@ -99,12 +100,12 @@ export class GradesService {
 			.catch(() => {
 				throw new NotFoundException('User not found');
 			});
-		const lesson = await this.lessonRepository
+		const quiz = await this.quizRepository
 			.findOneOrFail({
-				where: { id: updateGradeDto.lessonId },
+				where: { id: updateGradeDto.quizId },
 			})
 			.catch(() => {
-				throw new NotFoundException('Lesson not found');
+				throw new NotFoundException('Quiz not found');
 			});
 		const period = await this.periodRepository
 			.findOneOrFail({
@@ -124,7 +125,7 @@ export class GradesService {
 		const grade = await this.gradeRepository.preload({
 			id: id,
 			user: userToGrade,
-			lesson: lesson,
+			quiz: quiz,
 			period: period,
 			grade: updateGradeDto.grade,
 			institute: institute,

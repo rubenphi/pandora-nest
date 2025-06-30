@@ -16,17 +16,17 @@ export class QueryGradeDto {
 
 	@ApiProperty({
 		type: Number,
-		description: 'year to search',
+		description: 'Quiz to search',
 		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
-	readonly year: number;
+	readonly quizId: number;
 
 	@ApiProperty({
 		type: Number,
-		description: 'course to search',
+		description: 'Course to search',
 		required: false,
 	})
 	@IsOptional()
@@ -36,22 +36,14 @@ export class QueryGradeDto {
 
 	@ApiProperty({
 		type: Number,
-		description: 'Area to search',
+		description: 'Year to search',
 		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
-	readonly areaId: number;
-	@ApiProperty({
-		type: Number,
-		description: 'Lesson to search',
-		required: false,
-	})
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	readonly lessonId: number;
+	readonly year: number;
+
 	@ApiProperty({
 		type: Number,
 		description: 'Period to search',

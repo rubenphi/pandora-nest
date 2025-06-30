@@ -12,7 +12,7 @@ import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 import { Option } from '../options/option.entity';
 import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
-import { Lesson } from '../lessons/lesson.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
@@ -28,8 +28,10 @@ export class AnswersService {
 		private readonly questionRepository: Repository<Question>,
 		@InjectRepository(Group)
 		private readonly groupRepository: Repository<Group>,
-		@InjectRepository(Lesson)
-		private readonly lessonRepository: Repository<Lesson>,
+		@InjectRepository(User)
+		private readonly userRepository: Repository<User>,
+		@InjectRepository(Quiz)
+		private readonly quizRepository: Repository<Quiz>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
@@ -39,9 +41,13 @@ export class AnswersService {
 			return await this.answerRepository.find({
 				where: {
 					option: { id: queryAnswer.optionId },
-					question: { id: queryAnswer.questionId },
+					question: {
+						id: queryAnswer.questionId,
+						quiz: {
+							id: queryAnswer.quizId,
+						},
+					},
 					group: { id: queryAnswer.groupId },
-					lesson: { id: queryAnswer.lessonId },
 					exist: queryAnswer.exist,
 					institute: {
 						id:
@@ -50,11 +56,25 @@ export class AnswersService {
 								: user.institute.id,
 					},
 				},
-				relations: ['option', 'question', 'group', 'lesson', 'institute'],
+				relations: [
+					'option',
+					'question',
+					'question.quiz',
+					'group',
+					'user',
+					'institute',
+				],
 			});
 		} else {
 			return await this.answerRepository.find({
-				relations: ['option', 'question', 'group', 'lesson', 'institute'],
+				relations: [
+					'option',
+					'question',
+					'question.quiz',
+					'group',
+					'user',
+					'institute',
+				],
 			});
 		}
 	}
@@ -63,21 +83,20 @@ export class AnswersService {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['option', 'question', 'group', 'lesson', 'institute'],
+				relations: [
+					'option',
+					'question',
+					'question.quiz',
+					'group',
+					'user',
+					'institute',
+				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
 		if (answer.institute.id !== user.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this answer');
-		}
-		if (user.rol === Role.Student) {
-			const courseIndex = user.courses.findIndex(
-				(assignment) => answer.lesson.course.id === assignment.course.id,
-			);
-			if (courseIndex === -1) {
-				throw new ForbiddenException('You are not allowed to see this answer');
-			}
 		}
 		return answer;
 	}
@@ -88,27 +107,45 @@ export class AnswersService {
 		) {
 			throw new ForbiddenException('You are not allowed to create this answer');
 		}
-		if (user.rol === Role.Student) {
-			const groupIndex = user.groups.findIndex(
-				(assignment) =>
-					assignment.group.id === answerDto.groupId && assignment.group.active,
+
+		// Validar que solo se proporcione groupId o userId, no ambos
+		if (answerDto.groupId && answerDto.userId) {
+			throw new BadRequestException('Cannot provide both groupId and userId');
+		}
+
+		let group: Group | undefined;
+		let userEntity: User | undefined;
+
+		const existingAnswerWhere: any = { question: { id: answerDto.questionId } };
+
+		if (answerDto.groupId) {
+			group = await this.groupRepository
+				.findOneOrFail({
+					where: { id: answerDto.groupId },
+				})
+				.catch(() => {
+					throw new NotFoundException('Group not found');
+				});
+			existingAnswerWhere.group = { id: answerDto.groupId };
+		} else if (answerDto.userId) {
+			userEntity = await this.userRepository
+				.findOneOrFail({
+					where: { id: answerDto.userId },
+				})
+				.catch(() => {
+					throw new NotFoundException('User not found');
+				});
+			existingAnswerWhere.user = { id: answerDto.userId };
+		} else {
+			throw new BadRequestException('Must provide either groupId or userId');
+		}
+
+		if (await this.answerRepository.findOne({ where: existingAnswerWhere })) {
+			throw new BadRequestException(
+				'Esta pregunta ya fue respondida por este grupo o usuario',
 			);
-			if (groupIndex === -1) {
-				throw new NotFoundException(
-					'You are not allowed to create this answer',
-				);
-			}
 		}
-		if (
-			await this.answerRepository.findOne({
-				where: {
-					question: { id: answerDto.questionId },
-					group: { id: answerDto.groupId },
-				},
-			})
-		) {
-			throw new BadRequestException('Este grupo ya respondió la pregunta');
-		}
+
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.optionId },
@@ -130,21 +167,6 @@ export class AnswersService {
 				'Debe esperar que la pregunta esté disponible',
 			);
 		}
-		const group: Group = await this.groupRepository
-			.findOneOrFail({
-				where: { id: answerDto.groupId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Group not found');
-			});
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id: answerDto.lessonId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
-
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: answerDto.instituteId },
@@ -158,7 +180,7 @@ export class AnswersService {
 			option,
 			question,
 			group,
-			lesson,
+			user: userEntity,
 			points,
 			institute,
 			exist: answerDto.exist,
@@ -176,19 +198,46 @@ export class AnswersService {
 		) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
-		if (
-			await this.answerRepository.findOne({
-				where: {
-					question: { id: answerDto.questionId },
-					group: { id: answerDto.groupId },
-					id: Not(id),
-				},
-			})
-		) {
+		if (answerDto.groupId && answerDto.userId) {
+			throw new BadRequestException('Cannot provide both groupId and userId');
+		}
+
+		let group: Group | undefined;
+		let userEntity: User | undefined;
+
+		const existingAnswerWhere: any = {
+			question: { id: answerDto.questionId },
+			id: Not(id),
+		};
+
+		if (answerDto.groupId) {
+			group = await this.groupRepository
+				.findOneOrFail({
+					where: { id: answerDto.groupId },
+				})
+				.catch(() => {
+					throw new NotFoundException('Group not found');
+				});
+			existingAnswerWhere.group = { id: answerDto.groupId };
+		} else if (answerDto.userId) {
+			userEntity = await this.userRepository
+				.findOneOrFail({
+					where: { id: answerDto.userId },
+				})
+				.catch(() => {
+					throw new NotFoundException('User not found');
+				});
+			existingAnswerWhere.user = { id: answerDto.userId };
+		} else {
+			throw new BadRequestException('Must provide either groupId or userId');
+		}
+
+		if (await this.answerRepository.findOne({ where: existingAnswerWhere })) {
 			throw new BadRequestException(
-				'This group already answered this question',
+				'Esta pregunta ya fue respondida por este grupo o usuario',
 			);
 		}
+
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id: answerDto.optionId },
@@ -203,20 +252,6 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
-		const group: Group = await this.groupRepository
-			.findOneOrFail({
-				where: { id: answerDto.groupId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Group not found');
-			});
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id: answerDto.lessonId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: answerDto.instituteId },
@@ -230,7 +265,7 @@ export class AnswersService {
 			option,
 			question,
 			group,
-			lesson,
+			user: userEntity,
 			institute,
 			exist: answerDto.exist,
 		});

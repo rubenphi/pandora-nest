@@ -6,12 +6,13 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinTable,
+	JoinColumn,
 } from 'typeorm';
 
 import { User } from '../users/user.entity';
-import { Lesson } from '../lessons/lesson.entity';
 import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 
 @Entity()
 export class Grade {
@@ -22,9 +23,9 @@ export class Grade {
 	@JoinTable({ name: 'userId' })
 	user: User;
 
-	@ManyToOne(() => Lesson)
-	@JoinTable({ name: 'lessonId' })
-	lesson: Lesson;
+	@ManyToOne(() => Quiz, (quiz) => quiz.grades)
+	@JoinColumn({ name: 'quizId' })
+	quiz: Quiz;
 
 	@ManyToOne(() => Period)
 	@JoinTable({ name: 'periodId' })
@@ -33,8 +34,8 @@ export class Grade {
 	@Column({ nullable: false, type: 'float', default: 0 })
 	grade: number;
 
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.grades)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 
 	@Column({ nullable: false, default: true })
@@ -46,4 +47,3 @@ export class Grade {
 	@UpdateDateColumn()
 	updatedAt: Date;
 }
-//id, user, lesson, period, grade, institute, created_at, updated_at

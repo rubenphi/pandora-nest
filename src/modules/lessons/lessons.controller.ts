@@ -10,20 +10,12 @@ import {
 } from '@nestjs/common';
 import { Lesson } from './lesson.entity';
 import { LessonsService } from './lessons.service';
-import { Answer } from '../answers/answer.entity';
-import { Question } from '../questions/question.entity';
-import {
-	CreateLessonDto,
-	UpdateLessonDto,
-	QueryLessonDto,
-	ResultLessonDto,
-	ImportFromLessonDto,
-} from './dto';
+import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
-import { ImportQuestionsMixDto } from './dto/import-from-lesson-mix.dto';
+import { Quiz } from '../quizzes/quiz.entity';
 
 @ApiTags('Lessons Routes')
 @Controller('lessons')
@@ -76,64 +68,11 @@ export class LessonsController {
 	}
 
 	@Auth()
-	@Get(':id')
-	getLessonResult(
+	@Get(':id/quizzes')
+	getQuizzesByLesson(
 		@Param('id') id: number,
 		@User() user: UserEntity,
-	): Promise<ResultLessonDto[]> {
-		return this.lessonService.getResultLesson(id, user);
-	}
-
-	@Auth()
-	@Get(':id/answers')
-	getAnswersByLesson(
-		@Param('id') id: number,
-		@User() user: UserEntity,
-	): Promise<Answer[]> {
-		return this.lessonService.getAnswersByLesson(id, user);
-	}
-
-	@Auth() @Get(':id/results') getResultsByLesson(
-		@Param('id') id: number,
-		@User() user: UserEntity,
-	): Promise<ResultLessonDto[]> {
-		return this.lessonService.getResultLesson(id, user);
-	}
-
-	@Auth()
-	@Get(':id/questions')
-	getQuestionsByLesson(
-		@Param('id') id: number,
-		@User() user: UserEntity,
-	): Promise<Partial<Question>[]> {
-		return this.lessonService.getQuestionsByLesson(id, user);
-	}
-
-	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
-	@Auth()
-	@Patch(':id/questions/import')
-	importQuestionsToLesson(
-		@Param('id') id: number,
-		@Body() importFromLessonDto: ImportFromLessonDto,
-	): Promise<Question[]> {
-		return this.lessonService.importQuestionsToLesson(id, importFromLessonDto);
-	}
-
-	@Patch('questions/import-mix')
-	importQuestionsToLessonMix(
-		@Body() importFromQuestionMixDto: ImportQuestionsMixDto,
-	): Promise<Question[]> {
-		return this.lessonService.importQuestionsToLessonMix(
-			importFromQuestionMixDto,
-		);
-	}
-
-	@Auth()
-	@Get(':id/points')
-	getPointsByLesson(
-		@Param('id') id: number,
-		@User() user: UserEntity,
-	): Promise<{ points: number }> {
-		return this.lessonService.getPointsByLesson(id, user);
+	): Promise<Quiz[]> {
+		return this.lessonService.getQuizzesByLesson(id, user);
 	}
 }

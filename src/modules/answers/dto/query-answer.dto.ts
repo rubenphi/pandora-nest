@@ -28,13 +28,14 @@ export class QueryAnswerDto {
 	@IsInt()
 	readonly groupId?: number;
 	@ApiProperty({
-		description: 'Search answer using lesson id',
+		description: 'Search answer using quiz id',
 		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
-	readonly lessonId?: number;
+	readonly quizId?: number;
+
 	@ApiProperty({
 		description: 'Institute id of query',
 		required: false,

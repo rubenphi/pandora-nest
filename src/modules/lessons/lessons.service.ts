@@ -9,24 +9,22 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
-import {
-	CreateLessonDto,
-	UpdateLessonDto,
-	QueryLessonDto,
-	ResultLessonDto,
-} from './dto';
+import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
 import { Lesson } from './lesson.entity';
 import { Course } from '../courses/course.entity';
-import { Answer } from '../answers/answer.entity';
-import { Question } from '../questions/question.entity';
 import { Area } from '../areas/area.entity';
 import { Institute } from '../institutes/institute.entity';
 import { ImportFromLessonDto } from './dto/import-from-lesson.dto';
-import { Option } from '../options/option.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
 import { Period } from '../periods/period.entity';
 import { ImportQuestionsMixDto } from './dto/import-from-lesson-mix.dto';
+import { ActivitiesService } from '../activities/activities.service';
+import { QuizzesService } from '../quizzes/quizzes.service';
+import { MaterialsService } from '../materials/materials.service';
+import { ContentType } from '../lesson-items/lesson-item.entity';
+import { LessonItem } from '../lesson-items/lesson-item.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 
 @Injectable()
 export class LessonsService {
@@ -39,12 +37,11 @@ export class LessonsService {
 		private readonly areaRepository: Repository<Area>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
-		@InjectRepository(Question)
-		private readonly questionRepository: Repository<Question>,
-		@InjectRepository(Option)
-		private readonly optionRepository: Repository<Option>,
 		@InjectRepository(Period)
 		private readonly periodRepository: Repository<Period>,
+		private readonly activitiesService: ActivitiesService,
+		private readonly quizzesService: QuizzesService,
+		private readonly materialsService: MaterialsService,
 	) {}
 
 	async getLessons(queryLesson: QueryLessonDto): Promise<Lesson[]> {
@@ -73,14 +70,44 @@ export class LessonsService {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course', 'area', 'author', 'period', 'institute'],
+				relations: ['course', 'area', 'author', 'period', 'institute', 'items'],
+				order: { items: { order: 'ASC' } }, // Asegura que los items estén ordenados
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
 
+		if (user.institute.id !== lesson.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this lesson');
+		}
+
+		// Resolver el contenido de cada LessonItem
+		const resolvedItems = await Promise.all(
+			lesson.items.map(async (item: LessonItem) => {
+				let content: any;
+				switch (item.contentType) {
+					case ContentType.QUIZ:
+						content = await this.quizzesService.findOne(item.contentId);
+						break;
+					case ContentType.ACTIVITY:
+						content = await this.activitiesService.findOne(item.contentId);
+						break;
+					case ContentType.MATERIAL:
+						content = await this.materialsService.findOne(item.contentId);
+						break;
+					default:
+						content = null; // O manejar un error si el tipo no es reconocido
+				}
+				return { ...item, content }; // Adjuntar el contenido resuelto al item
+			}),
+		);
+
+		// Reemplazar los items originales con los items resueltos
+		(lesson as any).items = resolvedItems;
+
 		return lesson;
 	}
+
 	async createLesson(lessonDto: CreateLessonDto, user: User): Promise<Lesson> {
 		if (user.institute.id !== lessonDto.instituteId) {
 			throw new ForbiddenException(
@@ -209,263 +236,27 @@ export class LessonsService {
 		this.lessonRepository.remove(lesson);
 	}
 
-	async getAnswersByLesson(id: number, user: User): Promise<Answer[]> {
+	async getQuizzesByLesson(id: number, user: User): Promise<Quiz[]> {
 		const lesson: Lesson = await this.lessonRepository
 			.findOneOrFail({
-				where: { id, exist: true },
+				where: { id },
 				relations: [
-					'answers',
-					'answers.option',
-					'answers.question',
-					'answers.group',
-					'answers.option',
+					'quizzes',
+					'quizzes.institute',
 					'institute',
+					'quizzes.lesson',
 				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Lesson not found');
 			});
+
 		if (user.institute.id !== lesson.institute.id) {
-			throw new ForbiddenException('You are not allowed to see this lesson');
-		}
-		return lesson.answers;
-	}
-
-	async getQuestionsByLesson(
-		id: number,
-		user: User,
-	): Promise<Partial<Question>[]> {
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id, exist: true },
-				relations: ['questions', 'questions.options'],
-				order: { questions: { id: 'asc' } },
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
-
-		return lesson.questions.map((question) => ({
-			id: question.id,
-			title: question.title,
-			sentence: question.sentence,
-			options: question.options,
-			available: question.available,
-			visible: question.visible,
-			exist: question.exist,
-		}));
-	}
-
-	async getResultLesson(id: number, user: User): Promise<ResultLessonDto[]> {
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id },
-				relations: [
-					'answers',
-					'answers.option',
-					'answers.question',
-					'answers.group',
-					'answers.option',
-					'institute',
-				],
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
-		if (user.institute.id !== lesson.institute.id) {
-			throw new ForbiddenException('You are not allowed to see this lesson');
-		}
-
-		const resultLesson = [];
-
-		lesson.answers.reduce((res, value) => {
-			if (!res[value.group.id]) {
-				res[value.group.id] = { group: value.group, points: 0 };
-				resultLesson.push(res[value.group.id]);
-			}
-			if (typeof value.points === 'number') {
-				value.points = value.points;
-			} else {
-				value.points = parseFloat(value.points);
-			}
-			res[value.group.id].points += value.points;
-
-			return res;
-		}, {});
-		return resultLesson.sort((a, b) => b.points - a.points);
-	}
-
-	async importQuestionsToLesson(
-		id: number,
-		importFromLessonDto: ImportFromLessonDto,
-	): Promise<Question[]> {
-		const fromLesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				relations: ['questions', 'questions.options'],
-				where: { id: importFromLessonDto.fromLessonId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Question origin not found');
-			});
-
-		const toLesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				relations: ['questions', 'institute'],
-				where: { id },
-			})
-			.catch(() => {
-				throw new NotFoundException('Question destiny not found');
-			});
-
-		if (toLesson.questions.length) {
-			throw new BadRequestException(
-				`You can only import options to a question that doesn't have them`,
+			throw new ForbiddenException(
+				'You are not allowed to see quizzes from this lesson',
 			);
-		} else {
-			// Copiar y ordenar las preguntas por ID
-			const questions = [...fromLesson.questions].sort((a, b) => a.id - b.id);
-
-			for (const question of questions) {
-				try {
-					const questionToSave: Question = this.questionRepository.create({
-						available: false,
-						exist: question.exist,
-						institute: toLesson.institute,
-						lesson: toLesson,
-						sentence: question.sentence,
-						photo: question.photo,
-						points: question.points,
-						title: question.title,
-						visible: false,
-					});
-
-					const questionSaved = await this.questionRepository.save(
-						questionToSave,
-					);
-
-					for (const option of question.options.sort((a, b) => a.id - b.id)) {
-						const optionToSave: Option = this.optionRepository.create({
-							correct: option.correct,
-							exist: option.exist,
-							question: questionSaved,
-							sentence: option.sentence,
-							identifier: option.identifier,
-							institute: toLesson.institute,
-						});
-
-						await this.optionRepository.save(optionToSave);
-					}
-				} catch (error) {
-					if (error instanceof QueryFailedError) {
-						const errorCode = (error as any).code;
-
-						switch (errorCode) {
-							case '23505': // PostgreSQL
-							case '1062': // MySQL y MariaDB
-								throw new ConflictException('Este registro ya existe.');
-							default:
-								throw new InternalServerErrorException('Database error.');
-						}
-					} else {
-						throw new InternalServerErrorException('Unknown error.');
-					}
-				}
-			}
-
-			// Devuelve las preguntas de la nueva lección
-			return (
-				await this.lessonRepository.findOne({
-					relations: ['questions.lesson'],
-					where: { id },
-				})
-			).questions;
-		}
-	}
-
-	async importQuestionsToLessonMix(
-		dto: ImportQuestionsMixDto,
-	): Promise<Question[]> {
-		const toLesson = await this.lessonRepository.findOneOrFail({
-			where: { id: dto.toLessonId },
-			relations: ['questions', 'institute'],
-		});
-
-		for (const { id, title } of dto.questions) {
-			// Verifica si ya existe una pregunta con el mismo título en la lección destino
-			const alreadyExists = await this.questionRepository.findOne({
-				where: {
-					lesson: { id: dto.toLessonId },
-					title,
-				},
-			});
-
-			if (alreadyExists) {
-				continue; // Evita duplicación
-			}
-
-			// Consulta la pregunta original con sus opciones
-			const question = await this.questionRepository.findOneOrFail({
-				where: { id },
-				relations: ['options'],
-			});
-
-			// Crea una nueva pregunta con campos válidos
-			const newQuestion = this.questionRepository.create({
-				title,
-				sentence: question.sentence,
-				points: question.points,
-				photo: question.photo,
-				lesson: toLesson,
-				institute: toLesson.institute,
-				visible: false,
-				available: false,
-				exist: true,
-			});
-
-			const savedQuestion = await this.questionRepository.save(newQuestion);
-
-			// Crea nuevas opciones solo con campos válidos
-			for (const option of question.options) {
-				const newOption = this.optionRepository.create({
-					identifier: option.identifier,
-					sentence: option.sentence,
-					correct: option.correct,
-					exist: true,
-					question: savedQuestion,
-					institute: toLesson.institute,
-				});
-
-				await this.optionRepository.save(newOption);
-			}
 		}
 
-		// Cargar las preguntas con sus opciones asociadas
-		const updatedLesson = await this.lessonRepository.findOneOrFail({
-			where: { id: dto.toLessonId },
-			relations: ['questions', 'questions.options'],
-		});
-
-		return updatedLesson.questions;
-	}
-
-	async getPointsByLesson(id: number, user: User): Promise<{ points: number }> {
-		const lesson: Lesson = await this.lessonRepository
-			.findOneOrFail({
-				where: { id },
-				relations: ['institute', 'questions'],
-			})
-			.catch(() => {
-				throw new NotFoundException('Lesson not found');
-			});
-		if (user.institute.id !== lesson.institute.id) {
-			throw new ForbiddenException('You are not allowed to see this lesson');
-		}
-
-		const points = lesson.questions.reduce(
-			(res, value) => res + value.points,
-			0,
-		);
-
-		return { points };
+		return lesson.quizzes;
 	}
 }

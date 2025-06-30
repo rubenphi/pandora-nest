@@ -11,6 +11,7 @@ import {
 import { Course } from '../courses/course.entity';
 import { Area } from '../areas/area.entity';
 import { User } from './user.entity';
+import { Institute } from '../institutes/institute.entity';
 
 @Entity()
 export class UserToCourse {
@@ -26,6 +27,7 @@ export class UserToCourse {
 	@ManyToOne(() => User, (user) => user.courses)
 	@JoinColumn({ name: 'userId' })
 	user: User;
+
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

@@ -51,14 +51,16 @@ export class QueryQuestionDto {
 	})
 	@IsBoolean()
 	readonly available?: boolean;
+
 	@ApiProperty({
-		description: 'Search the questions using the lesson´s id',
+		description: 'Quiz id of question',
 		required: false,
 	})
 	@IsOptional()
 	@Type(() => Number)
 	@IsInt()
-	readonly lessonId?: number;
+	readonly quizId: number;
+	
 	@ApiProperty({
 		description: 'Institute id of question',
 		required: false,

@@ -8,6 +8,7 @@ import {
 	ManyToMany,
 	JoinTable,
 	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
 
 import { Group } from 'src/modules/groups/group.entity';
@@ -22,8 +23,8 @@ export class Course {
 	id: number;
 	@Column({ nullable: false })
 	name: string;
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.courses)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@ManyToMany(() => Area)
 	@JoinTable()

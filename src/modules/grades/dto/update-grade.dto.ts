@@ -10,10 +10,10 @@ export class UpdateGradeDto {
 	readonly userId: number;
 	@ApiProperty({
 		type: Number,
-		description: 'Lesson to add Id',
+		description: 'Quiz to add Id',
 	})
 	@IsInt()
-	readonly lessonId: number;
+	readonly quizId: number;
 	@ApiProperty({
 		type: Number,
 		description: 'Period to add Id',

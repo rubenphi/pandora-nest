@@ -29,8 +29,8 @@ export class Option {
 	})
 	@JoinColumn({ name: 'questionId' })
 	question: Question;
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.options)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@OneToMany(() => Answer, (answer) => answer.option)
 	answers: Answer[];

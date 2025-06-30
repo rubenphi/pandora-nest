@@ -11,8 +11,9 @@ import {
 import { Option } from 'src/modules/options/option.entity';
 import { Question } from 'src/modules/questions/question.entity';
 import { Group } from 'src/modules/groups/group.entity';
-import { Lesson } from 'src/modules/lessons/lesson.entity';
+import { User } from 'src/modules/users/user.entity';
 import { Institute } from '../institutes/institute.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 
 @Entity()
 export class Answer {
@@ -27,17 +28,27 @@ export class Answer {
 	@JoinColumn({ name: 'questionId' })
 	question: Question;
 
+	@ManyToOne(() => Quiz, (quiz) => quiz.answers, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: 'quizId' })
+	quiz: Quiz;
+
 	@ManyToOne(() => Institute, (institute) => institute.answers, {
 		onDelete: 'CASCADE',
 	})
 	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
-	@ManyToOne(() => Group, (group) => group.answers, { onDelete: 'CASCADE' })
+	@ManyToOne(() => Group, (group) => group.answers, {
+		onDelete: 'CASCADE',
+		nullable: true,
+	})
 	@JoinColumn({ name: 'groupId' })
 	group: Group;
-	@ManyToOne(() => Lesson, (lesson) => lesson.answers, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'lessonId' })
-	lesson: Lesson;
+	@ManyToOne(() => User, (user) => user.answers, {
+		onDelete: 'CASCADE',
+		nullable: true,
+	})
+	@JoinColumn({ name: 'userId' })
+	user: User;
 	@Column({
 		nullable: false,
 		type: 'decimal',

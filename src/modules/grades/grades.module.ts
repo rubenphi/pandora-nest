@@ -7,9 +7,12 @@ import { User } from '../users/user.entity';
 import { Lesson } from '../lessons/lesson.entity';
 import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Grade, User, Lesson, Period, Institute])],
+	imports: [
+		TypeOrmModule.forFeature([Grade, User, Lesson, Quiz, Period, Institute]),
+	],
 	controllers: [GradesController],
 	providers: [GradesService],
 })

@@ -7,6 +7,7 @@ import {
 	OneToMany,
 	JoinTable,
 	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
 
 import { Lesson } from 'src/modules/lessons/lesson.entity';
@@ -24,8 +25,8 @@ export class Period {
 	exist: boolean;
 	@OneToMany(() => Lesson, (lesson) => lesson.period)
 	lessons: Lesson[];
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.periods)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@OneToMany(() => Group, (group) => group.period)
 	groups: Group[];

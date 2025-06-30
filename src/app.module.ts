@@ -18,6 +18,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { InstitutesModule } from './modules/institutes/institutes.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { GradesModule } from './modules/grades/grades.module';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { ActivitiesModule } from './modules/activities/activities.module';
+import { CriteriaModule } from './modules/criteria/criteria.module';
+import { MaterialsModule } from './modules/materials/materials.module';
+import { LessonItemsModule } from './modules/lesson-items/lesson-items.module';
 
 import * as dotenv from 'dotenv';
 
@@ -51,6 +56,11 @@ dotenv.config();
 		InstitutesModule,
 		InvitationsModule,
 		GradesModule,
+		QuizzesModule,
+		ActivitiesModule,
+		CriteriaModule,
+		MaterialsModule,
+		LessonItemsModule,
 	],
 })
 export class AppModule {

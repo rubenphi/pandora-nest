@@ -10,7 +10,7 @@ import {
 	JoinTable,
 } from 'typeorm';
 
-import { Lesson } from 'src/modules/lessons/lesson.entity';
+import { Quiz } from '../quizzes/quiz.entity';
 import { Option } from 'src/modules/options/option.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { Institute } from '../institutes/institute.entity';
@@ -23,13 +23,13 @@ export class Question {
 	title: string;
 	@Column({ nullable: false })
 	sentence: string;
-	@ManyToOne(() => Lesson, (lesson) => lesson.questions, {
+	@ManyToOne(() => Quiz, (quiz) => quiz.questions, {
 		onDelete: 'CASCADE',
 	})
-	@JoinColumn({ name: 'lessonId' })
-	lesson: Lesson;
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@JoinColumn({ name: 'quizId' })
+	quiz: Quiz;
+	@ManyToOne(() => Institute, (institute) => institute.questions)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@OneToMany(() => Answer, (answer) => answer.question)
 	answers: Answer[];

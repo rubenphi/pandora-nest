@@ -12,11 +12,12 @@ import {
 
 import { Course } from 'src/modules/courses/course.entity';
 import { Question } from 'src/modules/questions/question.entity';
-import { Answer } from 'src/modules/answers/answer.entity';
 import { Area } from 'src/modules/areas/area.entity';
 import { User } from 'src/modules/users/user.entity';
 import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
+import { LessonItem } from '../lesson-items/lesson-item.entity';
+import { Quiz } from 'src/modules/quizzes/quiz.entity';
 
 @Entity()
 export class Lesson {
@@ -28,8 +29,8 @@ export class Lesson {
 	year: number;
 	@Column({ nullable: false })
 	date: Date;
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.lessons)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@ManyToOne(() => Course, (course) => course.lessons, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'courseId' })
@@ -43,10 +44,10 @@ export class Lesson {
 	@ManyToOne(() => User, (user) => user.lessons, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'userId' })
 	author: User;
-	@OneToMany(() => Question, (question) => question.lesson)
-	questions: Question[];
-	@OneToMany(() => Answer, (answer) => answer.lesson)
-	answers: Answer[];
+	@OneToMany(() => LessonItem, (item) => item.lesson)
+	items: LessonItem[];
+	@OneToMany(() => Quiz, (quiz) => quiz.lesson)
+	quizzes: Quiz[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

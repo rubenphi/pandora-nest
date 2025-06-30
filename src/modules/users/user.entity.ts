@@ -13,6 +13,7 @@ import {
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
+import { Answer } from 'src/modules/answers/answer.entity';
 import { hash } from 'bcryptjs';
 import { Institute } from '../institutes/institute.entity';
 //estamos en autenticacion
@@ -43,6 +44,8 @@ export class User {
 	courses: UserToCourse[];
 	@OneToMany(() => UserToGroup, (userToGroup) => userToGroup.user)
 	groups: UserToGroup[];
+	@OneToMany(() => Answer, (answer) => answer.user)
+	answers: Answer[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

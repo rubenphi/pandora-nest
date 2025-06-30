@@ -21,12 +21,14 @@ export class UpdateAnswerDto {
 	@IsInt()
 	@IsOptional()
 	readonly groupId: number;
+
 	@ApiProperty({
-		description: 'Lesson´s id of answer',
+		description: 'User´s id of answer',
 	})
 	@IsInt()
 	@IsOptional()
-	readonly lessonId: number;
+	readonly userId: number;
+
 	@ApiProperty({
 		description: 'Points of answer',
 	})

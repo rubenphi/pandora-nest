@@ -6,6 +6,7 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinTable,
+	JoinColumn,
 } from 'typeorm';
 
 
@@ -20,8 +21,8 @@ export class Invitation {
 	code: string;
 	@Column({ nullable: false })
 	expirationDate: string;
-	@ManyToOne(() => Institute)
-	@JoinTable({ name: 'instituteId' })
+	@ManyToOne(() => Institute, (institute) => institute.invitations)
+	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
 	@Column({ nullable: false })
 	valid: boolean;
