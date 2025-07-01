@@ -108,26 +108,30 @@ export class AnswersService {
 			throw new ForbiddenException('You are not allowed to create this answer');
 		}
 
-		// Validar que solo se proporcione groupId o userId, no ambos
-		if (answerDto.groupId && answerDto.userId) {
-			throw new BadRequestException('Cannot provide both groupId and userId');
-		}
+		let existingAnswerWhere: Answer | null = null;
+
+		const quiz: Quiz = await this.quizRepository
+			.findOneOrFail({
+				where: { id: answerDto.quizId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
 
 		let group: Group | undefined;
 		let userEntity: User | undefined;
 
-		const existingAnswerWhere: any = { question: { id: answerDto.questionId } };
-
-		if (answerDto.groupId) {
-			group = await this.groupRepository
-				.findOneOrFail({
-					where: { id: answerDto.groupId },
-				})
-				.catch(() => {
-					throw new NotFoundException('Group not found');
-				});
-			existingAnswerWhere.group = { id: answerDto.groupId };
-		} else if (answerDto.userId) {
+		if (quiz.quizType === 'individual') {
+			if (!answerDto.userId) {
+				throw new BadRequestException(
+					'For individual quizzes, userId is required.',
+				);
+			}
+			if (answerDto.groupId) {
+				throw new BadRequestException(
+					'For individual quizzes, groupId should not be provided.',
+				);
+			}
 			userEntity = await this.userRepository
 				.findOneOrFail({
 					where: { id: answerDto.userId },
@@ -135,14 +139,54 @@ export class AnswersService {
 				.catch(() => {
 					throw new NotFoundException('User not found');
 				});
-			existingAnswerWhere.user = { id: answerDto.userId };
+			existingAnswerWhere = await this.answerRepository.findOne({
+				where: {
+					question: { id: answerDto.questionId },
+
+					user: { id: answerDto.userId },
+					exist: true,
+				},
+			});
+		} else if (quiz.quizType === 'group') {
+			if (!answerDto.userId) {
+				throw new BadRequestException('For group quizzes, userId is required.');
+			}
+			if (!answerDto.groupId) {
+				throw new BadRequestException(
+					'For group quizzes, groupId is required.',
+				);
+			}
+			userEntity = await this.userRepository
+				.findOneOrFail({
+					where: { id: answerDto.userId },
+				})
+				.catch(() => {
+					throw new NotFoundException('User not found');
+				});
+			group = await this.groupRepository
+				.findOneOrFail({
+					where: { id: answerDto.groupId },
+				})
+				.catch(() => {
+					throw new NotFoundException('Group not found');
+				});
+
+			existingAnswerWhere = await this.answerRepository.findOne({
+				where: {
+					question: { id: answerDto.questionId },
+
+					group: { id: answerDto.groupId },
+
+					exist: true,
+				},
+			});
 		} else {
-			throw new BadRequestException('Must provide either groupId or userId');
+			throw new BadRequestException('Invalid quiz type.');
 		}
 
-		if (await this.answerRepository.findOne({ where: existingAnswerWhere })) {
+		if (existingAnswerWhere) {
 			throw new BadRequestException(
-				'Esta pregunta ya fue respondida por este grupo o usuario',
+				'Esta pregunta ya fue respondida por este grupo o usuario en este quiz',
 			);
 		}
 
@@ -182,6 +226,7 @@ export class AnswersService {
 			group,
 			user: userEntity,
 			points,
+			quiz,
 			institute,
 			exist: answerDto.exist,
 		});
@@ -198,28 +243,32 @@ export class AnswersService {
 		) {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
-		if (answerDto.groupId && answerDto.userId) {
-			throw new BadRequestException('Cannot provide both groupId and userId');
-		}
+		const quiz: Quiz = await this.quizRepository
+			.findOneOrFail({
+				where: { id: answerDto.quizId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
 
 		let group: Group | undefined;
 		let userEntity: User | undefined;
-
 		const existingAnswerWhere: any = {
 			question: { id: answerDto.questionId },
-			id: Not(id),
+			quiz: { id: answerDto.quizId },
 		};
 
-		if (answerDto.groupId) {
-			group = await this.groupRepository
-				.findOneOrFail({
-					where: { id: answerDto.groupId },
-				})
-				.catch(() => {
-					throw new NotFoundException('Group not found');
-				});
-			existingAnswerWhere.group = { id: answerDto.groupId };
-		} else if (answerDto.userId) {
+		if (quiz.quizType === 'individual') {
+			if (!answerDto.userId) {
+				throw new BadRequestException(
+					'For individual quizzes, userId is required.',
+				);
+			}
+			if (answerDto.groupId) {
+				throw new BadRequestException(
+					'For individual quizzes, groupId should not be provided.',
+				);
+			}
 			userEntity = await this.userRepository
 				.findOneOrFail({
 					where: { id: answerDto.userId },
@@ -228,13 +277,39 @@ export class AnswersService {
 					throw new NotFoundException('User not found');
 				});
 			existingAnswerWhere.user = { id: answerDto.userId };
+		} else if (quiz.quizType === 'group') {
+			if (!answerDto.userId) {
+				throw new BadRequestException('For group quizzes, userId is required.');
+			}
+			if (!answerDto.groupId) {
+				throw new BadRequestException(
+					'For group quizzes, groupId is required.',
+				);
+			}
+			userEntity = await this.userRepository
+				.findOneOrFail({
+					where: { id: answerDto.userId },
+				})
+				.catch(() => {
+					throw new NotFoundException('User not found');
+				});
+			group = await this.groupRepository
+				.findOneOrFail({
+					where: { id: answerDto.groupId },
+				})
+				.catch(() => {
+					throw new NotFoundException('Group not found');
+				});
+			existingAnswerWhere.group = { id: answerDto.groupId };
 		} else {
-			throw new BadRequestException('Must provide either groupId or userId');
+			throw new BadRequestException('Invalid quiz type.');
 		}
 
 		if (await this.answerRepository.findOne({ where: existingAnswerWhere })) {
 			throw new BadRequestException(
-				'Esta pregunta ya fue respondida por este grupo o usuario',
+				`Esta pregunta ya fue respondida por este ${
+					quiz.quizType === 'individual' ? 'usuario' : 'grupo'
+				} en este quiz.`,
 			);
 		}
 
@@ -309,7 +384,6 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Answer not found');
 			});
-		console.log(answer);
 
 		if (user.rol !== Role.Admin && user.institute.id !== answer.institute.id) {
 			throw new ForbiddenException('You are not allowed to update this answer');

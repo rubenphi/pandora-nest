@@ -24,6 +24,11 @@ export class CreateAnswerDto {
 	readonly userId: number;
 
 	@ApiProperty({
+		description: 'Quiz´s id of answer',
+	})
+	@IsInt()
+	readonly quizId: number;
+	@ApiProperty({
 		description: 'Institute id of answer',
 	})
 	@IsInt()

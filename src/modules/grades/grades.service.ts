@@ -76,7 +76,14 @@ export class GradesService {
 						? Between(queryGrades.gradeMin, queryGrades.gradeMax)
 						: undefined,
 			},
-			relations: ['user', 'quiz', 'quiz.lesson', 'quiz.lesson.course', 'period', 'institute'],
+			relations: [
+				'user',
+				'quiz',
+				'quiz.lesson',
+				'quiz.lesson.course',
+				'period',
+				'institute',
+			],
 		});
 	}
 

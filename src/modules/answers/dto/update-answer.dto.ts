@@ -30,6 +30,12 @@ export class UpdateAnswerDto {
 	readonly userId: number;
 
 	@ApiProperty({
+		description: 'Quiz´s id of answer',
+	})
+	@IsInt()
+	@IsOptional()
+	readonly quizId: number;
+	@ApiProperty({
 		description: 'Points of answer',
 	})
 	@IsNumber()

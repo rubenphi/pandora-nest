@@ -446,13 +446,13 @@ export class QuestionsService {
 					return option;
 				});
 
-				optionsForQuestion.forEach((option, optionIndex) => {
+				/* 	optionsForQuestion.forEach((option, optionIndex) => {
 					console.log(
 						`Option ${optionIndex + 1} for question ${option.question.id}: ${
 							option.sentence
 						}, Correct: ${option.correct}`,
 					);
-				});
+				}); */
 
 				return optionsForQuestion;
 			},

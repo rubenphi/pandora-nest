@@ -85,7 +85,6 @@ export class InvitationsService {
 				'You must specify both initialDate and finalDate',
 			);
 		}
-		console.log(JSON.stringify(queryInvitation));
 
 		if (queryInvitation) {
 			return await this.invitationRepository.find({

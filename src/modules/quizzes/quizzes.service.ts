@@ -237,6 +237,7 @@ export class QuizzesService {
 					'answers.option',
 					'answers.question',
 					'answers.group',
+					'answers.user',
 					'answers.option',
 					'institute',
 				],
@@ -250,20 +251,39 @@ export class QuizzesService {
 
 		const resultQuiz = [];
 
-		quiz.answers.reduce((res, value) => {
-			if (!res[value.group.id]) {
-				res[value.group.id] = { group: value.group, points: 0 };
-				resultQuiz.push(res[value.group.id]);
-			}
-			if (typeof value.points === 'number') {
-				value.points = value.points;
-			} else {
-				value.points = parseFloat(value.points);
-			}
-			res[value.group.id].points += value.points;
+		if (quiz.quizType === 'individual') {
+			quiz.answers.reduce((res, value) => {
+				if (!res[value.user.id]) {
+					res[value.user.id] = { user: value.user, points: 0 };
+					resultQuiz.push(res[value.user.id]);
+				}
+				if (typeof value.points === 'number') {
+					value.points = value.points;
+				} else {
+					value.points = parseFloat(value.points);
+				}
+				res[value.user.id].points += value.points;
 
-			return res;
-		}, {});
+				return res;
+			}, {});
+		}
+
+		if (quiz.quizType === 'group') {
+			quiz.answers.reduce((res, value) => {
+				if (!res[value.group.id]) {
+					res[value.group.id] = { group: value.group, points: 0 };
+					resultQuiz.push(res[value.group.id]);
+				}
+				if (typeof value.points === 'number') {
+					value.points = value.points;
+				} else {
+					value.points = parseFloat(value.points);
+				}
+				res[value.group.id].points += value.points;
+
+				return res;
+			}, {});
+		}
 		return resultQuiz.sort((a, b) => b.points - a.points);
 	}
 

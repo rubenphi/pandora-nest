@@ -27,6 +27,9 @@ export class Grade {
 	@JoinColumn({ name: 'quizId' })
 	quiz: Quiz;
 
+	@Column({ type: 'enum', enum: ['regular', 'support'], default: 'regular' })
+	gradeType: 'regular' | 'support';
+
 	@ManyToOne(() => Period)
 	@JoinTable({ name: 'periodId' })
 	period: Period;
