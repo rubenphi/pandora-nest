@@ -374,71 +374,146 @@ export class QuizzesService {
 		}
 	}
 
-	async importQuestionsToQuizMix(
-		dto: ImportQuestionsMixDto,
-	): Promise<Question[]> {
-		const toQuiz = await this.quizRepository.findOneOrFail({
-			where: { id: dto.toLessonId },
-			relations: ['questions', 'institute'],
-		});
+	import { In } from 'typeorm';
 
-		for (const { id, title } of dto.questions) {
-			// Verifica si ya existe una pregunta con el mismo título en la lección destino
-			const alreadyExists = await this.questionRepository.findOne({
-				where: {
-					quiz: { id: dto.toLessonId },
-					title,
-				},
+
+// Versión alternativa con mejor manejo de errores y logging
+async importQuestionsToQuizMix(
+	dto: ImportQuestionsMixDto,
+): Promise<{
+	questions: Question[];
+	summary: {
+		total: number;
+		imported: number;
+		skipped: number;
+		errors: number;
+	};
+	details: {
+		imported: { id: string; title: string }[];
+		skipped: { id: string; title: string; reason: string }[];
+		errors: { id: string; title: string; error: string }[];
+	};
+}> {
+	const result = {
+		questions: [] as Question[],
+		summary: { total: 0, imported: 0, skipped: 0, errors: 0 },
+		details: {
+			imported: [] as { id: string; title: string }[],
+			skipped: [] as { id: string; title: string; reason: string }[],
+			errors: [] as { id: string; title: string; error: string }[],
+		},
+	};
+
+	return await this.dataSource.transaction(async (manager) => {
+		const questionRepo = manager.getRepository(Question);
+		const optionRepo = manager.getRepository(Option);
+		const quizRepo = manager.getRepository(Quiz);
+
+		try {
+			result.summary.total = dto.questions.length;
+
+			const toQuiz = await quizRepo.findOneOrFail({
+				where: { id: dto.toLessonId },
+				relations: ['questions', 'institute'],
 			});
 
-			if (alreadyExists) {
-				continue; // Evita duplicación
-			}
-
-			// Consulta la pregunta original con sus opciones
-			const question = await this.questionRepository.findOneOrFail({
-				where: { id },
+			const questionsToImport = await questionRepo.find({
+				where: { 
+					id: In(dto.questions.map(q => q.id)) 
+				},
 				relations: ['options'],
 			});
 
-			// Crea una nueva pregunta con campos válidos
-			const newQuestion = this.questionRepository.create({
-				title,
-				sentence: question.sentence,
-				points: question.points,
-				photo: question.photo,
-				quiz: toQuiz,
-				institute: toQuiz.institute,
-				visible: false,
-				available: false,
-				exist: true,
+			const existingTitles = new Set(
+				toQuiz.questions.map(q => q.title.toLowerCase().trim())
+			);
+
+			for (const questionData of dto.questions) {
+				try {
+					const normalizedTitle = questionData.title.toLowerCase().trim();
+					
+					if (existingTitles.has(normalizedTitle)) {
+						result.summary.skipped++;
+						result.details.skipped.push({
+							id: questionData.id,
+							title: questionData.title,
+							reason: 'Ya existe una pregunta con el mismo título'
+						});
+						continue;
+					}
+
+					const sourceQuestion = questionsToImport.find(q => q.id === questionData.id);
+					if (!sourceQuestion) {
+						result.summary.skipped++;
+						result.details.skipped.push({
+							id: questionData.id,
+							title: questionData.title,
+							reason: 'Pregunta fuente no encontrada'
+						});
+						continue;
+					}
+
+					const newQuestion = questionRepo.create({
+						title: questionData.title,
+						sentence: sourceQuestion.sentence,
+						points: sourceQuestion.points,
+						photo: sourceQuestion.photo,
+						quiz: toQuiz,
+						institute: toQuiz.institute,
+						visible: false,
+						available: false,
+						exist: true,
+					});
+
+					const savedQuestion = await questionRepo.save(newQuestion);
+
+					if (sourceQuestion.options?.length > 0) {
+						const newOptions = sourceQuestion.options.map(option => 
+							optionRepo.create({
+								identifier: option.identifier,
+								sentence: option.sentence,
+								correct: option.correct,
+								exist: true,
+								question: savedQuestion,
+								institute: toQuiz.institute,
+							})
+						);
+
+						await optionRepo.save(newOptions);
+					}
+
+					result.summary.imported++;
+					result.details.imported.push({
+						id: questionData.id,
+						title: questionData.title
+					});
+					existingTitles.add(normalizedTitle);
+
+				} catch (error) {
+					result.summary.errors++;
+					result.details.errors.push({
+						id: questionData.id,
+						title: questionData.title,
+						error: error.message || 'Error desconocido'
+					});
+				}
+			}
+
+			// Obtener las preguntas actualizadas
+			const updatedQuiz = await quizRepo.findOneOrFail({
+				where: { id: dto.toLessonId },
+				relations: ['questions', 'questions.options'],
 			});
 
-			const savedQuestion = await this.questionRepository.save(newQuestion);
+			result.questions = updatedQuiz.questions;
+			return result;
 
-			// Crea nuevas opciones solo con campos válidos
-			for (const option of question.options) {
-				const newOption = this.optionRepository.create({
-					identifier: option.identifier,
-					sentence: option.sentence,
-					correct: option.correct,
-					exist: true,
-					question: savedQuestion,
-					institute: toQuiz.institute,
-				});
-
-				await this.optionRepository.save(newOption);
-			}
+		} catch (error) {
+			throw new Error(`Error al importar preguntas: ${error.message}`);
 		}
+	});
+}
 
-		// Cargar las preguntas con sus opciones asociadas
-		const updatedQuiz = await this.quizRepository.findOneOrFail({
-			where: { id: dto.toLessonId },
-			relations: ['questions', 'questions.options'],
-		});
-
-		return updatedQuiz.questions;
-	}
 
 	async getPointsByQuiz(id: number, user: User): Promise<{ points: number }> {
 		const quiz: Quiz = await this.quizRepository
