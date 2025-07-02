@@ -26,6 +26,7 @@ import { Criterion } from '../criteria/criterion.entity';
 import { Grade } from '../grades/grade.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
+import { StudentCriterionScore } from '../student-criterion-scores/student-criterion-score.entity';
 
 @Entity()
 export class Institute {
@@ -65,6 +66,8 @@ export class Institute {
 	criteria: Criterion[];
 	@OneToMany(() => Grade, (grade) => grade.institute)
 	grades: Grade[];
+	@OneToMany(() => StudentCriterionScore, (score) => score.institute)
+	studentCriterionScores: StudentCriterionScore[];
 	@ManyToOne(() => User, (user) => user.institute, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'userId' })
 	owner: User;

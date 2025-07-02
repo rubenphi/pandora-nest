@@ -27,7 +27,7 @@ import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
 import { ImportQuestionByTypeDto } from './dto/import-question-by-type.dto';
-import { numerosOrdinales } from 'src/common/vars/vars';
+import { numerosOrdinales, shuffleArray } from 'src/common/vars/vars';
 import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
 import { Quiz } from '../quizzes/quiz.entity';
 
@@ -390,6 +390,18 @@ export class QuestionsService {
 		importationData: ImportQuestionByTypeDto,
 		user: User,
 	): Promise<Question[]> {
+		const quiz: Quiz = await this.quizRepository
+			.findOneOrFail({
+				where: { id: importationData.quizId },
+				relations: ['questions'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
+
+		const lastQuestion: Question | undefined =
+			quiz.questions[quiz.questions.length - 1];
+
 		const options: Option[] = importationData.types.map((type, index) => {
 			return this.optionRepository.create({
 				sentence: type,
@@ -411,17 +423,18 @@ export class QuestionsService {
 
 				//search the last title on numerosOrdinales
 				const lastTitleIndex = numerosOrdinales.findIndex(
-					(title) => title === null,
+					(title) => title === lastQuestion?.title,
 				);
 
 				const title =
 					lastTitleIndex >= 0
-						? numerosOrdinales[lastTitleIndex + index]
+						? numerosOrdinales[lastTitleIndex + index + 1] // +1 because we want the next title
 						: numerosOrdinales[index];
 
 				return this.questionRepository.create({
 					title,
 					sentence: question.sentence,
+					quiz,
 					points: 10,
 					photo: null,
 					visible: false,
@@ -446,14 +459,6 @@ export class QuestionsService {
 					return option;
 				});
 
-				/* 	optionsForQuestion.forEach((option, optionIndex) => {
-					console.log(
-						`Option ${optionIndex + 1} for question ${option.question.id}: ${
-							option.sentence
-						}, Correct: ${option.correct}`,
-					);
-				}); */
-
 				return optionsForQuestion;
 			},
 		);
@@ -465,20 +470,32 @@ export class QuestionsService {
 		importationData: ImportQuestionVariableOptionDto,
 		user: User,
 	): Promise<Question[]> {
+		const quiz: Quiz = await this.quizRepository
+			.findOneOrFail({
+				where: { id: importationData.quizId },
+				relations: ['questions'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
+		const lastQuestion: Question | undefined =
+			quiz.questions[quiz.questions.length - 1];
+
 		const questionsToSave: Question[] = importationData.questions.map(
 			(question, index) => {
 				const lastTitleIndex = numerosOrdinales.findIndex(
-					(title) => title === null,
+					(title) => title === lastQuestion?.title,
 				);
 
 				const title =
 					lastTitleIndex >= 0
-						? numerosOrdinales[lastTitleIndex + index]
+						? numerosOrdinales[lastTitleIndex + index + 1] // +1 because we want the next title
 						: numerosOrdinales[index];
 
 				return this.questionRepository.create({
 					title,
 					sentence: question.sentence,
+					quiz,
 					points: importationData.points,
 					photo: null,
 					visible: false,
@@ -494,14 +511,17 @@ export class QuestionsService {
 		);
 		const optionsToSave: Option[] = savedQuestions.flatMap(
 			(question, index) => {
+				importationData.questions[index].options = shuffleArray(
+					importationData.questions[index].options,
+				);
 				const optionsForQuestion: Option[] = importationData.questions[
 					index
-				].options.map((optionDto) => {
+				].options.map((optionDto, indexOption) => {
 					const option = this.optionRepository.create({
 						...optionDto,
 						question: question,
 						institute: user.institute,
-						identifier: String.fromCharCode(65 + index),
+						identifier: String.fromCharCode(65 + indexOption),
 						exist: true,
 					});
 					return option;

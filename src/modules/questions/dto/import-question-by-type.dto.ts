@@ -21,7 +21,7 @@ export class QuestionOfTypesDto {
 export class ImportQuestionByTypeDto {
 	@ApiProperty()
 	@IsInt()
-	lessonId: number;
+	quizId: number;
 
 	@ApiProperty()
 	@IsInt()

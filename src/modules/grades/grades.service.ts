@@ -6,13 +6,14 @@ import {
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, In } from 'typeorm';
 import { Grade } from './grade.entity';
 import { User } from '../users/user.entity';
 import { Quiz } from '../quizzes/quiz.entity';
 import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
 import { QueryGradeDto } from './dto/query-grade.dto';
+import { Activity } from '../activities/activity.entity';
 
 @Injectable()
 export class GradesService {
@@ -23,18 +24,25 @@ export class GradesService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Quiz)
 		private readonly quizRepository: Repository<Quiz>,
+		@InjectRepository(Activity)
+		private readonly activityRepository: Repository<Activity>,
 		@InjectRepository(Period)
 		private readonly periodRepository: Repository<Period>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
+
 	async create(createGradeDto: CreateGradeDto): Promise<Grade> {
-		const grade = new Grade();
-		//search grade with same user and quiz
+		const { userId, gradableId, gradableType, periodId, grade, instituteId } =
+			createGradeDto;
+
+		await this.findGradableItem(gradableId, gradableType);
+
 		const gradeExist = await this.gradeRepository.findOne({
 			where: {
-				user: { id: createGradeDto.userId },
-				quiz: { id: createGradeDto.quizId },
+				user: { id: userId },
+				gradableId,
+				gradableType,
 			},
 		});
 
@@ -42,106 +50,182 @@ export class GradesService {
 			return gradeExist;
 		}
 
-		grade.grade = createGradeDto.grade;
-		grade.user = await this.userRepository.findOneByOrFail({
-			id: createGradeDto.userId,
+		const newGrade = new Grade();
+		newGrade.grade = grade;
+		newGrade.gradableId = gradableId;
+		newGrade.gradableType = gradableType;
+		newGrade.user = await this.userRepository.findOneByOrFail({ id: userId });
+		newGrade.period = await this.periodRepository.findOneByOrFail({
+			id: periodId,
 		});
-		grade.quiz = await this.quizRepository.findOneBy({
-			id: createGradeDto.quizId,
+		newGrade.institute = await this.instituteRepository.findOneByOrFail({
+			id: instituteId,
 		});
-		grade.period = await this.periodRepository.findOneBy({
-			id: createGradeDto.periodId,
-		});
-		grade.institute = await this.instituteRepository.findOneBy({
-			id: createGradeDto.instituteId,
-		});
-		return this.gradeRepository.save(grade);
+
+		return this.gradeRepository.save(newGrade);
 	}
 
 	async findAll(queryGrades: QueryGradeDto): Promise<Grade[]> {
-		return this.gradeRepository.find({
-			where: {
-				user: { id: queryGrades.userId },
-				quiz: {
-					id: queryGrades.quizId,
-					lesson: {
-						course: { id: queryGrades.courseId },
-						year: queryGrades.year,
-					},
-				},
-				period: { id: queryGrades.periodId },
-				institute: { id: queryGrades.instituteId },
-				grade:
-					queryGrades.gradeMax && queryGrades.gradeMin
-						? Between(queryGrades.gradeMin, queryGrades.gradeMax)
-						: undefined,
-			},
-			relations: [
-				'user',
-				'quiz',
-				'quiz.lesson',
-				'quiz.lesson.course',
-				'period',
-				'institute',
-			],
+		const {
+			userId,
+			gradableId,
+			gradableType,
+			periodId,
+			gradeMin,
+			gradeMax,
+			instituteId,
+			courseId,
+			areaId,
+			year,
+		} = queryGrades;
+
+		const where: any = {
+			user: { id: userId },
+			period: { id: periodId },
+			institute: { id: instituteId },
+		};
+
+		// Handle gradableId and gradableType filters
+		if (gradableId) {
+			where.gradableId = gradableId;
+		}
+		if (gradableType) {
+			where.gradableType = gradableType;
+		}
+
+		// Handle lesson-related filters
+		if (courseId || areaId || year) {
+			const quizIds: number[] = [];
+			const activityIds: number[] = [];
+
+			// Filter Quizzes
+			const quizWhere: any = { lesson: {} };
+			if (courseId) quizWhere.lesson.course = { id: courseId };
+			if (areaId) quizWhere.lesson.area = { id: areaId };
+			if (year) quizWhere.lesson.year = year;
+
+			const quizzes = await this.quizRepository.find({
+				where: quizWhere,
+				relations: ['lesson', 'lesson.course', 'lesson.area'],
+			});
+			quizIds.push(...quizzes.map((q) => q.id));
+
+			// Filter Activities
+			const activityWhere: any = { lesson: {} };
+			if (courseId) activityWhere.lesson.course = { id: courseId };
+			if (areaId) activityWhere.lesson.area = { id: areaId };
+			if (year) activityWhere.lesson.year = year;
+
+			const activities = await this.activityRepository.find({
+				where: activityWhere,
+				relations: ['lesson', 'lesson.course', 'lesson.area'],
+			});
+			activityIds.push(...activities.map((a) => a.id));
+
+			// Combine filters for gradableId and gradableType
+			const combinedGradableFilters: any[] = [];
+			if (quizIds.length > 0) {
+				combinedGradableFilters.push({
+					gradableType: 'quiz',
+					gradableId: In(quizIds),
+				});
+			}
+			if (activityIds.length > 0) {
+				combinedGradableFilters.push({
+					gradableType: 'activity',
+					gradableId: In(activityIds),
+				});
+			}
+
+			if (combinedGradableFilters.length > 0) {
+				where.gradableId = In([...quizIds, ...activityIds]);
+				where.gradableType = In(['quiz', 'activity']);
+			} else {
+				// If no quizzes or activities match the lesson filters, return empty array
+				return [];
+			}
+		}
+
+		if (gradeMin && gradeMax) {
+			where.grade = Between(gradeMin, gradeMax);
+		}
+
+		const grades = await this.gradeRepository.find({
+			where,
+			relations: ['user'],
 		});
+
+		for (const grade of grades) {
+			grade.gradableItem = await this.findGradableItem(
+				grade.gradableId,
+				grade.gradableType,
+				['lesson'],
+			);
+		}
+
+		return grades;
 	}
 
 	async findOne(id: number): Promise<Grade> {
-		return await this.gradeRepository
-			.findOneOrFail({
-				where: { id },
-				relations: ['user', 'quiz', 'period', 'institute'],
-			})
+		const grade = await this.gradeRepository
+			.findOneOrFail({ where: { id }, relations: ['user'] })
 			.catch(() => {
 				throw new NotFoundException('Grade not found');
 			});
+
+		grade.gradableItem = await this.findGradableItem(
+			grade.gradableId,
+			grade.gradableType,
+			['lesson'],
+		);
+
+		return grade;
 	}
 
 	async update(id: number, updateGradeDto: UpdateGradeDto): Promise<Grade> {
-		//preload
-		const userToGrade = await this.userRepository
-			.findOneOrFail({
-				where: { id: updateGradeDto.userId },
-			})
-			.catch(() => {
-				throw new NotFoundException('User not found');
-			});
-		const quiz = await this.quizRepository
-			.findOneOrFail({
-				where: { id: updateGradeDto.quizId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Quiz not found');
-			});
-		const period = await this.periodRepository
-			.findOneOrFail({
-				where: { id: updateGradeDto.periodId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Period not found');
-			});
-		const institute = await this.instituteRepository
-			.findOneOrFail({
-				where: { id: updateGradeDto.instituteId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Institute not found');
-			});
+		const grade = await this.gradeRepository.findOneByOrFail({ id });
 
-		const grade = await this.gradeRepository.preload({
-			id: id,
-			user: userToGrade,
-			quiz: quiz,
-			period: period,
-			grade: updateGradeDto.grade,
-			institute: institute,
+		if (updateGradeDto.gradableId && updateGradeDto.gradableType) {
+			await this.findGradableItem(
+				updateGradeDto.gradableId,
+				updateGradeDto.gradableType,
+			);
+		}
+
+		const gradeToUpdate = await this.gradeRepository.preload({
+			id,
+			...updateGradeDto,
 		});
 
-		return await this.gradeRepository.save(grade);
+		if (!gradeToUpdate) {
+			throw new NotFoundException('Grade not found for update');
+		}
+
+		return this.gradeRepository.save(gradeToUpdate);
 	}
 
 	async remove(id: number): Promise<void> {
-		this.gradeRepository.delete(id);
+		await this.gradeRepository.delete(id);
+	}
+
+	private async findGradableItem(
+		id: number,
+		type: string,
+		relations: string[] = [],
+	) {
+		let repository: Repository<Quiz | Activity>;
+		if (type === 'quiz') {
+			repository = this.quizRepository;
+		} else if (type === 'activity') {
+			repository = this.activityRepository;
+		} else {
+			throw new BadRequestException(`Invalid gradableType: ${type}`);
+		}
+
+		const item = await repository.findOne({ where: { id }, relations });
+		if (!item) {
+			throw new NotFoundException(`${type} with ID ${id} not found`);
+		}
+		return item;
 	}
 }

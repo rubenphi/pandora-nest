@@ -23,6 +23,7 @@ import { ActivitiesModule } from './modules/activities/activities.module';
 import { CriteriaModule } from './modules/criteria/criteria.module';
 import { MaterialsModule } from './modules/materials/materials.module';
 import { LessonItemsModule } from './modules/lesson-items/lesson-items.module';
+import { StudentCriterionScoresModule } from './modules/student-criterion-scores/student-criterion-scores.module';
 
 import * as dotenv from 'dotenv';
 
@@ -61,6 +62,7 @@ dotenv.config();
 		CriteriaModule,
 		MaterialsModule,
 		LessonItemsModule,
+		StudentCriterionScoresModule,
 	],
 })
 export class AppModule {

@@ -41,7 +41,7 @@ export class ImportQuestionVariableOption {
 export class ImportQuestionVariableOptionDto {
 	@ApiProperty()
 	@IsInt()
-	lessonId: number;
+	quizId: number;
 
 	@ApiProperty()
 	@IsInt()

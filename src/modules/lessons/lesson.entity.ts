@@ -1,3 +1,4 @@
+import { Activity } from 'src/modules/activities/activity.entity';
 import {
 	Entity,
 	PrimaryGeneratedColumn,
@@ -48,6 +49,8 @@ export class Lesson {
 	items: LessonItem[];
 	@OneToMany(() => Quiz, (quiz) => quiz.lesson)
 	quizzes: Quiz[];
+	@OneToMany(() => Activity, (activity) => activity.lesson)
+	activities: Activity[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

@@ -13,6 +13,11 @@ import { User } from '../users/user.entity';
 import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
 import { Quiz } from '../quizzes/quiz.entity';
+import { Activity } from '../activities/activity.entity';
+
+// Types for polymorphic relation
+export type Gradable = Quiz | Activity;
+export const GRADABLE_ENTITIES = ['quiz', 'activity'];
 
 @Entity()
 export class Grade {
@@ -23,9 +28,14 @@ export class Grade {
 	@JoinTable({ name: 'userId' })
 	user: User;
 
-	@ManyToOne(() => Quiz, (quiz) => quiz.grades)
-	@JoinColumn({ name: 'quizId' })
-	quiz: Quiz;
+	@Column()
+	gradableId: number;
+
+	@Column()
+	gradableType: string;
+
+	// This property will be populated manually in the service
+	gradableItem?: Gradable;
 
 	@Column({ type: 'enum', enum: ['regular', 'support'], default: 'regular' })
 	gradeType: 'regular' | 'support';

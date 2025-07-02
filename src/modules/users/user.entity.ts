@@ -16,6 +16,7 @@ import { UserToGroup } from './userToGroup.entity';
 import { Answer } from 'src/modules/answers/answer.entity';
 import { hash } from 'bcryptjs';
 import { Institute } from '../institutes/institute.entity';
+import { StudentCriterionScore } from '../student-criterion-scores/student-criterion-score.entity';
 //estamos en autenticacion
 @Entity()
 export class User {
@@ -46,6 +47,12 @@ export class User {
 	groups: UserToGroup[];
 	@OneToMany(() => Answer, (answer) => answer.user)
 	answers: Answer[];
+
+	@OneToMany(() => StudentCriterionScore, (score) => score.student)
+	studentCriterionScores: StudentCriterionScore[];
+
+	@OneToMany(() => StudentCriterionScore, (score) => score.gradedBy)
+	gradedCriterionScores: StudentCriterionScore[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

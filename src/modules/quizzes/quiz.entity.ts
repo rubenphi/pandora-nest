@@ -26,9 +26,6 @@ export class Quiz {
 	@OneToMany(() => Question, (question) => question.quiz)
 	questions: Question[];
 
-	@OneToMany(() => Grade, (grade) => grade.quiz)
-	grades: Grade[];
-
 	@OneToMany(() => Answer, (answer) => answer.quiz)
 	answers: Answer[];
 
