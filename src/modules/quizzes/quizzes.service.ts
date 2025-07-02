@@ -9,10 +9,11 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { DataSource, In, QueryFailedError, Repository } from 'typeorm';
+
 
 import { Quiz } from './quiz.entity';
-import { CreateQuizDto, UpdateQuizDto, QueryQuizDto } from './dto'; // Assuming these DTOs will be created
+import { CreateQuizDto, UpdateQuizDto, QueryQuizDto, ImportFromQuizDto, ImportQuestionsMixDto } from './dto';
 import { Lesson } from '../lessons/lesson.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
@@ -25,13 +26,12 @@ import { LessonItem } from '../lesson-items/lesson-item.entity';
 import { Course } from '../courses/course.entity';
 import { Area } from '../areas/area.entity';
 import { Period } from '../periods/period.entity';
-import { ImportFromLessonDto } from '../lessons/dto/import-from-lesson.dto'; // New import
-import { ImportQuestionsMixDto } from '../lessons/dto/import-from-lesson-mix.dto'; // New import
-import { ResultLessonDto } from '../lessons/dto/result-lesson.dto'; // New import
+import { ResultLessonDto } from '../lessons/dto/result-lesson.dto';
 
 @Injectable()
 export class QuizzesService {
-	constructor(
+		constructor(
+		private readonly dataSource: DataSource,
 		@InjectRepository(Quiz)
 		private readonly quizRepository: Repository<Quiz>,
 		@InjectRepository(Lesson)
@@ -289,12 +289,12 @@ export class QuizzesService {
 
 	async importQuestionsToQuiz(
 		id: number,
-		importFromQuizDto: ImportFromLessonDto,
+		importFromQuizDto: ImportFromQuizDto,
 	): Promise<Question[]> {
 		const fromQuiz: Quiz = await this.quizRepository
 			.findOneOrFail({
 				relations: ['questions', 'questions.options'],
-				where: { id: importFromQuizDto.fromLessonId },
+				where: { id: importFromQuizDto.fromQuizId },
 			})
 			.catch(() => {
 				throw new NotFoundException('Quiz origin not found');
@@ -311,7 +311,7 @@ export class QuizzesService {
 
 		if (toQuiz.questions.length) {
 			throw new BadRequestException(
-				`You can only import options to a question that doesn't have them`,
+				`You can only import questions to a quiz that doesn't have them`,
 			);
 		} else {
 			// Copiar y ordenar las preguntas por ID
@@ -374,162 +374,77 @@ export class QuizzesService {
 		}
 	}
 
-	import { In } from 'typeorm';
-
-
-// Versión alternativa con mejor manejo de errores y logging
-async importQuestionsToQuizMix(
-	dto: ImportQuestionsMixDto,
-): Promise<{
-	questions: Question[];
-	summary: {
-		total: number;
-		imported: number;
-		skipped: number;
-		errors: number;
-	};
-	details: {
-		imported: { id: string; title: string }[];
-		skipped: { id: string; title: string; reason: string }[];
-		errors: { id: string; title: string; error: string }[];
-	};
-}> {
-	const result = {
-		questions: [] as Question[],
-		summary: { total: 0, imported: 0, skipped: 0, errors: 0 },
-		details: {
-			imported: [] as { id: string; title: string }[],
-			skipped: [] as { id: string; title: string; reason: string }[],
-			errors: [] as { id: string; title: string; error: string }[],
-		},
-	};
-
-	return await this.dataSource.transaction(async (manager) => {
-		const questionRepo = manager.getRepository(Question);
-		const optionRepo = manager.getRepository(Option);
-		const quizRepo = manager.getRepository(Quiz);
-
-		try {
-			result.summary.total = dto.questions.length;
-
-			const toQuiz = await quizRepo.findOneOrFail({
-				where: { id: dto.toLessonId },
+	async importQuestionsToQuizMix(
+		id: number,
+		dto: ImportQuestionsMixDto,
+	): Promise<Question[]> {
+		return this.dataSource.transaction(async (manager) => {
+			const toQuiz = await manager.findOneOrFail(Quiz, {
+				where: { id },
 				relations: ['questions', 'institute'],
 			});
 
-			const questionsToImport = await questionRepo.find({
-				where: { 
-					id: In(dto.questions.map(q => q.id)) 
+			const questionsToImport = await manager.find(Question, {
+				where: {
+					id: In(dto.questions.map((q) => q.id)),
 				},
 				relations: ['options'],
 			});
 
 			const existingTitles = new Set(
-				toQuiz.questions.map(q => q.title.toLowerCase().trim())
+				toQuiz.questions.map((q) => q.title.toLowerCase().trim()),
 			);
 
 			for (const questionData of dto.questions) {
-				try {
-					const normalizedTitle = questionData.title.toLowerCase().trim();
-					
-					if (existingTitles.has(normalizedTitle)) {
-						result.summary.skipped++;
-						result.details.skipped.push({
-							id: questionData.id,
-							title: questionData.title,
-							reason: 'Ya existe una pregunta con el mismo título'
-						});
-						continue;
-					}
-
-					const sourceQuestion = questionsToImport.find(q => q.id === questionData.id);
-					if (!sourceQuestion) {
-						result.summary.skipped++;
-						result.details.skipped.push({
-							id: questionData.id,
-							title: questionData.title,
-							reason: 'Pregunta fuente no encontrada'
-						});
-						continue;
-					}
-
-					const newQuestion = questionRepo.create({
-						title: questionData.title,
-						sentence: sourceQuestion.sentence,
-						points: sourceQuestion.points,
-						photo: sourceQuestion.photo,
-						quiz: toQuiz,
-						institute: toQuiz.institute,
-						visible: false,
-						available: false,
-						exist: true,
-					});
-
-					const savedQuestion = await questionRepo.save(newQuestion);
-
-					if (sourceQuestion.options?.length > 0) {
-						const newOptions = sourceQuestion.options.map(option => 
-							optionRepo.create({
-								identifier: option.identifier,
-								sentence: option.sentence,
-								correct: option.correct,
-								exist: true,
-								question: savedQuestion,
-								institute: toQuiz.institute,
-							})
-						);
-
-						await optionRepo.save(newOptions);
-					}
-
-					result.summary.imported++;
-					result.details.imported.push({
-						id: questionData.id,
-						title: questionData.title
-					});
-					existingTitles.add(normalizedTitle);
-
-				} catch (error) {
-					result.summary.errors++;
-					result.details.errors.push({
-						id: questionData.id,
-						title: questionData.title,
-						error: error.message || 'Error desconocido'
-					});
+				const normalizedTitle = questionData.title.toLowerCase().trim();
+				if (existingTitles.has(normalizedTitle)) {
+					// Maybe log this skip action
+					continue;
 				}
+
+				const sourceQuestion = questionsToImport.find(
+					(q) => q.id === questionData.id,
+				);
+				if (!sourceQuestion) {
+					// Maybe log this skip action
+					continue;
+				}
+
+				const newQuestion = manager.create(Question, {
+					title: questionData.title,
+					sentence: sourceQuestion.sentence,
+					points: sourceQuestion.points,
+					photo: sourceQuestion.photo,
+					quiz: toQuiz,
+					institute: toQuiz.institute,
+					visible: false,
+					available: false,
+					exist: true,
+				});
+
+				const savedQuestion = await manager.save(newQuestion);
+
+				if (sourceQuestion.options?.length > 0) {
+					const newOptions = sourceQuestion.options.map((option) =>
+						manager.create(Option, {
+							identifier: option.identifier,
+							sentence: option.sentence,
+							correct: option.correct,
+							exist: true,
+							question: savedQuestion,
+							institute: toQuiz.institute,
+						}),
+					);
+					await manager.save(newOptions);
+				}
+				existingTitles.add(normalizedTitle);
 			}
 
-			// Obtener las preguntas actualizadas
-			const updatedQuiz = await quizRepo.findOneOrFail({
-				where: { id: dto.toLessonId },
+			const updatedQuiz = await manager.findOneOrFail(Quiz, {
+				where: { id },
 				relations: ['questions', 'questions.options'],
 			});
 
-			result.questions = updatedQuiz.questions;
-			return result;
-
-		} catch (error) {
-			throw new Error(`Error al importar preguntas: ${error.message}`);
-		}
-	});
-}
-
-
-	async getPointsByQuiz(id: number, user: User): Promise<{ points: number }> {
-		const quiz: Quiz = await this.quizRepository
-			.findOneOrFail({
-				where: { id },
-				relations: ['institute', 'questions'],
-			})
-			.catch(() => {
-				throw new NotFoundException('Quiz not found');
-			});
-		if (user.institute.id !== quiz.institute.id) {
-			throw new ForbiddenException('You are not allowed to see this quiz');
-		}
-
-		const points = quiz.questions.reduce((res, value) => res + value.points, 0);
-
-		return { points };
+			return updatedQuiz.questions;
+		});
 	}
-}

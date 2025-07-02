@@ -10,15 +10,13 @@ import {
 } from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 import { Quiz } from './quiz.entity';
-import { CreateQuizDto, UpdateQuizDto, QueryQuizDto } from './dto';
+import { CreateQuizDto, UpdateQuizDto, QueryQuizDto, ImportFromQuizDto, ImportQuestionsMixDto } from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
 import { Answer } from '../answers/answer.entity';
 import { Question } from '../questions/question.entity';
-import { ImportFromLessonDto } from '../lessons/dto/import-from-lesson.dto';
-import { ImportQuestionsMixDto } from '../lessons/dto/import-from-lesson-mix.dto';
 import { ResultLessonDto } from '../lessons/dto/result-lesson.dto';
 
 @ApiTags('Quizzes Routes')
@@ -98,7 +96,7 @@ export class QuizzesController {
 	@Post(':id/import-questions')
 	importQuestionsToQuiz(
 		@Param('id') id: number,
-		@Body() importFromQuizDto: ImportFromLessonDto,
+		@Body() importFromQuizDto: ImportFromQuizDto,
 	): Promise<Question[]> {
 		return this.quizzesService.importQuestionsToQuiz(id, importFromQuizDto);
 	}
@@ -107,9 +105,13 @@ export class QuizzesController {
 	@Auth()
 	@Post(':id/import-questions-mix')
 	importQuestionsToQuizMix(
+		@Param('id') id: number,
 		@Body() importQuestionsMixDto: ImportQuestionsMixDto,
-	): Promise<Question[]> {
-		return this.quizzesService.importQuestionsToQuizMix(importQuestionsMixDto);
+	): Promise<any> {
+		return this.quizzesService.importQuestionsToQuizMix(
+			id,
+			importQuestionsMixDto,
+		);
 	}
 
 	@Auth()

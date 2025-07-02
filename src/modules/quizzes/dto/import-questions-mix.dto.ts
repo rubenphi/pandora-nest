@@ -11,11 +11,11 @@ import { Type } from 'class-transformer';
 export class ImportQuestionsMixDto {
 	@ApiProperty({
 		description:
-			'ID of the destination lesson where the questions will be imported',
+			'ID of the destination quiz where the questions will be imported',
 		example: 42,
 	})
 	@IsInt()
-	readonly toLessonId: number;
+	readonly toQuizId: number;
 
 	@ApiProperty({
 		description: 'Array of questions to import',
