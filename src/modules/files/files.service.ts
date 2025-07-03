@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { MulterModuleOptions } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
+import { unlink } from 'fs/promises';
 
 @Injectable()
 export class FilesService {
@@ -24,5 +25,16 @@ export class FilesService {
 
 	getUploadedFileUrl(filename: string): string {
 		return `files/${this.uploadPath.replace('./', '')}/${filename}`;
+	}
+
+	async deleteFile(filename: string): Promise<void> {
+		const filePath = join(process.cwd(), this.uploadPath, filename);
+		try {
+			await unlink(filePath);
+		} catch (error) {
+			console.error(`Error deleting file ${filename}:`, error);
+			// Depending on requirements, you might want to throw an exception here
+			// throw new InternalServerErrorException(`Failed to delete file ${filename}`);
+		}
 	}
 }
