@@ -11,9 +11,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, QueryFailedError, Repository } from 'typeorm';
 
-
 import { Quiz } from './quiz.entity';
-import { CreateQuizDto, UpdateQuizDto, QueryQuizDto, ImportFromQuizDto, ImportQuestionsMixDto } from './dto';
+import {
+	CreateQuizDto,
+	UpdateQuizDto,
+	QueryQuizDto,
+	ImportFromQuizDto,
+	ImportQuestionsMixDto,
+} from './dto';
 import { Lesson } from '../lessons/lesson.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
@@ -30,7 +35,7 @@ import { ResultLessonDto } from '../lessons/dto/result-lesson.dto';
 
 @Injectable()
 export class QuizzesService {
-		constructor(
+	constructor(
 		private readonly dataSource: DataSource,
 		@InjectRepository(Quiz)
 		private readonly quizRepository: Repository<Quiz>,
@@ -448,3 +453,21 @@ export class QuizzesService {
 			return updatedQuiz.questions;
 		});
 	}
+	async getPointsByQuiz(id: number, user: User): Promise<{ points: number }> {
+		const quiz: Quiz = await this.quizRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['institute', 'questions'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
+		if (user.institute.id !== quiz.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this quiz');
+		}
+
+		const points = quiz.questions.reduce((res, value) => res + value.points, 0);
+
+		return { points };
+	}
+}

@@ -19,6 +19,7 @@ import { Period } from '../periods/period.entity';
 import { Institute } from '../institutes/institute.entity';
 import { LessonItem } from '../lesson-items/lesson-item.entity';
 import { Quiz } from 'src/modules/quizzes/quiz.entity';
+import { Material } from '../materials/material.entity';
 
 @Entity()
 export class Lesson {
@@ -51,6 +52,8 @@ export class Lesson {
 	quizzes: Quiz[];
 	@OneToMany(() => Activity, (activity) => activity.lesson)
 	activities: Activity[];
+	@OneToMany(() => Material, (material) => material.lesson)
+	materials: Material[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

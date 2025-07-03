@@ -23,7 +23,7 @@ export class Area {
 	institute: Institute;
 	@OneToMany(() => Lesson, (lesson) => lesson.area)
 	lessons: Lesson[];
-	@Column({ nullable: false }) 
+	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()
 	createdAt: Date;

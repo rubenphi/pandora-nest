@@ -39,6 +39,7 @@ export class Question {
 	points: number;
 	@Column({ nullable: true })
 	photo: string;
+
 	@Column({ nullable: false })
 	visible: boolean;
 	@Column({ nullable: false })
