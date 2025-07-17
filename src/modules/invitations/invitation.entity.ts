@@ -9,15 +9,13 @@ import {
 	JoinColumn,
 } from 'typeorm';
 
-
 import { Institute } from '../institutes/institute.entity';
-
 
 @Entity()
 export class Invitation {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
-	@Column({ nullable: false , unique: true})
+	@Column({ nullable: false, unique: true })
 	code: string;
 	@Column({ nullable: false })
 	expirationDate: string;

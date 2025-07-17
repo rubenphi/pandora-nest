@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
-import {  IsInt, IsBoolean, IsOptional, IsISO8601, IsString } from 'class-validator';
+import {
+	IsInt,
+	IsBoolean,
+	IsOptional,
+	IsISO8601,
+	IsString,
+} from 'class-validator';
 
 export class QueryInvitationDto {
 	@ApiProperty({
@@ -55,5 +61,5 @@ export class QueryInvitationDto {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
 	})
 	@IsBoolean()
-	readonly active: boolean;
+	readonly valid: boolean;
 }

@@ -62,7 +62,7 @@ export class QuizzesService {
 	async findOne(id: number): Promise<Quiz> {
 		return this.quizRepository.findOne({
 			where: { id },
-			relations: ['questions', 'questions.options'],
+			relations: ['questions', 'questions.options', , 'institute'],
 		});
 	}
 
@@ -105,6 +105,7 @@ export class QuizzesService {
 					'lesson.period',
 					'questions',
 					'questions.options',
+					'institute',
 				],
 			})
 			.catch(() => {

@@ -22,5 +22,5 @@ export class CreateInvitationDto {
 		description: 'Indicates if the invitation was expired',
 	})
 	@IsBoolean()
-	readonly active: boolean;
+	readonly valid: boolean;
 }

@@ -67,7 +67,7 @@ export class InvitationsService {
 
 		const invitation: Invitation = this.invitationRepository.create({
 			code,
-			valid: createInvitationDto.active,
+			valid: createInvitationDto.valid,
 			institute,
 			expirationDate: createInvitationDto.expirationDate,
 			exist: createInvitationDto.exist,
@@ -89,11 +89,12 @@ export class InvitationsService {
 		if (queryInvitation) {
 			return await this.invitationRepository.find({
 				where: {
+					code: queryInvitation.code,
 					expirationDate: Between(
 						queryInvitation.initialDate || '2000-01-01',
 						queryInvitation.finalDate || '3000-01-01',
 					),
-					valid: queryInvitation.active,
+					valid: queryInvitation.valid,
 					exist: queryInvitation.exist,
 					institute: { id: queryInvitation.instituteId },
 				},
@@ -161,7 +162,7 @@ export class InvitationsService {
 
 		const group: Invitation = await this.invitationRepository.preload({
 			id: id,
-			valid: updateInvitationDto.active,
+			valid: updateInvitationDto.valid,
 			institute,
 			expirationDate: updateInvitationDto.expirationDate,
 			exist: updateInvitationDto.exist,

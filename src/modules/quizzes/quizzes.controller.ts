@@ -10,7 +10,13 @@ import {
 } from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 import { Quiz } from './quiz.entity';
-import { CreateQuizDto, UpdateQuizDto, QueryQuizDto, ImportFromQuizDto, ImportQuestionsMixDto } from './dto';
+import {
+	CreateQuizDto,
+	UpdateQuizDto,
+	QueryQuizDto,
+	ImportFromQuizDto,
+	ImportQuestionsMixDto,
+} from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';

@@ -483,6 +483,7 @@ export class QuestionsService {
 
 		const questionsToSave: Question[] = importationData.questions.map(
 			(question, index) => {
+				//search the last title on numerosOrdinales
 				const lastTitleIndex = numerosOrdinales.findIndex(
 					(title) => title === lastQuestion?.title,
 				);
@@ -491,6 +492,9 @@ export class QuestionsService {
 					lastTitleIndex >= 0
 						? numerosOrdinales[lastTitleIndex + index + 1] // +1 because we want the next title
 						: numerosOrdinales[index];
+				console.log(numerosOrdinales[lastTitleIndex]);
+
+				console.log(numerosOrdinales[lastTitleIndex + index + 1]);
 
 				return this.questionRepository.create({
 					title,

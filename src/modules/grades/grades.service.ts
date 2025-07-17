@@ -47,7 +47,8 @@ export class GradesService {
 		});
 
 		if (gradeExist) {
-			return gradeExist;
+			gradeExist.grade = grade;
+			return this.gradeRepository.save(gradeExist);
 		}
 
 		const newGrade = new Grade();
@@ -159,7 +160,7 @@ export class GradesService {
 			grade.gradableItem = await this.findGradableItem(
 				grade.gradableId,
 				grade.gradableType,
-				['lesson'],
+				['lesson', 'lesson.course', 'lesson.area'],
 			);
 		}
 

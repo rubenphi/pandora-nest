@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsISO8601, IsInt, IsString } from 'class-validator';
 
-export class UpdateInvitationDto  {
+export class UpdateInvitationDto {
 	@ApiProperty({
 		description: 'Expiration date of invitation',
 	})
 	@IsISO8601()
 	readonly expirationDate: string;
-    @ApiProperty({
+	@ApiProperty({
 		description: 'Invitation code',
 	})
 	@IsString()
@@ -22,10 +22,9 @@ export class UpdateInvitationDto  {
 	})
 	@IsBoolean()
 	readonly exist: boolean;
-    @ApiProperty({
+	@ApiProperty({
 		description: 'Indicates if the invitation was expired',
 	})
 	@IsBoolean()
-	readonly active: boolean;
+	readonly valid: boolean;
 }
-
