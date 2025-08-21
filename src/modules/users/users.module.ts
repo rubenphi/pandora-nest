@@ -8,11 +8,20 @@ import { Institute } from '../institutes/institute.entity';
 import { Invitation } from '../invitations/invitation.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
+import { AlumnosController } from './colonline.controller';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([User, Institute, Invitation, UserToCourse, UserToGroup])],
+	imports: [
+		TypeOrmModule.forFeature([
+			User,
+			Institute,
+			Invitation,
+			UserToCourse,
+			UserToGroup,
+		]),
+	],
 	providers: [UsersService],
-	controllers: [UsersController],
+	controllers: [UsersController, AlumnosController],
 	exports: [UsersService],
 })
 export class UsersModule {}
