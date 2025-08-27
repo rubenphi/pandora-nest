@@ -6,7 +6,7 @@ import {
 	ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { StudentCriterionScore } from './student-criterion-score.entity';
 import {
 	CreateStudentCriterionScoreDto,
@@ -75,14 +75,36 @@ export class StudentCriterionScoresService {
 		query: QueryStudentCriterionScoreDto,
 		user: User,
 	): Promise<StudentCriterionScore[]> {
+		const { studentId, instituteId, activityId, criterionId } = query;
+
+		const where: any = {
+			institute: { id: instituteId },
+			activity: { id: activityId },
+			criterion: { id: criterionId },
+		};
+
+		if (user.rol === Role.Student) {
+			const userGroup = await this.userRepository.findOne({
+				where: { id: user.id },
+				relations: ['groups', 'groups.group'],
+			});
+
+			const activeGroup = userGroup.groups.find((g) => g.group.active);
+
+			if (activeGroup) {
+				const groupUsers = await this.userRepository.find({
+					where: { groups: { id: activeGroup.group.id } },
+				});
+				where.student = { id: In(groupUsers.map((u) => u.id)) };
+			} else {
+				where.student = { id: user.id };
+			}
+		} else if (studentId) {
+			where.student = { id: studentId };
+		}
+
 		return this.studentCriterionScoreRepository.find({
-			where: {
-				student: { id: query.studentId },
-				institute: { id: query.instituteId },
-				activity: { id: query.activityId },
-				criterion: { id: query.criterionId },
-				gradedBy: { id: user.id },
-			},
+			where,
 			relations: ['student', 'activity', 'criterion', 'institute'],
 		});
 	}
@@ -99,10 +121,29 @@ export class StudentCriterionScoresService {
 			);
 		}
 
-		if (user.rol === Role.Student && score.student.id !== user.id) {
-			throw new UnauthorizedException(
-				`You are not authorized to view this score.`,
-			);
+		if (user.rol === Role.Student) {
+			const userGroup = await this.userRepository.findOne({
+				where: { id: user.id },
+				relations: ['groups', 'groups.group'],
+			});
+
+			const activeGroup = userGroup.groups.find((g) => g.group.active);
+
+			if (activeGroup) {
+				const groupUsers = await this.userRepository.find({
+					where: { groups: { id: activeGroup.group.id } },
+				});
+				const groupUserIds = groupUsers.map((u) => u.id);
+				if (!groupUserIds.includes(score.student.id)) {
+					throw new UnauthorizedException(
+						`You are not authorized to view this score.`,
+					);
+				}
+			} else if (score.student.id !== user.id) {
+				throw new UnauthorizedException(
+					`You are not authorized to view this score.`,
+				);
+			}
 		}
 
 		if (user.rol !== Role.Admin && score.institute.id !== user.institute.id) {

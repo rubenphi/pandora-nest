@@ -21,6 +21,8 @@ export class UserToCourse {
 	year: number;
 	@Column({ nullable: false })
 	rol: string;
+	@Column({ default: true })
+	active: boolean;
 	@ManyToOne(() => Course, (course) => course.users)
 	@JoinColumn({ name: 'courseId' })
 	course: Course;

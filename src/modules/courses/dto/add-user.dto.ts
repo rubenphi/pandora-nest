@@ -1,22 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Role } from 'src/modules/auth/roles.decorator';
 
 export class AddUserToCourseDto {
-	@ApiProperty({
-		type: Number,
-		description: 'User to add Id',
-	})
-	@IsInt({ each: true })
-	readonly userId: number;
-	@ApiProperty({
-		type: Number,
-		description: 'year',
-	})
-	@IsInt()
-	readonly year: number;
-	@ApiProperty({
-		type: String,
-		description: 'rol',
-	})
-	readonly rol: string;
+	@ApiProperty()
+	@IsNumber()
+	userId: number;
+
+	@ApiProperty()
+	@IsString()
+	rol: Role;
+
+	@ApiProperty()
+	@IsNumber()
+	year: number;
+
+	@ApiProperty({ required: false, default: true })
+	@IsBoolean()
+	@IsOptional()
+	active: boolean;
 }

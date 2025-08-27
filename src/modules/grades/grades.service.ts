@@ -33,8 +33,15 @@ export class GradesService {
 	) {}
 
 	async create(createGradeDto: CreateGradeDto): Promise<Grade> {
-		const { userId, gradableId, gradableType, periodId, grade, instituteId } =
-			createGradeDto;
+		const {
+			userId,
+			gradableId,
+			gradableType,
+			periodId,
+			grade,
+			instituteId,
+			registrarMayor,
+		} = createGradeDto;
 
 		await this.findGradableItem(gradableId, gradableType);
 
@@ -47,6 +54,9 @@ export class GradesService {
 		});
 
 		if (gradeExist) {
+			if (registrarMayor && grade <= gradeExist.grade) {
+				return gradeExist;
+			}
 			gradeExist.grade = grade;
 			return this.gradeRepository.save(gradeExist);
 		}

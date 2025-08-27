@@ -83,4 +83,14 @@ export class CreateGradeDto {
 	@IsOptional()
 	@IsBoolean()
 	readonly exist?: boolean;
+
+	@ApiProperty({
+		type: Boolean,
+		description: 'Register only if the grade is higher',
+		default: false,
+		required: false,
+	})
+	@IsOptional()
+	@IsBoolean()
+	readonly registrarMayor?: boolean;
 }

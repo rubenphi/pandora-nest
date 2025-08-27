@@ -371,35 +371,47 @@ export class CoursesService {
 			);
 		}
 
-		const usuarioExistente = await this.userToCourseRepository.findOne({
-			where: usersToAdd.map((userToAdd) => ({
-				user: { id: userToAdd.userId },
-				course: { id },
-				year: userToAdd.year,
-			})),
-		});
+		// Process each user assignment individually
+		for (const userToAdd of usersToAdd) {
+			// 1. Deactivate all existing course assignments for this user for the given year
+			await this.userToCourseRepository.update(
+				{ user: { id: userToAdd.userId }, year: userToAdd.year },
+				{ active: false },
+			);
 
-		if (usuarioExistente) {
-			throw new BadRequestException('User already belongs to this course');
-		}
+			// 2. Check if the user is already in the target course for that year
+			const existingAssignment = await this.userToCourseRepository.findOne({
+				where: {
+					user: { id: userToAdd.userId },
+					course: { id },
+					year: userToAdd.year,
+				},
+			});
 
-		const usersToAddIncourse: User[] = await this.userRepository.find({
-			where: { id: In(usersToAdd.map((userToAdd) => userToAdd.userId)) },
-		});
-
-		const usersToCourse: UserToCourse[] = await Promise.all(
-			usersToAdd.map(async (userToAdd) => {
-				const userToCourse: UserToCourse = this.userToCourseRepository.create({
-					user: usersToAddIncourse.find((user) => user.id === userToAdd.userId),
+			if (existingAssignment) {
+				// If they are, just reactivate the assignment
+				existingAssignment.active = true;
+				await this.userToCourseRepository.save(existingAssignment);
+			} else {
+				// If not, create a new active assignment
+				const userToAssign = await this.userRepository.findOneBy({ id: userToAdd.userId });
+				if (!userToAssign) {
+					// Optional: throw an error or just skip this user if not found
+					continue;
+				}
+				const newAssignment = this.userToCourseRepository.create({
+					user: userToAssign,
 					course,
 					rol: userToAdd.rol,
 					year: userToAdd.year,
+					active: true, // Explicitly set as active
 				});
-				return userToCourse;
-			}),
-		);
+				await this.userToCourseRepository.save(newAssignment);
+			}
+		}
 
-		return this.userToCourseRepository.save(usersToCourse);
+		// Return a success message or the updated list of assignments if needed
+		return { message: 'User assignments updated successfully.' };
 	}
 	async removeUserFromCourse(
 		id: number,
