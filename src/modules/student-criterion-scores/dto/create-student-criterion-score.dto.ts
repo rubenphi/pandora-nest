@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateStudentCriterionScoreDto {
 	@ApiProperty()
@@ -26,4 +26,9 @@ export class CreateStudentCriterionScoreDto {
 	@IsNumber()
 	@IsNotEmpty()
 	instituteId?: number;
+
+	@ApiProperty({ required: false })
+	@IsOptional()
+	@IsNumber()
+	permissionId?: number;
 }

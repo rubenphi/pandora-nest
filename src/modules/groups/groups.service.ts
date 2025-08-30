@@ -52,7 +52,7 @@ export class GroupsService {
 								: user.institute.id,
 					},
 				},
-				relations: ['course', 'institute', 'period'],
+				relations: ['course', 'institute', 'period', 'usersToGroup'],
 			});
 		} else {
 			return await this.groupRepository.find({
@@ -65,7 +65,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course', 'institute', 'period'],
+				relations: ['course', 'institute', 'period', 'usersToGroup'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');

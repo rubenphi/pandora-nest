@@ -15,6 +15,9 @@ import {
 	CreateStudentCriterionScoreDto,
 	QueryStudentCriterionScoreDto,
 	UpdateStudentCriterionScoreDto,
+	CreateStudentCriterionPermissionDto,
+	UpdateStudentCriterionPermissionDto,
+	QueryStudentCriterionPermissionDto,
 } from './dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
@@ -31,7 +34,6 @@ export class StudentCriterionScoresController {
 		private readonly studentCriterionScoresService: StudentCriterionScoresService,
 	) {}
 
-	@Roles(Role.Admin, Role.Teacher)
 	@Auth()
 	@Post()
 	@ApiOperation({ summary: 'Create a new student criterion score' })
@@ -70,7 +72,6 @@ export class StudentCriterionScoresController {
 		return this.studentCriterionScoresService.findOne(id, user);
 	}
 
-	@Roles(Role.Admin, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	@ApiOperation({ summary: 'Update a student criterion score by ID' })
@@ -99,5 +100,82 @@ export class StudentCriterionScoresController {
 		@User() user: UserEntity,
 	) {
 		return this.studentCriterionScoresService.remove(id, user);
+	}
+
+	@Auth()
+	@Post('permissions')
+	@ApiOperation({ summary: 'Create a new student criterion permission' })
+	@ApiResponse({ status: 201, description: 'Permission successfully created.' })
+	@ApiResponse({ status: 400, description: 'Bad Request.' })
+	async createPermission(
+		@Body() createStudentCriterionPermissionDto: CreateStudentCriterionPermissionDto,
+	) {
+		return this.studentCriterionScoresService.createPermission(
+			createStudentCriterionPermissionDto,
+		);
+	}
+
+	@Auth()
+	@Post('permissions/bulk')
+	@ApiOperation({ summary: 'Create multiple student criterion permissions' })
+	@ApiResponse({ status: 201, description: 'Permissions successfully created.' })
+	@ApiResponse({ status: 400, description: 'Bad Request.' })
+	async createPermissionsBulk(
+		@Body() createPermissionsDto: CreateStudentCriterionPermissionDto[],
+	) {
+		return this.studentCriterionScoresService.bulkCreatePermissions(
+			createPermissionsDto,
+		);
+	}
+
+	@Auth()
+	@Get('permissions')
+	@ApiOperation({ summary: 'Get all student criterion permissions with filters' })
+	@ApiResponse({ status: 200, description: 'List of permissions.' })
+	async findAllPermissions(@Query() query: QueryStudentCriterionPermissionDto) {
+		return this.studentCriterionScoresService.findAllPermissions(query);
+	}
+
+	@Auth()
+	@Get('permissions/:id')
+	@ApiOperation({ summary: 'Get a student criterion permission by ID' })
+	@ApiResponse({ status: 200, description: 'Permission found.' })
+	@ApiResponse({ status: 404, description: 'Permission not found.' })
+	async findOnePermission(@Param('id', ParseIntPipe) id: number) {
+		return this.studentCriterionScoresService.findOnePermission(id);
+	}
+
+	@Auth()
+	@Patch('permissions/:id')
+	@ApiOperation({ summary: 'Update a student criterion permission by ID' })
+	@ApiResponse({ status: 200, description: 'Permission successfully updated.' })
+	@ApiResponse({ status: 404, description: 'Permission not found.' })
+	async updatePermission(
+		@Param('id', ParseIntPipe) id: number,
+		@Body() updateStudentCriterionPermissionDto: UpdateStudentCriterionPermissionDto,
+	) {
+		return this.studentCriterionScoresService.updatePermission(
+			id,
+			updateStudentCriterionPermissionDto,
+		);
+	}
+
+	@Roles(Role.Admin)
+	@Auth()
+	@Delete('permissions/:id')
+	@ApiOperation({ summary: 'Delete a student criterion permission by ID' })
+	@ApiResponse({ status: 200, description: 'Permission successfully deleted.' })
+	@ApiResponse({ status: 404, description: 'Permission not found.' })
+	async removePermission(@Param('id', ParseIntPipe) id: number) {
+		return this.studentCriterionScoresService.removePermission(id);
+	}
+
+	@Roles(Role.Admin)
+	@Auth()
+	@Delete('permissions')
+	@ApiOperation({ summary: 'Delete all permissions for an activity' })
+	@ApiResponse({ status: 200, description: 'Permissions successfully deleted.' })
+	async removePermissionsByActivity(@Query('activityId', ParseIntPipe) activityId: number) {
+		return this.studentCriterionScoresService.deletePermissionsByActivity(activityId);
 	}
 }

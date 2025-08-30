@@ -7,11 +7,13 @@ import { User } from 'src/modules/users/user.entity';
 import { Activity } from 'src/modules/activities/activity.entity';
 import { Criterion } from 'src/modules/criteria/criterion.entity';
 import { Institute } from 'src/modules/institutes/institute.entity';
+import { StudentCriterionPermission } from './student-criterion-permission.entity';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([
 			StudentCriterionScore,
+			StudentCriterionPermission,
 			User,
 			Activity,
 			Criterion,

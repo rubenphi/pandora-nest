@@ -12,18 +12,24 @@ import {
 	CreateStudentCriterionScoreDto,
 	QueryStudentCriterionScoreDto,
 	UpdateStudentCriterionScoreDto,
+	CreateStudentCriterionPermissionDto,
+	UpdateStudentCriterionPermissionDto,
+	QueryStudentCriterionPermissionDto,
 } from './dto';
 import { User } from 'src/modules/users/user.entity';
 import { Activity } from 'src/modules/activities/activity.entity';
 import { Criterion } from 'src/modules/criteria/criterion.entity';
 import { Institute } from 'src/modules/institutes/institute.entity';
 import { Role } from 'src/modules/auth/roles.decorator';
+import { StudentCriterionPermission } from './student-criterion-permission.entity';
 
 @Injectable()
 export class StudentCriterionScoresService {
 	constructor(
 		@InjectRepository(StudentCriterionScore)
 		private readonly studentCriterionScoreRepository: Repository<StudentCriterionScore>,
+		@InjectRepository(StudentCriterionPermission)
+		private readonly studentCriterionPermissionRepository: Repository<StudentCriterionPermission>,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Activity)
@@ -38,6 +44,56 @@ export class StudentCriterionScoresService {
 		createStudentCriterionScoreDto: CreateStudentCriterionScoreDto,
 		user: User,
 	): Promise<StudentCriterionScore> {
+		const permission = await this.studentCriterionPermissionRepository.findOne({
+			where: { id: createStudentCriterionScoreDto.permissionId },
+		});
+		if (user.rol === Role.Student && !permission) {
+			throw new UnauthorizedException(
+				`Students are not authorized to create scores.`,
+			);
+		} else if (user.rol === Role.Student && permission) {
+			if (permission.reviserType == 'Group') {
+				const userGroup = await this.userRepository.findOne({
+					where: {
+						id: user.id,
+						groups: { id: permission.reviserId, group: { active: true } },
+					},
+					relations: ['groups', 'groups.group'],
+				});
+				if (!userGroup) {
+					throw new UnauthorizedException(
+						`You are not authorized to create this score.`,
+					);
+				}
+			} else if (permission.reviserType == 'User') {
+				if (permission.reviserId !== user.id) {
+					throw new UnauthorizedException(
+						`You are not authorized to create this score.`,
+					);
+				}
+			}
+
+			if (permission.revisedType == 'User') {
+				if (permission.revisedId !== createStudentCriterionScoreDto.studentId) {
+					throw new UnauthorizedException(
+						`You are not authorized to create a score for this student.`,
+					);
+				}
+			} else if (permission.revisedType == 'Group') {
+				const studentGroup = await this.userRepository.findOne({
+					where: {
+						id: createStudentCriterionScoreDto.studentId,
+						groups: { id: permission.revisedId, group: { active: true } },
+					},
+					relations: ['groups', 'groups.group'],
+				});
+				if (!studentGroup) {
+					throw new UnauthorizedException(
+						`You are not authorized to create a score for this student.`,
+					);
+				}
+			}
+		}
 		const { studentId, criterionId } = createStudentCriterionScoreDto;
 
 		const existingScore = await this.studentCriterionScoreRepository.findOne({
@@ -160,6 +216,56 @@ export class StudentCriterionScoresService {
 		updateStudentCriterionScoreDto: UpdateStudentCriterionScoreDto,
 		user: User,
 	): Promise<StudentCriterionScore> {
+		const permission = await this.studentCriterionPermissionRepository.findOne({
+			where: { id: updateStudentCriterionScoreDto.permissionId },
+		});
+		if (user.rol === Role.Student && !permission) {
+			throw new UnauthorizedException(
+				`Students are not authorized to create scores.`,
+			);
+		} else if (user.rol === Role.Student && permission) {
+			if (permission.reviserType == 'Group') {
+				const userGroup = await this.userRepository.findOne({
+					where: {
+						id: user.id,
+						groups: { id: permission.reviserId, group: { active: true } },
+					},
+					relations: ['groups', 'groups.group'],
+				});
+				if (!userGroup) {
+					throw new UnauthorizedException(
+						`You are not authorized to create this score.`,
+					);
+				}
+			} else if (permission.reviserType == 'User') {
+				if (permission.reviserId !== user.id) {
+					throw new UnauthorizedException(
+						`You are not authorized to create this score.`,
+					);
+				}
+			}
+
+			if (permission.revisedType == 'User') {
+				if (permission.revisedId !== updateStudentCriterionScoreDto.studentId) {
+					throw new UnauthorizedException(
+						`You are not authorized to create a score for this student.`,
+					);
+				}
+			} else if (permission.revisedType == 'Group') {
+				const studentGroup = await this.userRepository.findOne({
+					where: {
+						id: updateStudentCriterionScoreDto.studentId,
+						groups: { id: permission.revisedId, group: { active: true } },
+					},
+					relations: ['groups', 'groups.group'],
+				});
+				if (!studentGroup) {
+					throw new UnauthorizedException(
+						`You are not authorized to create a score for this student.`,
+					);
+				}
+			}
+		}
 		const score = await this.studentCriterionScoreRepository.findOneBy({ id });
 		if (!score) {
 			throw new NotFoundException(
@@ -269,5 +375,88 @@ export class StudentCriterionScoresService {
 				`StudentCriterionScore with ID ${id} not found`,
 			);
 		}
+	}
+
+	async createPermission(
+		createStudentCriterionPermissionDto: CreateStudentCriterionPermissionDto,
+	): Promise<StudentCriterionPermission> {
+		const newPermission: StudentCriterionPermission =
+			this.studentCriterionPermissionRepository.create(
+				createStudentCriterionPermissionDto,
+			);
+
+		return this.studentCriterionPermissionRepository.save(newPermission);
+	}
+
+	async findAllPermissions(
+		query: QueryStudentCriterionPermissionDto,
+	): Promise<StudentCriterionPermission[]> {
+		const where: any = {
+			reviserId: query.reviserId,
+			revisedId: query.revisedId,
+			reviserType: query.reviserType,
+			revisedType: query.revisedType,
+			expired: query.expired,
+		};
+
+		return this.studentCriterionPermissionRepository.find({
+			where,
+		});
+	}
+
+	async findOnePermission(id: number): Promise<StudentCriterionPermission> {
+		const permission = await this.studentCriterionPermissionRepository.findOne({
+			where: { id },
+		});
+
+		if (!permission) {
+			throw new NotFoundException(
+				`StudentCriterionPermission with ID ${id} not found`,
+			);
+		}
+
+		return permission;
+	}
+
+	async updatePermission(
+		id: number,
+		updateStudentCriterionPermissionDto: UpdateStudentCriterionPermissionDto,
+	): Promise<StudentCriterionPermission> {
+		const permission = await this.studentCriterionPermissionRepository.preload({
+			id,
+			...updateStudentCriterionPermissionDto,
+		});
+
+		if (!permission) {
+			throw new NotFoundException(
+				`StudentCriterionPermission with ID ${id} not found`,
+			);
+		}
+
+		return this.studentCriterionPermissionRepository.save(permission);
+	}
+
+	async removePermission(id: number): Promise<void> {
+		const result = await this.studentCriterionPermissionRepository.delete(id);
+
+		if (result.affected === 0) {
+			throw new NotFoundException(
+				`StudentCriterionPermission with ID ${id} not found`,
+			);
+		}
+	}
+
+	async deletePermissionsByActivity(activityId: number): Promise<void> {
+		await this.studentCriterionPermissionRepository.delete({
+			activity: { id: activityId },
+		});
+	}
+
+	async bulkCreatePermissions(
+		createPermissionsDto: CreateStudentCriterionPermissionDto[],
+	): Promise<StudentCriterionPermission[]> {
+		const permissions =
+			this.studentCriterionPermissionRepository.create(createPermissionsDto);
+		return this.studentCriterionPermissionRepository.save(permissions);
 	}
 }

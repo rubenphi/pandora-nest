@@ -255,7 +255,12 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['groups', 'institute'],
+				relations: [
+					'groups',
+					'institute',
+					'groups.usersToGroup',
+					'groups.usersToGroup.user',
+				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -394,7 +399,9 @@ export class CoursesService {
 				await this.userToCourseRepository.save(existingAssignment);
 			} else {
 				// If not, create a new active assignment
-				const userToAssign = await this.userRepository.findOneBy({ id: userToAdd.userId });
+				const userToAssign = await this.userRepository.findOneBy({
+					id: userToAdd.userId,
+				});
 				if (!userToAssign) {
 					// Optional: throw an error or just skip this user if not found
 					continue;
