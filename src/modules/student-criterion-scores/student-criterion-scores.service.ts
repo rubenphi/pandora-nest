@@ -168,7 +168,7 @@ export class StudentCriterionScoresService {
 	async findOne(id: number, user: User): Promise<StudentCriterionScore> {
 		const score = await this.studentCriterionScoreRepository.findOne({
 			where: { id },
-			relations: ['student', 'activity', 'criterion', 'user', 'institute'],
+			relations: ['student', 'activity', 'criterion', 'institute'],
 		});
 
 		if (!score) {
@@ -266,7 +266,11 @@ export class StudentCriterionScoresService {
 				}
 			}
 		}
-		const score = await this.studentCriterionScoreRepository.findOneBy({ id });
+		const score: StudentCriterionScore =
+			await this.studentCriterionScoreRepository.findOne({
+				where: { id },
+				relations: ['institute'],
+			});
 		if (!score) {
 			throw new NotFoundException(
 				`StudentCriterionScore with ID ${id} not found`,

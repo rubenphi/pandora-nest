@@ -1,19 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsOptional, IsEnum, IsInt } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class QueryStudentCriterionPermissionDto {
 	@ApiProperty({ required: false })
 	@IsOptional()
-	@IsNumber()
 	@Type(() => Number)
+	@IsInt()
 	reviserId?: number;
 
 	@ApiProperty({ required: false })
 	@IsOptional()
-	@IsNumber()
 	@Type(() => Number)
+	@IsInt()
 	revisedId?: number;
+
+	@ApiProperty({ required: false })
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	activityId?: number;
 
 	@ApiProperty({
 		type: String,
@@ -22,6 +28,7 @@ export class QueryStudentCriterionPermissionDto {
 		enum: ['Group', 'User'],
 	})
 	@IsOptional()
+	@IsEnum(['Group', 'User'])
 	reviserType?: 'Group' | 'User';
 
 	@ApiProperty({
@@ -31,10 +38,14 @@ export class QueryStudentCriterionPermissionDto {
 		enum: ['Group', 'User'],
 	})
 	@IsOptional()
+	@IsEnum(['Group', 'User'])
 	revisedType?: 'Group' | 'User';
+
 	@ApiProperty({ required: false })
 	@IsOptional()
+	@Transform(({ value }) => {
+		return [true, 'enabled', 'true'].indexOf(value) > -1;
+	})
 	@IsBoolean()
-	@Type(() => Number)
 	expired?: boolean;
 }

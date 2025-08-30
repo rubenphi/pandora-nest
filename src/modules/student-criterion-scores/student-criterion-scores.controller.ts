@@ -22,20 +22,19 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from 'src/modules/auth/roles.decorator';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
+
 import { User as UserEntity } from 'src/modules/users/user.entity';
 
 @ApiTags('student-criterion-scores')
 @Controller('student-criterion-scores')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class StudentCriterionScoresController {
 	constructor(
 		private readonly studentCriterionScoresService: StudentCriterionScoresService,
 	) {}
 
+	// ---------- SCORES ----------
 	@Auth()
-	@Post()
+	@Post('create')
 	@ApiOperation({ summary: 'Create a new student criterion score' })
 	@ApiResponse({ status: 201, description: 'Score successfully created.' })
 	@ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -50,7 +49,7 @@ export class StudentCriterionScoresController {
 	}
 
 	@Auth()
-	@Get()
+	@Get('getAll')
 	@ApiOperation({ summary: 'Get all student criterion scores with filters' })
 	@ApiResponse({ status: 200, description: 'List of scores.' })
 	async findAll(
@@ -61,24 +60,12 @@ export class StudentCriterionScoresController {
 	}
 
 	@Auth()
-	@Get(':id')
-	@ApiOperation({ summary: 'Get a student criterion score by ID' })
-	@ApiResponse({ status: 200, description: 'Score found.' })
-	@ApiResponse({ status: 404, description: 'Score not found.' })
-	async findOne(
-		@Param('id', ParseIntPipe) id: number,
-		@User() user: UserEntity,
-	) {
-		return this.studentCriterionScoresService.findOne(id, user);
-	}
-
-	@Auth()
-	@Patch(':id')
+	@Patch('update/:id')
 	@ApiOperation({ summary: 'Update a student criterion score by ID' })
 	@ApiResponse({ status: 200, description: 'Score successfully updated.' })
 	@ApiResponse({ status: 404, description: 'Score not found.' })
 	async update(
-		@Param('id', ParseIntPipe) id: number,
+		@Param('id') id: number,
 		@Body() updateStudentCriterionScoreDto: UpdateStudentCriterionScoreDto,
 		@User() user: UserEntity,
 	) {
@@ -89,26 +76,34 @@ export class StudentCriterionScoresController {
 		);
 	}
 
+	@Auth()
+	@Get('getOne/:id')
+	@ApiOperation({ summary: 'Get a student criterion score by ID' })
+	@ApiResponse({ status: 200, description: 'Score found.' })
+	@ApiResponse({ status: 404, description: 'Score not found.' })
+	async findOne(@Param('id') id: number, @User() user: UserEntity) {
+		return this.studentCriterionScoresService.findOne(id, user);
+	}
+
 	@Roles(Role.Admin)
 	@Auth()
-	@Delete(':id')
+	@Delete('delete/:id')
 	@ApiOperation({ summary: 'Delete a student criterion score by ID' })
 	@ApiResponse({ status: 200, description: 'Score successfully deleted.' })
 	@ApiResponse({ status: 404, description: 'Score not found.' })
-	async remove(
-		@Param('id', ParseIntPipe) id: number,
-		@User() user: UserEntity,
-	) {
+	async remove(@Param('id') id: number, @User() user: UserEntity) {
 		return this.studentCriterionScoresService.remove(id, user);
 	}
 
+	// ---------- PERMISSIONS ----------
 	@Auth()
 	@Post('permissions')
 	@ApiOperation({ summary: 'Create a new student criterion permission' })
 	@ApiResponse({ status: 201, description: 'Permission successfully created.' })
 	@ApiResponse({ status: 400, description: 'Bad Request.' })
 	async createPermission(
-		@Body() createStudentCriterionPermissionDto: CreateStudentCriterionPermissionDto,
+		@Body()
+		createStudentCriterionPermissionDto: CreateStudentCriterionPermissionDto,
 	) {
 		return this.studentCriterionScoresService.createPermission(
 			createStudentCriterionPermissionDto,
@@ -118,7 +113,10 @@ export class StudentCriterionScoresController {
 	@Auth()
 	@Post('permissions/bulk')
 	@ApiOperation({ summary: 'Create multiple student criterion permissions' })
-	@ApiResponse({ status: 201, description: 'Permissions successfully created.' })
+	@ApiResponse({
+		status: 201,
+		description: 'Permissions successfully created.',
+	})
 	@ApiResponse({ status: 400, description: 'Bad Request.' })
 	async createPermissionsBulk(
 		@Body() createPermissionsDto: CreateStudentCriterionPermissionDto[],
@@ -130,10 +128,12 @@ export class StudentCriterionScoresController {
 
 	@Auth()
 	@Get('permissions')
-	@ApiOperation({ summary: 'Get all student criterion permissions with filters' })
-	@ApiResponse({ status: 200, description: 'List of permissions.' })
-	async findAllPermissions(@Query() query: QueryStudentCriterionPermissionDto) {
-		return this.studentCriterionScoresService.findAllPermissions(query);
+	findAllPermissions(
+		@Query() queryPermission: QueryStudentCriterionPermissionDto,
+	): Promise<any> {
+		return this.studentCriterionScoresService.findAllPermissions(
+			queryPermission,
+		);
 	}
 
 	@Auth()
@@ -141,7 +141,7 @@ export class StudentCriterionScoresController {
 	@ApiOperation({ summary: 'Get a student criterion permission by ID' })
 	@ApiResponse({ status: 200, description: 'Permission found.' })
 	@ApiResponse({ status: 404, description: 'Permission not found.' })
-	async findOnePermission(@Param('id', ParseIntPipe) id: number) {
+	async findOnePermission(@Param('id') id: number) {
 		return this.studentCriterionScoresService.findOnePermission(id);
 	}
 
@@ -151,8 +151,9 @@ export class StudentCriterionScoresController {
 	@ApiResponse({ status: 200, description: 'Permission successfully updated.' })
 	@ApiResponse({ status: 404, description: 'Permission not found.' })
 	async updatePermission(
-		@Param('id', ParseIntPipe) id: number,
-		@Body() updateStudentCriterionPermissionDto: UpdateStudentCriterionPermissionDto,
+		@Param('id') id: number,
+		@Body()
+		updateStudentCriterionPermissionDto: UpdateStudentCriterionPermissionDto,
 	) {
 		return this.studentCriterionScoresService.updatePermission(
 			id,
@@ -166,7 +167,7 @@ export class StudentCriterionScoresController {
 	@ApiOperation({ summary: 'Delete a student criterion permission by ID' })
 	@ApiResponse({ status: 200, description: 'Permission successfully deleted.' })
 	@ApiResponse({ status: 404, description: 'Permission not found.' })
-	async removePermission(@Param('id', ParseIntPipe) id: number) {
+	async removePermission(@Param('id') id: number) {
 		return this.studentCriterionScoresService.removePermission(id);
 	}
 
@@ -174,8 +175,13 @@ export class StudentCriterionScoresController {
 	@Auth()
 	@Delete('permissions')
 	@ApiOperation({ summary: 'Delete all permissions for an activity' })
-	@ApiResponse({ status: 200, description: 'Permissions successfully deleted.' })
-	async removePermissionsByActivity(@Query('activityId', ParseIntPipe) activityId: number) {
-		return this.studentCriterionScoresService.deletePermissionsByActivity(activityId);
+	@ApiResponse({
+		status: 200,
+		description: 'Permissions successfully deleted.',
+	})
+	async removePermissionsByActivity(@Query('activityId') activityId: number) {
+		return this.studentCriterionScoresService.deletePermissionsByActivity(
+			activityId,
+		);
 	}
 }
