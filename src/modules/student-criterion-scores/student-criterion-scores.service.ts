@@ -385,9 +385,10 @@ export class StudentCriterionScoresService {
 		createStudentCriterionPermissionDto: CreateStudentCriterionPermissionDto,
 	): Promise<StudentCriterionPermission> {
 		const newPermission: StudentCriterionPermission =
-			this.studentCriterionPermissionRepository.create(
-				createStudentCriterionPermissionDto,
-			);
+			this.studentCriterionPermissionRepository.create({
+				...createStudentCriterionPermissionDto,
+				activity: { id: createStudentCriterionPermissionDto.activityId },
+			});
 
 		return this.studentCriterionPermissionRepository.save(newPermission);
 	}
@@ -401,11 +402,19 @@ export class StudentCriterionScoresService {
 			reviserType: query.reviserType,
 			revisedType: query.revisedType,
 			expired: query.expired,
+			activity: { id: query.activityId },
 		};
 
-		return this.studentCriterionPermissionRepository.find({
-			where,
+		const returnData: StudentCriterionPermission[] =
+			await this.studentCriterionPermissionRepository.find({
+				where,
+				relations: ['activity'],
+			});
+
+		returnData.forEach((permission) => {
+			console.log(JSON.stringify(permission));
 		});
+		return returnData;
 	}
 
 	async findOnePermission(id: number): Promise<StudentCriterionPermission> {
@@ -458,9 +467,75 @@ export class StudentCriterionScoresService {
 
 	async bulkCreatePermissions(
 		createPermissionsDto: CreateStudentCriterionPermissionDto[],
-	): Promise<StudentCriterionPermission[]> {
-		const permissions =
-			this.studentCriterionPermissionRepository.create(createPermissionsDto);
-		return this.studentCriterionPermissionRepository.save(permissions);
+	): Promise<any> {
+		const activityId = createPermissionsDto[0]?.activityId;
+		if (!activityId) {
+			// If the payload is empty, we can't know which activity to sync.
+			// The frontend should handle this by calling the DELETE endpoint if it wants to clear everything.
+			return { created: 0, updated: 0, expired: 0 };
+		}
+
+		// 1. Get all existing permissions for the activity.
+		const existingPermissions =
+			await this.studentCriterionPermissionRepository.find({
+				where: { activity: { id: activityId } },
+			});
+
+		const summary = { created: 0, updated: 0, expired: 0 };
+		const promises = [];
+
+		// Use a Map for efficient lookup of desired permissions.
+		const desiredPermissions = new Map<
+			string,
+			CreateStudentCriterionPermissionDto
+		>();
+		for (const dto of createPermissionsDto) {
+			const key = `${dto.reviserType}-${dto.reviserId}-${dto.revisedType}-${dto.revisedId}`;
+			desiredPermissions.set(key, dto);
+		}
+
+		// 2. Check existing permissions: expire those no longer desired, or re-activate those that are desired again.
+		for (const existing of existingPermissions) {
+			const key = `${existing.reviserType}-${existing.reviserId}-${existing.revisedType}-${existing.revisedId}`;
+			if (desiredPermissions.has(key)) {
+				// It's desired. If it was expired, re-activate it.
+				if (existing.expired) {
+					existing.expired = false;
+					promises.push(
+						this.studentCriterionPermissionRepository.save(existing),
+					);
+					summary.updated++;
+				}
+				desiredPermissions.delete(key);
+			} else {
+				// It's not desired. If it's not already expired, expire it.
+				if (!existing.expired) {
+					existing.expired = true;
+					promises.push(
+						this.studentCriterionPermissionRepository.save(existing),
+					);
+					summary.expired++;
+				}
+			}
+		}
+
+		// 3. Create new permissions: any left in the map are new.
+		if (desiredPermissions.size > 0) {
+			const toCreateDtos = Array.from(desiredPermissions.values());
+			// Manually map DTOs to entities to ensure the activity relation is set correctly
+			const newPermissionEntities = toCreateDtos.map((dto) => {
+				return this.studentCriterionPermissionRepository.create({
+					...dto,
+					activity: { id: dto.activityId } as Activity,
+				});
+			});
+			promises.push(
+				this.studentCriterionPermissionRepository.save(newPermissionEntities),
+			);
+			summary.created = newPermissionEntities.length;
+		}
+
+		await Promise.all(promises);
+		return summary;
 	}
 }

@@ -72,7 +72,13 @@ export class QuestionsService {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['institute', 'options', 'quiz'],
+				relations: [
+					'institute',
+					'options',
+					'quiz',
+					'quiz.lesson',
+					'quiz.lesson.period',
+				],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');

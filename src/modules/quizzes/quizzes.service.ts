@@ -9,7 +9,7 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, In, Like, QueryFailedError, Repository } from 'typeorm';
 
 import { Quiz } from './quiz.entity';
 import {
@@ -69,9 +69,11 @@ export class QuizzesService {
 	// Replicating getLessons as getQuizzes
 	async getQuizzes(queryQuiz: QueryQuizDto): Promise<Quiz[]> {
 		if (queryQuiz) {
+			console.log(queryQuiz);
+
 			return await this.quizRepository.find({
 				where: {
-					title: queryQuiz.title,
+					title: Like(`%${queryQuiz.title}%`),
 					quizType: queryQuiz.quizType,
 					lesson: {
 						id: queryQuiz.lessonId,
