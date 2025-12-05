@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsBoolean, IsNumber } from 'class-validator';
+import { IsInt, IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateAnswerDto {
 	@ApiProperty({
@@ -14,12 +14,16 @@ export class CreateAnswerDto {
 	readonly questionId: number;
 	@ApiProperty({
 		description: 'Group´s id of answer',
+        required: false
 	})
+    @IsOptional()
 	@IsInt()
 	readonly groupId: number;
 	@ApiProperty({
 		description: 'User´s id of answer',
+        required: false
 	})
+    @IsOptional()
 	@IsInt()
 	readonly userId: number;
 

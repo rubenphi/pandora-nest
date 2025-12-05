@@ -36,6 +36,15 @@ export class QueryAnswerDto {
 	@IsInt()
 	readonly quizId?: number;
 
+    @ApiProperty({
+		description: 'Search answer using user id',
+		required: false,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly userId?: number;
+
 	@ApiProperty({
 		description: 'Institute id of query',
 		required: false,

@@ -48,6 +48,7 @@ export class AnswersService {
 						},
 					},
 					group: { id: queryAnswer.groupId },
+                    user: { id: queryAnswer.userId },
 					exist: queryAnswer.exist,
 					institute: {
 						id:

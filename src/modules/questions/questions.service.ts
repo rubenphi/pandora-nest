@@ -265,6 +265,7 @@ export class QuestionsService {
 					'answers',
 					'answers.option',
 					'answers.group',
+					'answers.user',
 					'institute',
 					'quiz',
 				],
