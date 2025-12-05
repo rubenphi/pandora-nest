@@ -6,7 +6,7 @@ import {
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In } from 'typeorm';
+import { Repository, Between, In, Brackets } from 'typeorm';
 import { Grade } from './grade.entity';
 import { User } from '../users/user.entity';
 import { Quiz } from '../quizzes/quiz.entity';
@@ -238,5 +238,65 @@ export class GradesService {
 			throw new NotFoundException(`${type} with ID ${id} not found`);
 		}
 		return item;
+	}
+
+	async getStudentAverages(
+		courseId: number,
+		periodId: number,
+		year: number,
+	): Promise<{ studentId: number; average: number }[]> {
+		const quizIds = (
+			await this.quizRepository.find({
+				where: { lesson: { course: { id: courseId }, year } },
+				select: { id: true },
+			})
+		).map((q) => q.id);
+
+		const activityIds = (
+			await this.activityRepository.find({
+				where: { lesson: { course: { id: courseId }, year } },
+				select: { id: true },
+			})
+		).map((a) => a.id);
+
+		if (quizIds.length === 0 && activityIds.length === 0) {
+			return [];
+		}
+
+		const grades = await this.gradeRepository
+			.createQueryBuilder('grade')
+			.select('grade.userId', 'studentId')
+			.addSelect('AVG(grade.grade)', 'average')
+			.where('grade.periodId = :periodId', { periodId })
+			.andWhere(
+				new Brackets((qb) => {
+					if (quizIds.length > 0) {
+						qb.where(
+							'(grade.gradableType = :quizType AND grade.gradableId IN (:...quizIds))',
+							{ quizType: 'quiz', quizIds },
+						);
+					}
+					if (activityIds.length > 0) {
+						if (quizIds.length > 0) {
+							qb.orWhere(
+								'(grade.gradableType = :activityType AND grade.gradableId IN (:...activityIds))',
+								{ activityType: 'activity', activityIds },
+							);
+						} else {
+							qb.where(
+								'(grade.gradableType = :activityType AND grade.gradableId IN (:...activityIds))',
+								{ activityType: 'activity', activityIds },
+							);
+						}
+					}
+				}),
+			)
+			.groupBy('grade.userId')
+			.getRawMany();
+
+		return grades.map((g) => ({
+			studentId: parseInt(g.studentId),
+			average: parseFloat(g.average),
+		}));
 	}
 }

@@ -74,4 +74,11 @@ export class QueryLessonDto {
 	})
 	@IsBoolean()
 	readonly exist?: boolean;
+	@ApiProperty({
+		description: 'Type of lesson',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	readonly type?: string;
 }

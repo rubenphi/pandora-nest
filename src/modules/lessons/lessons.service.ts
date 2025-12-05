@@ -54,6 +54,7 @@ export class LessonsService {
 					exist: queryLesson.exist,
 					period: { id: queryLesson.periodId },
 					institute: { id: queryLesson.instituteId },
+					type: queryLesson.type as any, // Cast to any or LessonType if imported
 				},
 				relations: ['course', 'area', 'institute'],
 			});

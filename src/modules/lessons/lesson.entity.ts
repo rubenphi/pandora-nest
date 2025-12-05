@@ -21,6 +21,11 @@ import { LessonItem } from '../lesson-items/lesson-item.entity';
 import { Quiz } from 'src/modules/quizzes/quiz.entity';
 import { Material } from '../materials/material.entity';
 
+export enum LessonType {
+	STANDARD = 'standard',
+	REINFORCEMENT = 'reinforcement',
+}
+
 @Entity()
 export class Lesson {
 	@PrimaryGeneratedColumn('increment')
@@ -56,6 +61,12 @@ export class Lesson {
 	materials: Material[];
 	@Column({ nullable: false })
 	exist: boolean;
+	@Column({
+		type: 'enum',
+		enum: LessonType,
+		default: LessonType.STANDARD,
+	})
+	type: LessonType;
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

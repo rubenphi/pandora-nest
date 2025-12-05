@@ -28,6 +28,15 @@ export class GradesController {
 		return this.gradesService.findAll(queryGrades);
 	}
 
+	@Get('averages')
+	getStudentAverages(
+		@Query('courseId') courseId: number,
+		@Query('periodId') periodId: number,
+		@Query('year') year: number,
+	) {
+		return this.gradesService.getStudentAverages(courseId, periodId, year);
+	}
+
 	@Get(':id')
 	findOne(@Param('id') id: string): Promise<Grade> {
 		return this.gradesService.findOne(+id);
