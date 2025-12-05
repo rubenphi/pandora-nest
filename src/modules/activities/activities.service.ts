@@ -6,6 +6,8 @@ import { CreateActivityDto, QueryActivityDto, UpdateActivityDto } from './dto';
 import { User } from 'src/modules/users/user.entity';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Institute } from 'src/modules/institutes/institute.entity';
+import { Grade } from '../grades/grade.entity';
+import { StudentCriterionScore } from '../student-criterion-scores/student-criterion-score.entity';
 
 @Injectable()
 export class ActivitiesService {
@@ -16,6 +18,10 @@ export class ActivitiesService {
 		private readonly lessonRepository: Repository<Lesson>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(Grade)
+		private readonly gradeRepository: Repository<Grade>,
+		@InjectRepository(StudentCriterionScore)
+		private readonly studentCriterionScoreRepository: Repository<StudentCriterionScore>,
 	) {}
 
 	async create(
@@ -55,7 +61,9 @@ export class ActivitiesService {
 	}
 
 	async findAll(query: QueryActivityDto): Promise<Activity[]> {
-		return this.activityRepository.find({
+		console.log(query.lessonId);
+
+		return await this.activityRepository.find({
 			where: {
 				title: query.title ? ILike(`%${query.title}%`) : null,
 				institute: { id: query.instituteId },
@@ -135,5 +143,85 @@ export class ActivitiesService {
 		if (result.affected === 0) {
 			throw new NotFoundException(`Activity with ID ${id} not found`);
 		}
+	}
+
+	/* 	async getPendingGrading(query: QueryQuizDto): Promise<Quiz[]> {
+			const { courseId, periodId, year, instituteId } = query;
+	
+			const quizzes: Quiz[] = await this.quizRepository.find({
+				relations: ['lesson'],
+				where: {
+					lesson: {
+						course: { id: courseId },
+						period: { id: periodId },
+						year: year,
+					},
+					institute: { id: instituteId },
+				},
+			});
+	
+			const quizzesWithPendingGrading: Quiz[] = [];
+			for (const quiz of quizzes) {
+				const answersCount = await this.answerRepository.count({
+					where: { quiz: { id: quiz.id } },
+				});
+				console.log(quiz.lesson.topic, ':', answersCount);
+	
+				const gradesCount = await this.gradeRepository.count({
+					where: {
+						gradableId: quiz.id,
+						gradableType: 'quiz',
+					},
+				});
+	
+				console.log(quiz.lesson.topic, ':', gradesCount);
+	
+				if (answersCount > gradesCount) {
+					console.log(quiz.title);
+					quizzesWithPendingGrading.push(quiz);
+				}
+			}
+	
+			return quizzesWithPendingGrading;
+		}
+	} */
+
+	async getPendingGrading(query: QueryActivityDto): Promise<Activity[]> {
+		const { courseId, periodId, year, instituteId } = query;
+
+		const activities: Activity[] = await this.activityRepository.find({
+			relations: ['lesson'],
+			where: {
+				lesson: {
+					course: { id: courseId },
+					period: { id: periodId },
+					year: year,
+				},
+				institute: { id: instituteId },
+			},
+		});
+
+		const activitiesWithPendingGrading: Activity[] = [];
+		for (const activity of activities) {
+			const scoresCount = await this.studentCriterionScoreRepository.count({
+				where: { activity: { id: activity.id } },
+			});
+			console.log(activity.lesson.topic, ':', scoresCount);
+
+			const gradesCount = await this.gradeRepository.count({
+				where: {
+					gradableId: activity.id,
+					gradableType: 'activity',
+				},
+			});
+
+			console.log(activity.lesson.topic, ':', gradesCount);
+
+			if (scoresCount > gradesCount) {
+				console.log(activity.title);
+				activitiesWithPendingGrading.push(activity);
+			}
+		}
+		return activitiesWithPendingGrading;
 	}
 }

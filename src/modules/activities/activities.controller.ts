@@ -47,6 +47,15 @@ export class ActivitiesController {
 		return this.activitiesService.findAll(query);
 	}
 
+	@Roles(Role.Admin, Role.Teacher)
+	@Auth()
+	@Get('pending-grading')
+	@ApiOperation({ summary: 'Get all activities pending for grading' })
+	@ApiResponse({ status: 200, description: 'List of pending activities.' })
+	getPendingGradingActivities(@Query() query: QueryActivityDto) {
+		return this.activitiesService.getPendingGrading(query);
+	}
+
 	@Auth()
 	@Get(':id')
 	@ApiOperation({ summary: 'Get an activity by ID' })

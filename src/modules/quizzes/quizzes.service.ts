@@ -32,6 +32,7 @@ import { Course } from '../courses/course.entity';
 import { Area } from '../areas/area.entity';
 import { Period } from '../periods/period.entity';
 import { ResultLessonDto } from '../lessons/dto/result-lesson.dto';
+import { Grade } from '../grades/grade.entity';
 
 @Injectable()
 export class QuizzesService {
@@ -55,6 +56,8 @@ export class QuizzesService {
 		private readonly answerRepository: Repository<Answer>,
 		@InjectRepository(Option) // New injection
 		private readonly optionRepository: Repository<Option>,
+		@InjectRepository(Grade)
+		private readonly gradeRepository: Repository<Grade>,
 		private readonly activitiesService: ActivitiesService,
 		private readonly materialsService: MaterialsService,
 	) {}
@@ -73,7 +76,7 @@ export class QuizzesService {
 
 			return await this.quizRepository.find({
 				where: {
-					title: Like(`%${queryQuiz.title}%`),
+					title: queryQuiz.title ? Like(`%${queryQuiz.title}%`) : null,
 					quizType: queryQuiz.quizType,
 					lesson: {
 						id: queryQuiz.lessonId,
@@ -472,5 +475,45 @@ export class QuizzesService {
 		const points = quiz.questions.reduce((res, value) => res + value.points, 0);
 
 		return { points };
+	}
+
+	async getPendingGrading(query: QueryQuizDto): Promise<Quiz[]> {
+		const { courseId, periodId, year, instituteId } = query;
+
+		const quizzes: Quiz[] = await this.quizRepository.find({
+			relations: ['lesson'],
+			where: {
+				lesson: {
+					course: { id: courseId },
+					period: { id: periodId },
+					year: year,
+				},
+				institute: { id: instituteId },
+			},
+		});
+
+		const quizzesWithPendingGrading: Quiz[] = [];
+		for (const quiz of quizzes) {
+			const answersCount = await this.answerRepository.count({
+				where: { quiz: { id: quiz.id } },
+			});
+			console.log(quiz.lesson.topic, ':', answersCount);
+
+			const gradesCount = await this.gradeRepository.count({
+				where: {
+					gradableId: quiz.id,
+					gradableType: 'quiz',
+				},
+			});
+
+			console.log(quiz.lesson.topic, ':', gradesCount);
+
+			if (answersCount > gradesCount) {
+				console.log(quiz.title);
+				quizzesWithPendingGrading.push(quiz);
+			}
+		}
+
+		return quizzesWithPendingGrading;
 	}
 }

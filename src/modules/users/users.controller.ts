@@ -21,6 +21,10 @@ import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
 import { UserToGroup } from './userToGroup.entity';
 import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 import { UserToGroupDto } from './dto/user-to-group.dto';
+import {
+	AssignmentType,
+	DeactivateUserAssignmentsDto,
+} from './dto/deactivate-user-assignments.dto';
 
 @ApiTags('Users Routes')
 @Controller('users')
@@ -87,5 +91,17 @@ export class UsersController {
 		@UserDecorator() userLoged: User,
 	): Promise<UserToGroup> {
 		return this.userService.addUserToGroup(userToGroup, userLoged);
+	}
+
+	@Auth()
+	@Patch(':id/deactivate-assignments')
+	deactivateUserAssignments(
+		@Param('id') id: number,
+		@Body() deactivateDto: DeactivateUserAssignmentsDto,
+	): Promise<void> {
+		return this.userService.deactivateUserAssignments(
+			id,
+			deactivateDto.assignmentTypes,
+		);
 	}
 }

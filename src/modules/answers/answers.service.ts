@@ -389,11 +389,12 @@ export class AnswersService {
 			throw new ForbiddenException('You are not allowed to update this answer');
 		}
 
-		/* 	const answerUpdated: Answer = await this.answerRepository.preload({
+		const answerUpdated: Answer = await this.answerRepository.preload({
 			id: answer.id,
-			points: answer.question.points * 1.5,
+			points: answer.question.points * 1.01,
 		});
- */
+		await this.answerRepository.save(answerUpdated);
+
 		const questionUpdated: Question = await this.questionRepository.preload({
 			id: id,
 			available: false,

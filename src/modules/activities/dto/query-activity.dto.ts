@@ -25,6 +25,12 @@ export class QueryActivityDto {
 	@IsOptional()
 	@IsNumber()
 	@Type(() => Number)
+	periodId?: number;
+
+	@ApiProperty({ required: false })
+	@IsOptional()
+	@IsNumber()
+	@Type(() => Number)
 	year?: number;
 
 	@ApiProperty({ required: false })

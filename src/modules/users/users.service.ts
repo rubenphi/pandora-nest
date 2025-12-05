@@ -18,6 +18,7 @@ import { QueryUserGroupsDto } from './dto/query-users-group.dto';
 import { UserToGroup } from './userToGroup.entity';
 import { Role } from '../auth/roles.decorator';
 import { UserToGroupDto } from './dto/user-to-group.dto';
+import { AssignmentType } from './dto/deactivate-user-assignments.dto';
 
 @Injectable()
 export class UsersService {
@@ -294,5 +295,34 @@ export class UsersService {
 
 			return userToGroupSave;
 		});
+	}
+
+	async deactivateUserAssignments(
+		userId: number,
+		assignmentTypes: AssignmentType[],
+	): Promise<void> {
+		if (assignmentTypes.includes(AssignmentType.COURSE)) {
+			const assignments: UserToCourse[] =
+				await this.userToCourseRepository.find({
+					where: { user: { id: userId }, active: true },
+				});
+			for await (const assignment of assignments) {
+				await this.userToCourseRepository.update(assignment.id, {
+					active: false,
+				});
+			}
+		}
+
+		if (assignmentTypes.includes(AssignmentType.GROUP)) {
+			const groupAssignments: UserToGroup[] =
+				await this.userToGroupsRepository.find({
+					where: { user: { id: userId }, active: true },
+				});
+			for await (const assignment of groupAssignments) {
+				await this.userToGroupsRepository.update(assignment.id, {
+					active: false,
+				});
+			}
+		}
 	}
 }

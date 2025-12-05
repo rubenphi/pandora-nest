@@ -36,6 +36,13 @@ export class QuizzesController {
 		return this.quizzesService.getQuizzes(queryQuiz);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Get('pending-grading')
+	getPendingGradingQuizzes(@Query() query: QueryQuizDto): Promise<Quiz[]> {
+		return this.quizzesService.getPendingGrading(query);
+	}
+
 	@Auth()
 	@Get(':id')
 	getQuiz(@Param('id') id: number, @User() user: UserEntity): Promise<Quiz> {
