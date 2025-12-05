@@ -379,4 +379,22 @@ export class ReinforcementService {
 
 		return lesson;
 	}
+
+	async countStudentReinforcements(
+		studentId: number,
+		courseId: number,
+		areaId: number,
+		periodId: number,
+		year: number,
+	) {
+		return this.reinforcementRepository.count({
+			where: {
+				student: { id: studentId },
+				course: { id: courseId },
+				area: { id: areaId },
+				period: { id: periodId },
+				year: year,
+			},
+		});
+	}
 }

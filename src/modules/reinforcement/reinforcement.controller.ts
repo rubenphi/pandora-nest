@@ -6,6 +6,7 @@ import {
 	Patch,
 	Param,
 	Delete,
+	Query,
 } from '@nestjs/common';
 import { ReinforcementService } from './reinforcement.service';
 import {
@@ -51,6 +52,23 @@ export class ReinforcementController {
 		return this.reinforcementService.updateReinforcementLesson(
 			+id,
 			updateReinforcementLessonDto,
+		);
+	}
+
+	@Get('count')
+	countStudentReinforcements(
+		@Query('studentId') studentId: string,
+		@Query('courseId') courseId: string,
+		@Query('areaId') areaId: string,
+		@Query('periodId') periodId: string,
+		@Query('year') year: string,
+	) {
+		return this.reinforcementService.countStudentReinforcements(
+			+studentId,
+			+courseId,
+			+areaId,
+			+periodId,
+			+year,
 		);
 	}
 
