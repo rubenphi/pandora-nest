@@ -251,7 +251,7 @@ export class CoursesService {
 		return course.lessons;
 	}
 
-	async getGroupsByCourse(id: number, user: User): Promise<Group[]> {
+	async getGroupsByCourse(id: number, year: number, user: User): Promise<Group[]> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -277,6 +277,11 @@ export class CoursesService {
 					'You are not allowed to see groups of this course',
 				);
 			}
+		}
+
+		// Filter groups by year if year parameter is provided
+		if (year) {
+			return course.groups.filter((group) => group.year === Number(year));
 		}
 
 		return course.groups;

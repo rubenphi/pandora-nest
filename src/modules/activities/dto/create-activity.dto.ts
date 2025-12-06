@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateActivityDto {
@@ -21,4 +21,8 @@ export class CreateActivityDto {
 	@IsOptional()
 	@IsNumber()
 	instituteId?: number;
+
+	@IsOptional()
+	@IsEnum(['knowledge', 'execution', 'behavior'])
+	classification: 'knowledge' | 'execution' | 'behavior';
 }

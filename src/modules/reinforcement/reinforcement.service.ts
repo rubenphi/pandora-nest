@@ -110,6 +110,23 @@ export class ReinforcementService {
 		});
 	}
 
+	async findAllByContext(
+		courseId: number,
+		areaId: number,
+		periodId: number,
+		year: number,
+	) {
+		return this.reinforcementRepository.find({
+			where: {
+				course: { id: courseId },
+				area: { id: areaId },
+				period: { id: periodId },
+				year: year,
+			},
+			relations: ['student'],
+		});
+	}
+
 	findOne(id: number) {
 		return this.reinforcementRepository.findOne({
 			where: { id },

@@ -38,6 +38,15 @@ export class QueryGroupDto {
 	@Type(() => Number)
 	readonly periodId: number;
 
+	@ApiProperty({
+		description: 'Year of the group',
+		required: false,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly year?: number;
+
 	@IsOptional()
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;

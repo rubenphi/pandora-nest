@@ -33,6 +33,16 @@ export class UpdateQuizDto {
     required: false,
   })
   @IsOptional()
+  @IsOptional()
   @IsInt()
   readonly instituteId?: number;
+
+  @ApiProperty({
+    description: 'Classification of the quiz (knowledge, execution, behavior)',
+    enum: ['knowledge', 'execution', 'behavior'],
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(['knowledge', 'execution', 'behavior'])
+  readonly classification?: 'knowledge' | 'execution' | 'behavior';
 }

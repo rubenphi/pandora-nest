@@ -23,6 +23,13 @@ export class Quiz {
 	@Column({ type: 'enum', enum: ['group', 'individual'], default: 'group' })
 	quizType: 'group' | 'individual';
 
+	@Column({
+		type: 'enum',
+		enum: ['knowledge', 'execution', 'behavior'],
+		default: 'knowledge',
+	})
+	classification: 'knowledge' | 'execution' | 'behavior';
+
 	@OneToMany(() => Question, (question) => question.quiz)
 	questions: Question[];
 

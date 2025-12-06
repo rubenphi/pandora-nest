@@ -22,6 +22,13 @@ export class Activity {
 	@Column({ type: 'text', nullable: true })
 	instructions: string;
 
+	@Column({
+		type: 'enum',
+		enum: ['knowledge', 'execution', 'behavior'],
+		default: 'execution',
+	})
+	classification: 'knowledge' | 'execution' | 'behavior';
+
 	@ManyToOne(() => Lesson, (lesson) => lesson.activities)
 	@JoinColumn({ name: 'lessonId' })
 	lesson: Lesson;

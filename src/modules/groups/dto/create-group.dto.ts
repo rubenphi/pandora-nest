@@ -24,6 +24,11 @@ export class CreateGroupDto {
 	@IsInt()
 	readonly periodId: number;
 	@ApiProperty({
+		description: 'Year of the group',
+	})
+	@IsInt()
+	readonly year: number;
+	@ApiProperty({
 		description: 'Indicates if the group exist or was "deleted"',
 	})
 	@IsBoolean()

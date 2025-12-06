@@ -30,6 +30,21 @@ export class ReinforcementController {
 		return this.reinforcementService.findAll();
 	}
 
+	@Get('by-context')
+	findAllByContext(
+		@Query('courseId') courseId: string,
+		@Query('areaId') areaId: string,
+		@Query('periodId') periodId: string,
+		@Query('year') year: string,
+	) {
+		return this.reinforcementService.findAllByContext(
+			+courseId,
+			+areaId,
+			+periodId,
+			+year,
+		);
+	}
+
 	@Post('lesson')
 	createLesson(
 		@Body() createReinforcementLessonDto: CreateReinforcementLessonDto,

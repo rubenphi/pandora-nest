@@ -51,6 +51,17 @@ export class CreateGradeDto {
 	readonly gradeType?: 'regular' | 'support';
 
 	@ApiProperty({
+		type: String,
+		description: 'Classification of the grade (knowledge, execution, behavior)',
+		enum: ['knowledge', 'execution', 'behavior'],
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	@IsIn(['knowledge', 'execution', 'behavior'])
+	readonly classification?: 'knowledge' | 'execution' | 'behavior';
+
+	@ApiProperty({
 		type: Number,
 		nullable: false,
 		description: 'Period to add Id',

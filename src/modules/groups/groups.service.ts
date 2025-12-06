@@ -43,7 +43,7 @@ export class GroupsService {
 					name: queryGroup.name,
 					course: { id: queryGroup.courseId },
 					period: { id: queryGroup.periodId },
-
+					year: queryGroup.year,
 					exist: queryGroup.exist,
 					institute: {
 						id:
@@ -114,7 +114,7 @@ export class GroupsService {
 			institute,
 			course,
 			period,
-
+			year: groupDto.year,
 			exist: groupDto.exist,
 			active: groupDto.active,
 		});
@@ -155,7 +155,7 @@ export class GroupsService {
 			name: groupDto.name,
 			institute,
 			course,
-
+			year: groupDto.year,
 			period,
 			exist: groupDto.exist,
 			active: groupDto.active,

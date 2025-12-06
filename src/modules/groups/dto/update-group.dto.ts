@@ -32,6 +32,13 @@ export class UpdateGroupDto {
 	@IsInt()
 	readonly periodId: number;
 	@ApiProperty({
+		description: 'Year of the group',
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly year: number;
+	@ApiProperty({
 		description: 'Indicates if the group is exist or was "deleted"',
 	})
 	@IsOptional()

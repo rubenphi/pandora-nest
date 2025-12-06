@@ -40,6 +40,13 @@ export class Grade {
 	@Column({ type: 'enum', enum: ['regular', 'support'], default: 'regular' })
 	gradeType: 'regular' | 'support';
 
+	@Column({
+		type: 'enum',
+		enum: ['knowledge', 'execution', 'behavior'],
+		nullable: true, 
+	})
+	classification: 'knowledge' | 'execution' | 'behavior';
+
 	@ManyToOne(() => Period)
 	@JoinTable({ name: 'periodId' })
 	period: Period;

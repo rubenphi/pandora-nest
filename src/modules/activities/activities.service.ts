@@ -217,7 +217,7 @@ export class ActivitiesService {
 
 			console.log(activity.lesson.topic, ':', gradesCount);
 
-			if (scoresCount > gradesCount) {
+			if (scoresCount > 0 && gradesCount === 0) {
 				console.log(activity.title);
 				activitiesWithPendingGrading.push(activity);
 			}

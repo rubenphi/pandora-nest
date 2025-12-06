@@ -104,9 +104,10 @@ export class CoursesController {
 	@Get(':id/groups')
 	getGroupsByCourse(
 		@Param('id') id: number,
+		@Query('year') year: number,
 		@User() user: UserEntity,
 	): Promise<any> {
-		return this.courseService.getGroupsByCourse(id, user);
+		return this.courseService.getGroupsByCourse(id, year, user);
 	}
 	@Auth()
 	@Get(':id/lessons')

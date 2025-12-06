@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 
 export enum QuizType {
   GROUP = 'group',
@@ -32,4 +32,8 @@ export class CreateQuizDto {
   })
   @IsInt()
   readonly instituteId: number;
+
+  @IsOptional()
+  @IsEnum(['knowledge', 'execution', 'behavior'])
+  classification: 'knowledge' | 'execution' | 'behavior';
 }

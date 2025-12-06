@@ -508,7 +508,7 @@ export class QuizzesService {
 
 			console.log(quiz.lesson.topic, ':', gradesCount);
 
-			if (answersCount > gradesCount) {
+			if (answersCount > 0 && gradesCount === 0) {
 				console.log(quiz.title);
 				quizzesWithPendingGrading.push(quiz);
 			}

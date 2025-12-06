@@ -32,6 +32,8 @@ export class Group {
 	@ManyToOne(() => Period, (period) => period.groups, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'periodId' })
 	period: Period;
+	@Column({ nullable: false })
+	year: number;
 	@OneToMany(() => Answer, (answer) => answer.group)
 	answers: Answer[];
 	@Column({ nullable: false })
