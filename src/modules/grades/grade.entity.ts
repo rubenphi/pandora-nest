@@ -43,7 +43,7 @@ export class Grade {
 	@Column({
 		type: 'enum',
 		enum: ['knowledge', 'execution', 'behavior'],
-		nullable: true, 
+		nullable: true,
 	})
 	classification: 'knowledge' | 'execution' | 'behavior';
 

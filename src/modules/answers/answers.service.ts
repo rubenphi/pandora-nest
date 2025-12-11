@@ -8,7 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
 import { Answer } from './answer.entity';
-import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
+import {
+	CreateAnswerDto,
+	UpdateAnswerDto,
+	QueryAnswerDto,
+	CreateBulkAnswersDto,
+} from './dto';
 import { Option } from '../options/option.entity';
 import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
@@ -48,7 +53,7 @@ export class AnswersService {
 						},
 					},
 					group: { id: queryAnswer.groupId },
-                    user: { id: queryAnswer.userId },
+					user: { id: queryAnswer.userId },
 					exist: queryAnswer.exist,
 					institute: {
 						id:
@@ -233,6 +238,128 @@ export class AnswersService {
 		});
 		return this.answerRepository.save(answer);
 	}
+
+	async createBulkAnswers(
+		bulkDto: CreateBulkAnswersDto,
+		user: User,
+	): Promise<Answer[]> {
+		if (user.rol !== Role.Admin && user.institute.id !== bulkDto.instituteId) {
+			throw new ForbiddenException(
+				'You are not allowed to create answers here',
+			);
+		}
+
+		const quiz: Quiz = await this.quizRepository
+			.findOneOrFail({
+				where: { id: bulkDto.quizId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
+
+		const institute: Institute = await this.instituteRepository
+			.findOneOrFail({
+				where: { id: bulkDto.instituteId },
+			})
+			.catch(() => {
+				throw new NotFoundException('Institute not found');
+			});
+
+		let group: Group | undefined;
+		let userEntity: User | undefined;
+		const whereClause: any = { quiz: { id: bulkDto.quizId } };
+
+		if (quiz.quizType === 'individual') {
+			if (!bulkDto.userId) {
+				throw new BadRequestException(
+					'For individual quizzes, userId is required.',
+				);
+			}
+			userEntity = await this.userRepository
+				.findOneOrFail({ where: { id: bulkDto.userId } })
+				.catch(() => {
+					throw new NotFoundException('User not found');
+				});
+			whereClause.user = { id: bulkDto.userId };
+		} else if (quiz.quizType === 'group') {
+			if (!bulkDto.userId) {
+				throw new BadRequestException('For group quizzes, userId is required.');
+			}
+			if (!bulkDto.groupId) {
+				throw new BadRequestException(
+					'For group quizzes, groupId is required.',
+				);
+			}
+			userEntity = await this.userRepository
+				.findOneOrFail({ where: { id: bulkDto.userId } })
+				.catch(() => {
+					throw new NotFoundException('User not found');
+				});
+			group = await this.groupRepository
+				.findOneOrFail({ where: { id: bulkDto.groupId } })
+				.catch(() => {
+					throw new NotFoundException('Group not found');
+				});
+			whereClause.group = { id: bulkDto.groupId };
+		} else {
+			throw new BadRequestException('Invalid quiz type.');
+		}
+
+		const existingAnswers = await this.answerRepository.find({
+			where: whereClause,
+			relations: ['question'],
+		});
+		const existingQuestionIds = new Set(
+			existingAnswers.map((a) => a.question.id),
+		);
+
+		const answersToCreate: Answer[] = [];
+
+		for (const answerItem of bulkDto.answers) {
+			if (existingQuestionIds.has(answerItem.questionId)) {
+				throw new BadRequestException(
+					`Question with id ${answerItem.questionId} has already been answered.`,
+				);
+			}
+
+			const question = await this.questionRepository
+				.findOneOrFail({
+					where: { id: answerItem.questionId },
+				})
+				.catch(() => {
+					throw new NotFoundException(
+						`Question with id ${answerItem.questionId} not found`,
+					);
+				});
+
+			const option = await this.optionRepository
+				.findOneOrFail({
+					where: { id: answerItem.optionId, question: { id: question.id } },
+				})
+				.catch(() => {
+					throw new NotFoundException(
+						`Option with id ${answerItem.optionId} not found or does not belong to question ${question.id}`,
+					);
+				});
+
+			const points = option.correct ? question.points : 0;
+
+			const newAnswer = this.answerRepository.create({
+				option,
+				question,
+				quiz,
+				institute,
+				points,
+				group: group,
+				user: userEntity,
+				exist: true,
+			});
+			answersToCreate.push(newAnswer);
+		}
+
+		return this.answerRepository.save(answersToCreate);
+	}
+
 	async updateAnswer(
 		id: number,
 		answerDto: UpdateAnswerDto,
