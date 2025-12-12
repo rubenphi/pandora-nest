@@ -307,20 +307,16 @@ export class AnswersService {
 
 		const existingAnswers = await this.answerRepository.find({
 			where: whereClause,
-			relations: ['question'],
+			relations: ['question', 'option'],
 		});
-		const existingQuestionIds = new Set(
-			existingAnswers.map((a) => a.question.id),
-		);
 
+		const answersToUpdate: Answer[] = [];
 		const answersToCreate: Answer[] = [];
 
 		for (const answerItem of bulkDto.answers) {
-			if (existingQuestionIds.has(answerItem.questionId)) {
-				throw new BadRequestException(
-					`Question with id ${answerItem.questionId} has already been answered.`,
-				);
-			}
+			const existingAnswer = existingAnswers.find(
+				(a) => a.question.id === answerItem.questionId,
+			);
 
 			const question = await this.questionRepository
 				.findOneOrFail({
@@ -344,20 +340,32 @@ export class AnswersService {
 
 			const points = option.correct ? question.points : 0;
 
-			const newAnswer = this.answerRepository.create({
-				option,
-				question,
-				quiz,
-				institute,
-				points,
-				group: group,
-				user: userEntity,
-				exist: true,
-			});
-			answersToCreate.push(newAnswer);
+			if (existingAnswer) {
+				// Update existing answer
+				existingAnswer.option = option;
+				existingAnswer.points = points;
+				answersToUpdate.push(existingAnswer);
+			} else {
+				// Create new answer
+				const newAnswer = this.answerRepository.create({
+					option,
+					question,
+					quiz,
+					institute,
+					points,
+					group: group,
+					user: userEntity,
+					exist: true,
+				});
+				answersToCreate.push(newAnswer);
+			}
 		}
 
-		return this.answerRepository.save(answersToCreate);
+		const savedAnswers = await this.answerRepository.save([
+			...answersToCreate,
+			...answersToUpdate,
+		]);
+		return savedAnswers;
 	}
 
 	async updateAnswer(

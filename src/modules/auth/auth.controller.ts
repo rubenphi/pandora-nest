@@ -5,6 +5,7 @@ import { User as UserEntity } from '../users/user.entity';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto';
 import { LocalAuthGuard } from './guards';
+import * as os from 'os';
 
 @ApiTags('Auth Routes')
 @Controller('auth')
@@ -26,5 +27,21 @@ export class AuthController {
 			message: 'Successfull Request',
 			user,
 		};
+	}
+
+	@Get('server-ip')
+	getServerIp() {
+		const interfaces = os.networkInterfaces();
+		for (const devName in interfaces) {
+			const iface = interfaces[devName];
+
+			for (let i = 0; i < iface.length; i++) {
+				const alias = iface[i];
+				if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+					return { ip: alias.address };
+				}
+			}
+		}
+		return { ip: 'localhost' };
 	}
 }
