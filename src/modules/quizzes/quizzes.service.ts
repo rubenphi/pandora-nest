@@ -149,6 +149,7 @@ export class QuizzesService {
 		const quiz: Quiz = await this.quizRepository.create({
 			title: quizDto.title,
 			quizType: quizDto.quizType,
+			evaluationType: quizDto.evaluationType,
 			lesson,
 			institute,
 		});
@@ -184,6 +185,7 @@ export class QuizzesService {
 			id,
 			title: quizDto.title,
 			quizType: quizDto.quizType,
+			evaluationType: quizDto.evaluationType,
 			lesson,
 			institute,
 		});

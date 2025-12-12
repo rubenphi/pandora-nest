@@ -256,10 +256,17 @@ export class GroupsService {
 
 		const usersToGroup: UserToGroup[] = await Promise.all(
 			usersToAdd.map(async (userToAdd) => {
+				// Deactivate all other active groups for this user
+				await this.userToGroupRepository.update(
+					{ user: { id: userToAdd.userId } },
+					{ active: false },
+				);
+
 				const userToGroup: UserToGroup = this.userToGroupRepository.create({
 					user: usersToAddInGroup.find((user) => user.id === userToAdd.userId),
 					group,
 					year: userToAdd.year,
+					active: true, // Explicitly set to true
 				});
 				return userToGroup;
 			}),
@@ -269,7 +276,7 @@ export class GroupsService {
 
 	async updateUserFromGroup(
 		id: number,
-		usersToRemove: UpdateUserFromGroupDto,
+		usersToUpdate: UpdateUserFromGroupDto,
 		user: User,
 	) {
 		const group: Group = await this.groupRepository
@@ -285,28 +292,36 @@ export class GroupsService {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 
-		const userToRemove: User = await this.userRepository
+		const userToUpdate: User = await this.userRepository
 			.findOneOrFail({
-				where: { id: usersToRemove.userIdToRemove },
+				where: { id: usersToUpdate.userIdToUpdate },
 			})
 			.catch(() => {
 				throw new NotFoundException('User not found');
 			});
 
-		const userToRemoveFromGroup: UserToGroup =
+		// If the user is being activated in this group, deactivate them from all others first.
+		if (usersToUpdate.active) {
+			await this.userToGroupRepository.update(
+				{ user: { id: userToUpdate.id } },
+				{ active: false },
+			);
+		}
+
+		const userToUpdateFromGroup: UserToGroup =
 			await this.userToGroupRepository.findOneOrFail({
 				where: {
-					user: { id: userToRemove.id },
+					user: { id: userToUpdate.id },
 					group: { id: group.id },
 				},
 				order: { createdAt: 'DESC' },
 			});
 
-		userToRemoveFromGroup.active = usersToRemove.active;
+		userToUpdateFromGroup.active = usersToUpdate.active;
 
-		await this.userToGroupRepository.save(userToRemoveFromGroup);
+		await this.userToGroupRepository.save(userToUpdateFromGroup);
 
-		return userToRemoveFromGroup;
+		return userToUpdateFromGroup;
 	}
 
 	async removeUserFromGroup(

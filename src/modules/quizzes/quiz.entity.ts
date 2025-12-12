@@ -11,6 +11,7 @@ import {
 import { Institute } from '../institutes/institute.entity';
 import { Grade } from '../grades/grade.entity';
 import { Answer } from '../answers/answer.entity';
+import { EvaluationType } from './dto/evaluation-type.enum';
 
 @Entity({ name: 'quizzes' })
 export class Quiz {
@@ -29,6 +30,13 @@ export class Quiz {
 		default: 'knowledge',
 	})
 	classification: 'knowledge' | 'execution' | 'behavior';
+
+	@Column({
+		type: 'enum',
+		enum: EvaluationType,
+		default: EvaluationType.RELATIVE,
+	})
+	evaluationType: EvaluationType;
 
 	@OneToMany(() => Question, (question) => question.quiz)
 	questions: Question[];
