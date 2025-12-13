@@ -5,9 +5,11 @@ import {
 	IsEmail,
 	IsBoolean,
 	IsOptional,
-	ValidateIf,
 	IsInt,
+	IsArray,
+	IsEnum,
 } from 'class-validator';
+import { Role } from 'src/modules/auth/roles.decorator';
 
 export class QueryUserDto {
 	@ApiProperty({
@@ -38,6 +40,22 @@ export class QueryUserDto {
 	@IsOptional()
 	@IsString()
 	readonly code?: string;
+	@ApiProperty({
+		description: 'Roles of user',
+		required: false,
+		type: [String],
+		enum: Role,
+	})
+	@IsOptional()
+	@IsArray()
+	@IsEnum(Role, { each: true })
+	@Transform(({ value }) => {
+		if (typeof value === 'string') {
+			return value.split(',');
+		}
+		return value;
+	})
+	readonly rol?: Role[];
 	@ApiProperty({
 		description: 'Institute id of user',
 		required: false,

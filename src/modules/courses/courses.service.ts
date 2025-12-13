@@ -297,7 +297,7 @@ export class CoursesService {
 			relations: ['institute'],
 		});
 		const users: UserToCourse[] = await this.userToCourseRepository.find({
-			where: { course: { id }, year: queryUser.year },
+			where: { course: { id }, year: queryUser.year, active: queryUser.active },
 			relations: ['user'],
 		});
 

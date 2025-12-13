@@ -5,7 +5,7 @@ import {
 	ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, ILike } from 'typeorm';
+import { Repository, Not, ILike, In } from 'typeorm';
 
 import { User } from './user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
@@ -37,16 +37,14 @@ export class UsersService {
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
 		if (Object.entries(queryUser).length != 0) {
+			const { rol, instituteId, name, lastName, ...rest } = queryUser;
 			return await this.userRepository.find({
 				where: {
-					name: queryUser.name ? ILike(`%${queryUser.name}%`) : null,
-					lastName: queryUser.lastName
-						? ILike(`%${queryUser.lastName}%`)
-						: null,
-					code: queryUser.code,
-					email: queryUser.email,
-					exist: queryUser.exist,
-					institute: { id: queryUser.instituteId },
+					...rest,
+					name: name ? ILike(`%${name}%`) : undefined,
+					lastName: lastName ? ILike(`%${lastName}%`) : undefined,
+					rol: rol ? In(rol) : undefined,
+					institute: instituteId ? { id: instituteId } : undefined,
 				},
 				relations: ['institute'],
 			});
