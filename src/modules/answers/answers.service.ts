@@ -5,15 +5,10 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { Answer } from './answer.entity';
-import {
-	CreateAnswerDto,
-	UpdateAnswerDto,
-	QueryAnswerDto,
-	CreateBulkAnswersDto,
-} from './dto';
+import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 import { Option } from '../options/option.entity';
 import { Question } from '../questions/question.entity';
 import { Group } from '../groups/group.entity';
@@ -240,131 +235,158 @@ export class AnswersService {
 	}
 
 	async createBulkAnswers(
-		bulkDto: CreateBulkAnswersDto,
+		answersDto: CreateAnswerDto[],
 		user: User,
 	): Promise<Answer[]> {
-		if (user.rol !== Role.Admin && user.institute.id !== bulkDto.instituteId) {
-			throw new ForbiddenException(
-				'You are not allowed to create answers here',
-			);
-		}
+		const savedAnswers: Answer[] = [];
 
-		const quiz: Quiz = await this.quizRepository
-			.findOneOrFail({
-				where: { id: bulkDto.quizId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Quiz not found');
-			});
-
-		const institute: Institute = await this.instituteRepository
-			.findOneOrFail({
-				where: { id: bulkDto.instituteId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Institute not found');
-			});
-
-		let group: Group | undefined;
-		let userEntity: User | undefined;
-		const whereClause: any = { quiz: { id: bulkDto.quizId } };
-
-		if (quiz.quizType === 'individual') {
-			if (!bulkDto.userId) {
-				throw new BadRequestException(
-					'For individual quizzes, userId is required.',
+		for (const answerDto of answersDto) {
+			if (
+				user.rol !== Role.Admin &&
+				user.institute.id !== answerDto.instituteId
+			) {
+				throw new ForbiddenException(
+					'You are not allowed to create answers for this institute',
 				);
 			}
-			userEntity = await this.userRepository
-				.findOneOrFail({ where: { id: bulkDto.userId } })
-				.catch(() => {
-					throw new NotFoundException('User not found');
-				});
-			whereClause.user = { id: bulkDto.userId };
-		} else if (quiz.quizType === 'group') {
-			if (!bulkDto.userId) {
-				throw new BadRequestException('For group quizzes, userId is required.');
-			}
-			if (!bulkDto.groupId) {
-				throw new BadRequestException(
-					'For group quizzes, groupId is required.',
-				);
-			}
-			userEntity = await this.userRepository
-				.findOneOrFail({ where: { id: bulkDto.userId } })
-				.catch(() => {
-					throw new NotFoundException('User not found');
-				});
-			group = await this.groupRepository
-				.findOneOrFail({ where: { id: bulkDto.groupId } })
-				.catch(() => {
-					throw new NotFoundException('Group not found');
-				});
-			whereClause.group = { id: bulkDto.groupId };
-		} else {
-			throw new BadRequestException('Invalid quiz type.');
-		}
 
-		const existingAnswers = await this.answerRepository.find({
-			where: whereClause,
-			relations: ['question', 'option'],
-		});
-
-		const answersToUpdate: Answer[] = [];
-		const answersToCreate: Answer[] = [];
-
-		for (const answerItem of bulkDto.answers) {
-			const existingAnswer = existingAnswers.find(
-				(a) => a.question.id === answerItem.questionId,
-			);
-
-			const question = await this.questionRepository
+			const quiz: Quiz = await this.quizRepository
 				.findOneOrFail({
-					where: { id: answerItem.questionId },
+					where: { id: answerDto.quizId },
 				})
 				.catch(() => {
 					throw new NotFoundException(
-						`Question with id ${answerItem.questionId} not found`,
+						`Quiz with ID ${answerDto.quizId} not found`,
 					);
 				});
 
-			const option = await this.optionRepository
+			const institute: Institute = await this.instituteRepository
 				.findOneOrFail({
-					where: { id: answerItem.optionId, question: { id: question.id } },
+					where: { id: answerDto.instituteId },
 				})
 				.catch(() => {
 					throw new NotFoundException(
-						`Option with id ${answerItem.optionId} not found or does not belong to question ${question.id}`,
+						`Institute with ID ${answerDto.instituteId} not found`,
 					);
 				});
 
-			const points = option.correct ? question.points : 0;
+			let group: Group | undefined;
+			let userEntity: User | undefined;
+			const existingAnswerWhere: any = {
+				question: { id: answerDto.questionId },
+				quiz: { id: answerDto.quizId },
+				exist: true,
+			};
 
-			if (existingAnswer) {
-				// Update existing answer
-				existingAnswer.option = option;
-				existingAnswer.points = points;
-				answersToUpdate.push(existingAnswer);
+			if (quiz.quizType === 'individual') {
+				if (!answerDto.userId) {
+					throw new BadRequestException(
+						'For individual quizzes, userId is required.',
+					);
+				}
+				if (answerDto.groupId) {
+					throw new BadRequestException(
+						'For individual quizzes, groupId should not be provided.',
+					);
+				}
+				userEntity = await this.userRepository
+					.findOneOrFail({
+						where: { id: answerDto.userId },
+					})
+					.catch(() => {
+						throw new NotFoundException(
+							`User with ID ${answerDto.userId} not found`,
+						);
+					});
+				existingAnswerWhere.user = { id: answerDto.userId };
+			} else if (quiz.quizType === 'group') {
+				if (!answerDto.userId) {
+					throw new BadRequestException(
+						'For group quizzes, userId is required.',
+					);
+				}
+				if (!answerDto.groupId) {
+					throw new BadRequestException(
+						'For group quizzes, groupId is required.',
+					);
+				}
+				userEntity = await this.userRepository
+					.findOneOrFail({
+						where: { id: answerDto.userId },
+					})
+					.catch(() => {
+						throw new NotFoundException(
+							`User with ID ${answerDto.userId} not found`,
+						);
+					});
+				group = await this.groupRepository
+					.findOneOrFail({
+						where: { id: answerDto.groupId },
+					})
+					.catch(() => {
+						throw new NotFoundException(
+							`Group with ID ${answerDto.groupId} not found`,
+						);
+					});
+				existingAnswerWhere.group = { id: answerDto.groupId };
 			} else {
-				// Create new answer
-				const newAnswer = this.answerRepository.create({
+				throw new BadRequestException('Invalid quiz type.');
+			}
+
+			const existingAnswer = await this.answerRepository.findOne({
+				where: existingAnswerWhere,
+			});
+
+			const option: Option = await this.optionRepository
+				.findOneOrFail({
+					where: { id: answerDto.optionId },
+					relations: ['question'],
+				})
+				.catch(() => {
+					throw new NotFoundException(
+						`Option with ID ${answerDto.optionId} not found`,
+					);
+				});
+			const question: Question = await this.questionRepository
+				.findOneOrFail({
+					where: { id: answerDto.questionId },
+				})
+				.catch(() => {
+					throw new NotFoundException(
+						`Question with ID ${answerDto.questionId} not found`,
+					);
+				});
+
+			const points: number = option.correct ? question.points : 0;
+			let answerToSave: Answer;
+			//si la pregunta ya fue respondida se sobreescribe
+			if (existingAnswer) {
+				answerToSave = await this.answerRepository.preload({
+					id: existingAnswer.id,
 					option,
 					question,
+					group,
+					user: userEntity,
+					points,
 					quiz,
 					institute,
-					points,
-					group: group,
-					user: userEntity,
-					exist: true,
+					exist: answerDto.exist,
 				});
-				answersToCreate.push(newAnswer);
+			} else {
+				answerToSave = this.answerRepository.create({
+					option,
+					question,
+					group,
+					user: userEntity,
+					points,
+					quiz,
+					institute,
+					exist: answerDto.exist,
+				});
 			}
+			savedAnswers.push(await this.answerRepository.save(answerToSave));
 		}
 
-		const savedAnswers = await this.answerRepository.save([
-			...answersToCreate,
-			...answersToUpdate,
-		]);
 		return savedAnswers;
 	}
 
@@ -527,7 +549,7 @@ export class AnswersService {
 
 		const answerUpdated: Answer = await this.answerRepository.preload({
 			id: answer.id,
-			points: answer.question.points * 1.01,
+			points: answer.question.points,
 		});
 		await this.answerRepository.save(answerUpdated);
 

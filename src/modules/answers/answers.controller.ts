@@ -12,12 +12,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Answer } from './answer.entity';
 import { AnswersService } from './answers.service';
-import {
-	CreateAnswerDto,
-	UpdateAnswerDto,
-	QueryAnswerDto,
-	CreateBulkAnswersDto,
-} from './dto';
+import { CreateAnswerDto, UpdateAnswerDto, QueryAnswerDto } from './dto';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
 
@@ -65,7 +60,7 @@ export class AnswersController {
 	@Auth()
 	@Post('bulk')
 	createBulkAnswers(
-		@Body() answers: CreateBulkAnswersDto,
+		@Body() answers: CreateAnswerDto[],
 		@User() user: UserEntity,
 	): Promise<Answer[]> {
 		return this.answerService.createBulkAnswers(answers, user);
