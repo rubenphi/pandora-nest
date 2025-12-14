@@ -8,10 +8,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, ILike, In } from 'typeorm';
 
 import { User } from './user.entity';
-import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
+import {
+	CreateUserDto,
+	UpdateUserDto,
+	QueryUserDto,
+	CreateBulkUserDto,
+} from './dto';
 import { Institute } from '../institutes/institute.entity';
 import { Invitation } from '../invitations/invitation.entity';
-import { Course } from '../courses/course.entity';
+import { Course } from '../courses/course.entity'; // Already imported
 import { UserToCourse } from './userToCourse.entity';
 import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
 import { QueryUserGroupsDto } from './dto/query-users-group.dto';
@@ -33,6 +38,8 @@ export class UsersService {
 		private readonly userToCourseRepository: Repository<UserToCourse>,
 		@InjectRepository(UserToGroup)
 		private readonly userToGroupsRepository: Repository<UserToGroup>,
+		@InjectRepository(Course) // Inject CourseRepository
+		private readonly courseRepository: Repository<Course>,
 	) {}
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
@@ -143,11 +150,62 @@ export class UsersService {
 						valid: false,
 					});
 				}
+
 				return user;
 			});
 		delete returnUser.password;
 		return returnUser;
 	}
+
+	async createBulkUsers(
+		createBulkUserDto: CreateBulkUserDto,
+		userLoged: User,
+	): Promise<User[]> {
+		const createdUsers: User[] = [];
+		for (const userItemDto of createBulkUserDto.users) {
+			// Extract CreateUserDto properties for the base user creation
+			const baseUserDto: CreateUserDto = {
+				name: userItemDto.name,
+				lastName: userItemDto.lastName,
+				email: userItemDto.email,
+				code: userItemDto.code,
+				password: userItemDto.password,
+				exist: userItemDto.exist,
+				instituteInvitation: userItemDto.instituteInvitation, // This will be undefined for bulk imports, which is fine
+			};
+
+			// Create the user using the base createUser logic
+			const createdUser = await this.createUser(baseUserDto, userLoged);
+
+			// Now handle systemRol and course assignment for the bulk user
+			if (createdUser) {
+				// Update the user's role based on systemRol from bulk DTO
+				createdUser.rol = userItemDto.systemRol;
+				await this.userRepository.save(createdUser);
+
+				// Handle cuurse and rolEnCurso only if the user is a student
+				if (userItemDto.systemRol === 'student' && userItemDto.cuurse && userItemDto.rolEnCurso) {
+					const course = await this.courseRepository.findOne({
+						where: { name: ILike(userItemDto.cuurse.toLowerCase()) },
+					});
+
+					if (course) {
+						const userToCourse = this.userToCourseRepository.create({
+							user: { id: createdUser.id },
+							course: { id: course.id },
+							rol: userItemDto.rolEnCurso,
+							year: new Date().getFullYear(), // Assuming current year for assignment
+							active: true,
+						});
+						await this.userToCourseRepository.save(userToCourse);
+					}
+				}
+			}
+			createdUsers.push(createdUser);
+		}
+		return createdUsers;
+	}
+
 	async updateUser(
 		id: number,
 		userDto: UpdateUserDto,

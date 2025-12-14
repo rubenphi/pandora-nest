@@ -12,7 +12,12 @@ import {
 
 import { User } from './user.entity';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
+import {
+	CreateUserDto,
+	UpdateUserDto,
+	QueryUserDto,
+	CreateBulkUserDto,
+} from './dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, User as UserDecorator } from 'src/common/decorators';
 import { Course } from '../courses/course.entity';
@@ -48,6 +53,14 @@ export class UsersController {
 		@UserDecorator() userLoged: User,
 	): Promise<User> {
 		return this.userService.createUser(user, userLoged);
+	}
+
+	@Post('bulk')
+	createBulkUsers(
+		@Body() createBulkUserDto: CreateBulkUserDto,
+		@UserDecorator() userLoged: User,
+	): Promise<User[]> {
+		return this.userService.createBulkUsers(createBulkUserDto, userLoged);
 	}
 
 	@Auth()

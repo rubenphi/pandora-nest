@@ -9,6 +9,7 @@ import { Invitation } from '../invitations/invitation.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
 import { AlumnosController } from './colonline.controller';
+import { Course } from '../courses/course.entity';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { AlumnosController } from './colonline.controller';
 			Invitation,
 			UserToCourse,
 			UserToGroup,
+			Course, // Add Course entity here
 		]),
 	],
 	providers: [UsersService],
