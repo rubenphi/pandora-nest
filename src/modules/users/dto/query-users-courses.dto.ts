@@ -18,7 +18,7 @@ export class QueryUserCoursesDto {
 	@Type(() => Number)
 	@IsInt()
 	readonly year: number;
-	
+
 	@ApiProperty({
 		description: 'Search the user if exist or not',
 		required: false,

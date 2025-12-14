@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Patch,
+	Param,
+	Delete,
+	Query,
+} from '@nestjs/common';
 import { InvitationsService } from './invitations.service';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { UpdateInvitationDto } from './dto/update-invitation.dto';
@@ -11,40 +20,46 @@ import { QueryInvitationDto } from './dto/query-invitation.dto';
 @ApiTags('Invitations Routes')
 @Controller('invitations')
 export class InvitationsController {
-  constructor(private readonly invitationsService: InvitationsService) {}
+	constructor(private readonly invitationsService: InvitationsService) {}
 
-  @Roles(Role.Admin, Role.Director)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
-  @Post()
-  create(@Body() createInvitationDto: CreateInvitationDto, @User() user: UserEntity) {
-    return this.invitationsService.create(createInvitationDto, user);
-  }
-
+	@Post()
+	create(
+		@Body() createInvitationDto: CreateInvitationDto,
+		@User() user: UserEntity,
+	) {
+		return this.invitationsService.create(createInvitationDto, user);
+	}
 
 	@Auth()
-  @Get()
-  findAll(@Query() queryInvitationDto: QueryInvitationDto) {
-    return this.invitationsService.findAll(queryInvitationDto);
-  }
+	@Get()
+	findAll(@Query() queryInvitationDto: QueryInvitationDto) {
+		return this.invitationsService.findAll(queryInvitationDto);
+	}
 
-  @Roles(Role.Admin, Role.Director, Role.Coordinator)
-  @Auth()
-  @Get(':id')
-  findOne(@Param('id') id: number, @User() user: UserEntity) {
-    return this.invitationsService.findOne(id, user);
-  }
-
-  @Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateInvitationDto: UpdateInvitationDto, @User() user: UserEntity)  {
-    return this.invitationsService.update(id, updateInvitationDto, user);
-  }
+	@Get(':id')
+	findOne(@Param('id') id: number, @User() user: UserEntity) {
+		return this.invitationsService.findOne(id, user);
+	}
 
-  @Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.invitationsService.remove(id);
-  }
+	@Patch(':id')
+	update(
+		@Param('id') id: number,
+		@Body() updateInvitationDto: UpdateInvitationDto,
+		@User() user: UserEntity,
+	) {
+		return this.invitationsService.update(id, updateInvitationDto, user);
+	}
+
+	@Roles(Role.Admin)
+	@Auth()
+	@Delete(':id')
+	remove(@Param('id') id: number) {
+		return this.invitationsService.remove(id);
+	}
 }

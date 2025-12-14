@@ -34,6 +34,13 @@ export class UpdateUserDto {
 	@IsString()
 	readonly code: string;
 	@ApiProperty({
+		description: 'Telephone number of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	readonly telephone?: string;
+	@ApiProperty({
 		description: 'Rol of user',
 	})
 	@IsOptional()

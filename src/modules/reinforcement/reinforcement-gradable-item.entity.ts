@@ -13,7 +13,10 @@ export class ReinforcementGradableItem {
 	@PrimaryGeneratedColumn('increment')
 	id: number;
 
-	@ManyToOne(() => Reinforcement, (reinforcement) => reinforcement.gradableItems)
+	@ManyToOne(
+		() => Reinforcement,
+		(reinforcement) => reinforcement.gradableItems,
+	)
 	@JoinColumn({ name: 'reinforcementId' })
 	reinforcement: Reinforcement;
 

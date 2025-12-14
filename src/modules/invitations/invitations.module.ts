@@ -6,13 +6,8 @@ import { Institute } from '../institutes/institute.entity';
 import { Invitation } from './invitation.entity';
 
 @Module({
-  imports: [
-		TypeOrmModule.forFeature([
-      Invitation,
-			Institute,
-		]),
-	],
-  controllers: [InvitationsController],
-  providers: [InvitationsService]
+	imports: [TypeOrmModule.forFeature([Invitation, Institute])],
+	controllers: [InvitationsController],
+	providers: [InvitationsService],
 })
 export class InvitationsModule {}

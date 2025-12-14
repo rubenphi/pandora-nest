@@ -251,7 +251,11 @@ export class CoursesService {
 		return course.lessons;
 	}
 
-	async getGroupsByCourse(id: number, year: number, user: User): Promise<Group[]> {
+	async getGroupsByCourse(
+		id: number,
+		year: number,
+		user: User,
+	): Promise<Group[]> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },

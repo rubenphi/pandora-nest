@@ -14,16 +14,16 @@ export class CreateAnswerDto {
 	readonly questionId: number;
 	@ApiProperty({
 		description: 'Group´s id of answer',
-        required: false
+		required: false,
 	})
-    @IsOptional()
+	@IsOptional()
 	@IsInt()
 	readonly groupId: number;
 	@ApiProperty({
 		description: 'User´s id of answer',
-        required: false
+		required: false,
 	})
-    @IsOptional()
+	@IsOptional()
 	@IsInt()
 	readonly userId: number;
 

@@ -14,9 +14,9 @@ export class DeleteFileException implements ExceptionFilter {
 		const response = ctx.getResponse<Response>();
 		const request = ctx.getRequest<Request>();
 		const status = exception.getStatus();
-		if(request.file){
-            fs.unlinkSync(request.file.path);
-        }
+		if (request.file) {
+			fs.unlinkSync(request.file.path);
+		}
 		response.status(status).json({
 			status,
 			exception: exception.message,

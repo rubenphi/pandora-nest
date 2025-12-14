@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	ForbiddenException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -21,8 +25,15 @@ export class AreasService {
 	async getAreas(queryArea: QueryAreaDto, user: User): Promise<Area[]> {
 		if (queryArea) {
 			return await this.areaRepository.find({
-				where: { name: queryArea.name, exist: queryArea.exist, 
-					institute: { id: user.rol == Role.Admin ? queryArea.instituteId : user.institute.id }
+				where: {
+					name: queryArea.name,
+					exist: queryArea.exist,
+					institute: {
+						id:
+							user.rol == Role.Admin
+								? queryArea.instituteId
+								: user.institute.id,
+					},
 				},
 				relations: ['institute'],
 			});
@@ -39,13 +50,13 @@ export class AreasService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
-			if(user.institute.id !== area.institute.id){
-				throw new ForbiddenException('You are not allowed to view this area');
-			}
+		if (user.institute.id !== area.institute.id) {
+			throw new ForbiddenException('You are not allowed to view this area');
+		}
 		return area;
 	}
 	async createArea(areaDto: CreateAreaDto, user: User): Promise<Area> {
-		if(user.institute.id !== areaDto.instituteId){
+		if (user.institute.id !== areaDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to create this area');
 		}
 		const institute: Institute = await this.instituteRepository
@@ -62,8 +73,12 @@ export class AreasService {
 		});
 		return this.areaRepository.save(area);
 	}
-	async updateArea(id: number, areaDto: UpdateAreaDto, user: User): Promise<Area> {
-		if(user.institute.id !== areaDto.instituteId){
+	async updateArea(
+		id: number,
+		areaDto: UpdateAreaDto,
+		user: User,
+	): Promise<Area> {
+		if (user.institute.id !== areaDto.instituteId) {
 			throw new ForbiddenException('You are not allowed to update this area');
 		}
 		const institute: Institute = await this.instituteRepository
@@ -107,9 +122,11 @@ export class AreasService {
 			.catch(() => {
 				throw new NotFoundException('Area not found');
 			});
-			if(user.institute.id !== area.institute.id){
-				throw new ForbiddenException('You are not allowed to view the lessons of this area');
-			}
+		if (user.institute.id !== area.institute.id) {
+			throw new ForbiddenException(
+				'You are not allowed to view the lessons of this area',
+			);
+		}
 		return area.lessons;
 	}
 }

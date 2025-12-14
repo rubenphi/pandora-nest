@@ -60,7 +60,7 @@ export class QueryQuestionDto {
 	@Type(() => Number)
 	@IsInt()
 	readonly quizId: number;
-	
+
 	@ApiProperty({
 		description: 'Institute id of question',
 		required: false,

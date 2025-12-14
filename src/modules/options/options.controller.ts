@@ -27,13 +27,19 @@ export class OptionsController {
 	}
 	@Auth()
 	@Get(':id')
-	getOption(@Param('id') id: number, @User() user: UserEntity): Promise<Option> {
+	getOption(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Option> {
 		return this.optionService.getOption(id, user);
 	}
 	@Auth()
 	@Post()
 	@ApiBody({ type: [CreateOptionDto] })
-	createOption(@Body() option: CreateOptionDto[], @User() user: UserEntity): Promise<Option[]> {
+	createOption(
+		@Body() option: CreateOptionDto[],
+		@User() user: UserEntity,
+	): Promise<Option[]> {
 		return this.optionService.createOption(option, user);
 	}
 	@Auth()
@@ -41,18 +47,24 @@ export class OptionsController {
 	updateOption(
 		@Param('id') id: number,
 		@Body() option: UpdateOptionDto,
-		 @User() user: UserEntity
+		@User() user: UserEntity,
 	): Promise<Option> {
 		return this.optionService.updateOption(id, option, user);
 	}
 	@Auth()
 	@Delete(':id')
-	deleteOption(@Param('id') id: number,@User() user: UserEntity): Promise<void> {
+	deleteOption(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<void> {
 		return this.optionService.deleteOption(id, user);
 	}
 	@Auth()
 	@Get(':id/answers')
-	getAnswersByOption(@Param('id') id: number, @User() user: UserEntity): Promise<Answer[]> {
+	getAnswersByOption(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Answer[]> {
 		return this.optionService.getAnswersByOption(id, user);
 	}
 }

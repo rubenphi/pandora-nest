@@ -36,7 +36,7 @@ export class QueryAnswerDto {
 	@IsInt()
 	readonly quizId?: number;
 
-    @ApiProperty({
+	@ApiProperty({
 		description: 'Search answer using user id',
 		required: false,
 	})

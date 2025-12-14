@@ -30,6 +30,8 @@ export class User {
 	email: string;
 	@Column({ nullable: false })
 	code: string;
+	@Column({ nullable: true })
+	telephone: string;
 	@ManyToOne(() => Institute)
 	@JoinTable({ name: 'instituteId' })
 	institute: Institute;

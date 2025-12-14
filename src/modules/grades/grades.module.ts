@@ -26,4 +26,3 @@ import { Lesson } from '../lessons/lesson.entity';
 	providers: [GradesService],
 })
 export class GradesModule {}
-

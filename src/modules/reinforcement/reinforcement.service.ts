@@ -259,10 +259,16 @@ export class ReinforcementService {
 			year,
 		} = dto;
 
-		const teacher = await this.userRepository.findOneByOrFail({ id: teacherId });
+		const teacher = await this.userRepository.findOneByOrFail({
+			id: teacherId,
+		});
 		const area = await this.areaRepository.findOneByOrFail({ id: areaId });
-		const period = await this.periodRepository.findOneByOrFail({ id: periodId });
-		const course = await this.courseRepository.findOneByOrFail({ id: courseId });
+		const period = await this.periodRepository.findOneByOrFail({
+			id: periodId,
+		});
+		const course = await this.courseRepository.findOneByOrFail({
+			id: courseId,
+		});
 		const institute = await this.instituteRepository.findOneByOrFail({
 			id: instituteId,
 		});
@@ -315,7 +321,10 @@ export class ReinforcementService {
 		});
 	}
 
-	async updateReinforcementLesson(id: number, dto: UpdateReinforcementLessonDto) {
+	async updateReinforcementLesson(
+		id: number,
+		dto: UpdateReinforcementLessonDto,
+	) {
 		const lesson = await this.lessonRepository.findOne({
 			where: { id },
 			relations: ['area', 'period', 'course', 'institute'],
@@ -346,36 +355,42 @@ export class ReinforcementService {
 			const studentsToAddIds = newStudentIds.filter(
 				(sid) => !currentStudentIds.includes(sid),
 			);
-			
-			const teacher = await this.userRepository.findOneBy({ id: dto.teacherId }); // Or existing teacher from somewhere? ideally passed in DTO
-			// If teacherId is not in DTO (Partial), we might fail. Use lesson.author if possible, but lesson doesn't strictly link author here 
-            // In Create DTO teacherId is required. Update DTO is Partial.
-            // Let's assume teacherId is passed or we default to existing teacher if we could find one from existing reinforcements?
-            // Actually, we need a teacher for new records.
-            if (studentsToAddIds.length > 0 && !dto.teacherId) {
-                 // Try to find teacher from existing reinforcements or lesson author
-                 // If not found, throw error? Or just use first one.
-                 // For now, let's assume valid teacherId is passed if adding students, 
-                 // or we re-use if existing reinforcements have one.
-            }
-            // Better: Require teacherId if adding students, OR fetch it from one of existing reinforcements?
-            // Let's just fetch it from `teacherId` if present, else try to find from existing.
-            
-            let teacherToUse = teacher;
-            if (!teacherToUse && currentReinforcements.length > 0) {
-                 teacherToUse = currentReinforcements[0].teacher;
-            }
-            if(!teacherToUse && studentsToAddIds.length > 0) {
-                 // Fallback or error. The user is editing, so they are the teacher?
-                 // We can rely on frontend sending it.
-                 // However, update DTO has it optional.
-                 throw new BadRequestException('Teacher ID is required to add new students');
-            }
+
+			const teacher = await this.userRepository.findOneBy({
+				id: dto.teacherId,
+			}); // Or existing teacher from somewhere? ideally passed in DTO
+			// If teacherId is not in DTO (Partial), we might fail. Use lesson.author if possible, but lesson doesn't strictly link author here
+			// In Create DTO teacherId is required. Update DTO is Partial.
+			// Let's assume teacherId is passed or we default to existing teacher if we could find one from existing reinforcements?
+			// Actually, we need a teacher for new records.
+			if (studentsToAddIds.length > 0 && !dto.teacherId) {
+				// Try to find teacher from existing reinforcements or lesson author
+				// If not found, throw error? Or just use first one.
+				// For now, let's assume valid teacherId is passed if adding students,
+				// or we re-use if existing reinforcements have one.
+			}
+			// Better: Require teacherId if adding students, OR fetch it from one of existing reinforcements?
+			// Let's just fetch it from `teacherId` if present, else try to find from existing.
+
+			let teacherToUse = teacher;
+			if (!teacherToUse && currentReinforcements.length > 0) {
+				teacherToUse = currentReinforcements[0].teacher;
+			}
+			if (!teacherToUse && studentsToAddIds.length > 0) {
+				// Fallback or error. The user is editing, so they are the teacher?
+				// We can rely on frontend sending it.
+				// However, update DTO has it optional.
+				throw new BadRequestException(
+					'Teacher ID is required to add new students',
+				);
+			}
 
 			if (studentsToAddIds.length > 0) {
 				const reinforcements: Reinforcement[] = [];
 				for (const studentId of studentsToAddIds) {
-					const student = await this.userRepository.findOneBy({ id: studentId });
+					const student = await this.userRepository.findOneBy({
+						id: studentId,
+					});
 					if (student) {
 						const reinforcement = this.reinforcementRepository.create({
 							student,

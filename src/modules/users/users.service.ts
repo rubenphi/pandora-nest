@@ -24,6 +24,7 @@ import { UserToGroup } from './userToGroup.entity';
 import { Role } from '../auth/roles.decorator';
 import { UserToGroupDto } from './dto/user-to-group.dto';
 import { AssignmentType } from './dto/deactivate-user-assignments.dto';
+import { Group } from '../groups/group.entity';
 
 @Injectable()
 export class UsersService {
@@ -44,13 +45,14 @@ export class UsersService {
 
 	async getUsers(queryUser: QueryUserDto): Promise<User[]> {
 		if (Object.entries(queryUser).length != 0) {
-			const { rol, instituteId, name, lastName, ...rest } = queryUser;
+			const { rol, instituteId, name, lastName, code, ...rest } = queryUser;
 			return await this.userRepository.find({
 				where: {
 					...rest,
 					name: name ? ILike(`%${name}%`) : undefined,
 					lastName: lastName ? ILike(`%${lastName}%`) : undefined,
 					rol: rol ? In(rol) : undefined,
+					code: code ? In(code) : undefined,
 					institute: instituteId ? { id: instituteId } : undefined,
 				},
 				relations: ['institute'],
@@ -183,22 +185,26 @@ export class UsersService {
 				createdUser.rol = userItemDto.systemRol;
 				await this.userRepository.save(createdUser);
 
-				// Handle cuurse and rolEnCurso only if the user is a student
-				if (userItemDto.systemRol === 'student' && userItemDto.cuurse && userItemDto.rolEnCurso) {
-					const course = await this.courseRepository.findOne({
-						where: { name: ILike(userItemDto.cuurse.toLowerCase()) },
-					});
-
-					if (course) {
-						const userToCourse = this.userToCourseRepository.create({
-							user: { id: createdUser.id },
-							course: { id: course.id },
-							rol: userItemDto.rolEnCurso,
-							year: new Date().getFullYear(), // Assuming current year for assignment
-							active: true,
+				// Handle course assignment only if the user is a student and courseId is provided
+				if (userItemDto.systemRol === 'student' && userItemDto.courseId) {
+					const course = await this.courseRepository
+						.findOneOrFail({
+							where: { id: userItemDto.courseId },
+						})
+						.catch(() => {
+							throw new NotFoundException(
+								`Course with ID ${userItemDto.courseId} not found`,
+							);
 						});
-						await this.userToCourseRepository.save(userToCourse);
-					}
+
+					const userToCourse = this.userToCourseRepository.create({
+						user: { id: createdUser.id },
+						course: course, // Assign the fetched course entity
+						rol: 'student', // Default to 'student' role for course assignment
+						year: new Date().getFullYear(), // Assuming current year for assignment
+						active: true,
+					});
+					await this.userToCourseRepository.save(userToCourse);
 				}
 			}
 			createdUsers.push(createdUser);
@@ -321,7 +327,36 @@ export class UsersService {
 		userToGroup: UserToGroupDto,
 		userLoged: User,
 	): Promise<UserToGroup> {
-		if (userLoged?.rol !== Role.Admin) {
+		// Fetch the group to get its associated course
+		const group = await this.userToGroupsRepository.manager
+			.findOneOrFail(Group, {
+				where: { id: userToGroup.groupId },
+				relations: ['course'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Group not found');
+			});
+
+		let requiresAuthorizationCode = true;
+
+		if (userLoged?.rol === Role.Admin) {
+			requiresAuthorizationCode = false;
+		} else if (userLoged?.rol === Role.Teacher) {
+			// Check if the teacher is an admin of the course associated with the group
+			const teacherCourseAdmin = await this.userToCourseRepository.findOne({
+				where: {
+					user: { id: userLoged.id },
+					course: { id: group.course.id },
+					rol: Role.Admin, // Assuming 'admin' is the role for course administrators
+					active: true,
+				},
+			});
+			if (teacherCourseAdmin) {
+				requiresAuthorizationCode = false;
+			}
+		}
+
+		if (requiresAuthorizationCode) {
 			const autorizacion = await this.invitationRepository.findOne({
 				where: { code: userToGroup.code, valid: true },
 			});

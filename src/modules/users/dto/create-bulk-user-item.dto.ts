@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsInt, IsIn } from 'class-validator';
 import { CreateUserDto } from './create-users.dto';
+import { Type } from 'class-transformer';
 
 export class CreateBulkUserItemDto extends CreateUserDto {
 	@ApiProperty({
-		description: 'Course name from Excel (optional)',
+		description: 'Course ID for assignment (optional)',
 		required: false,
 	})
 	@IsOptional()
-	@IsString()
-	readonly cuurse?: string;
+	@Type(() => Number)
+	@IsInt()
+	readonly courseId?: number;
 
 	@ApiProperty({
 		description: 'Role in course from Excel (optional)',
@@ -24,6 +26,8 @@ export class CreateBulkUserItemDto extends CreateUserDto {
 		enum: ['student', 'teacher'],
 	})
 	@IsString()
-	@IsIn(['student', 'teacher'], { message: 'System role must be student or teacher' })
+	@IsIn(['student', 'teacher'], {
+		message: 'System role must be student or teacher',
+	})
 	readonly systemRol: string;
 }

@@ -26,7 +26,6 @@ import { LessonItemsModule } from './modules/lesson-items/lesson-items.module';
 import { StudentCriterionScoresModule } from './modules/student-criterion-scores/student-criterion-scores.module';
 import { ReinforcementModule } from './modules/reinforcement/reinforcement.module';
 
-
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -67,7 +66,6 @@ dotenv.config();
 		StudentCriterionScoresModule,
 		ReinforcementModule,
 	],
-
 })
 export class AppModule {
 	static port: number | string;

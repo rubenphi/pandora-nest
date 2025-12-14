@@ -21,9 +21,7 @@ export class MaterialsController {
 
 	@Post()
 	@ApiOperation({ summary: 'Create a new material' })
-	async create(
-		@Body() createMaterialDto: CreateMaterialDto,
-	) {
+	async create(@Body() createMaterialDto: CreateMaterialDto) {
 		return this.materialsService.create(createMaterialDto);
 	}
 

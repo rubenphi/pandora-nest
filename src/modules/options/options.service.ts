@@ -38,7 +38,7 @@ export class OptionsService {
 					identifier: queryOption.identifier,
 					question: { id: queryOption.questionId },
 					exist: queryOption.exist,
-					institute: { id: queryOption.instituteId }
+					institute: { id: queryOption.instituteId },
 				},
 				relations: ['question', 'institute'],
 			});
@@ -50,8 +50,6 @@ export class OptionsService {
 	}
 
 	async getOption(id: number, user: User): Promise<Option> {
-
-		
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id },
@@ -60,15 +58,16 @@ export class OptionsService {
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
-			if(user.institute.id !== option.institute.id){
-				throw new ForbiddenException('You are not allowed to see this option');
-			}
+		if (user.institute.id !== option.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this option');
+		}
 		return option;
 	}
 
-	
-	async createOption(optionsDto: CreateOptionDto[], user : User): Promise<Option[]> {
-		
+	async createOption(
+		optionsDto: CreateOptionDto[],
+		user: User,
+	): Promise<Option[]> {
 		if (
 			optionsDto.some(
 				(optionDto) =>
@@ -81,7 +80,7 @@ export class OptionsService {
 			);
 		}
 
-		if(user.institute.id !== optionsDto[0].instituteId){
+		if (user.institute.id !== optionsDto[0].instituteId) {
 			throw new ForbiddenException('You are not allowed to create this option');
 		}
 
@@ -127,15 +126,18 @@ export class OptionsService {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id: optionsDto[0].questionId },
-				relations: []
+				relations: [],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
 
-			if(user.rol !== Role.Admin && user.institute.id !== question.institute.id){
-				throw new ForbiddenException('You are not allowed to create this option');
-			}
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== question.institute.id
+		) {
+			throw new ForbiddenException('You are not allowed to create this option');
+		}
 
 		const options: Option[] = await Promise.all(
 			optionsDto.map(async (optionDto) => {
@@ -153,7 +155,11 @@ export class OptionsService {
 		return this.optionRepository.save(options);
 	}
 
-	async updateOption(id: number, optionDto: UpdateOptionDto, user: User): Promise<Option> {
+	async updateOption(
+		id: number,
+		optionDto: UpdateOptionDto,
+		user: User,
+	): Promise<Option> {
 		if (
 			await this.optionRepository.findOne({
 				where: {
@@ -187,18 +193,21 @@ export class OptionsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-				const question: Question = await this.questionRepository
+		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id: optionDto.questionId },
-				relations: []
+				relations: [],
 			})
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
 
-			if(user.rol !== Role.Admin &&  user.institute.id !== question.institute.id){
-				throw new ForbiddenException('You are not allowed to update this option');
-			}
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== question.institute.id
+		) {
+			throw new ForbiddenException('You are not allowed to update this option');
+		}
 		const option: Option = await this.optionRepository
 			.preload({
 				id: id,
@@ -227,14 +236,16 @@ export class OptionsService {
 				'The option you want to delete does not exist',
 			);
 		}
-		if(user.rol !== Role.Admin && user.institute.id !== option.question.institute.id){
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== option.question.institute.id
+		) {
 			throw new ForbiddenException('You are not allowed to delete this option');
 		}
 		this.optionRepository.remove(option);
 	}
 
 	async getAnswersByOption(id: number, user: User): Promise<Answer[]> {
-
 		const option: Option = await this.optionRepository
 			.findOneOrFail({
 				where: { id },
@@ -243,9 +254,9 @@ export class OptionsService {
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
-			if(user.institute.id !== option.institute.id){
-				throw new ForbiddenException('You are not allowed to see this option');
-			}
+		if (user.institute.id !== option.institute.id) {
+			throw new ForbiddenException('You are not allowed to see this option');
+		}
 		return option.answers;
 	}
 }

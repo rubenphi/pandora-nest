@@ -10,5 +10,4 @@ export class QueryCourseLesson {
 	@IsOptional()
 	@IsString()
 	readonly areaId?: number;
-	
 }

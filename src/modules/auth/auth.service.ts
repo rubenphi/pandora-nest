@@ -22,7 +22,7 @@ export class AuthService {
 
 	async login(user: User) {
 		delete user.password;
-		
+
 		const payload: Payload = { sub: user.id };
 
 		return {

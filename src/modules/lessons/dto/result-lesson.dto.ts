@@ -1,4 +1,4 @@
-import {Type} from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsInt, IsNumber, IsObject } from 'class-validator';
 
 import { Group } from 'src/modules/groups/group.entity';

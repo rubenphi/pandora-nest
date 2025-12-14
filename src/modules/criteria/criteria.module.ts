@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Criterion } from './criterion.entity';
@@ -8,9 +7,9 @@ import { Activity } from '../activities/activity.entity';
 import { Institute } from '../institutes/institute.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Criterion, Activity, Institute])],
-  controllers: [CriteriaController],
-  providers: [CriteriaService],
-  exports: [CriteriaService],
+	imports: [TypeOrmModule.forFeature([Criterion, Activity, Institute])],
+	controllers: [CriteriaController],
+	providers: [CriteriaService],
+	exports: [CriteriaService],
 })
 export class CriteriaModule {}

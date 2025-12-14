@@ -8,7 +8,6 @@ import { Area } from '../areas/area.entity';
 import { Period } from '../periods/period.entity';
 import { Course } from '../courses/course.entity';
 
-
 import { ReinforcementGradableItem } from './reinforcement-gradable-item.entity';
 import { Quiz } from '../quizzes/quiz.entity';
 import { Activity } from '../activities/activity.entity';
@@ -30,7 +29,6 @@ import { Institute } from '../institutes/institute.entity';
 			Institute,
 		]),
 	],
-
 
 	providers: [ReinforcementService],
 	controllers: [ReinforcementController],

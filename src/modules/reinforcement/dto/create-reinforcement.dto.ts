@@ -35,4 +35,3 @@ export class CreateReinforcementDto {
 	@IsOptional()
 	readonly gradableItems: { id: number; type: string }[];
 }
-

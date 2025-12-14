@@ -43,11 +43,11 @@ export class GradesService {
 			registrarMayor,
 		} = createGradeDto;
 
-		// Removed redundant findGradableItem call here. 
-        // We will call it when creating new grade or validating.
-        // Actually, we need to check existence efficiently. 
-        // Optimally, we fetch it once.
-        const gradableItem = await this.findGradableItem(gradableId, gradableType);
+		// Removed redundant findGradableItem call here.
+		// We will call it when creating new grade or validating.
+		// Actually, we need to check existence efficiently.
+		// Optimally, we fetch it once.
+		const gradableItem = await this.findGradableItem(gradableId, gradableType);
 
 		const gradeExist = await this.gradeRepository.findOne({
 			where: {
@@ -62,8 +62,8 @@ export class GradesService {
 				return gradeExist;
 			}
 			gradeExist.grade = grade;
-            // Always update classification from source to ensure consistency
-            gradeExist.classification = gradableItem.classification;
+			// Always update classification from source to ensure consistency
+			gradeExist.classification = gradableItem.classification;
 			return this.gradeRepository.save(gradeExist);
 		}
 
@@ -72,17 +72,16 @@ export class GradesService {
 		newGrade.gradableId = gradableId;
 		newGrade.gradableType = gradableType;
 
-        
-        // Enforce classification from source entity
-        newGrade.classification = gradableItem.classification;
-        
-        // Fallback or override logic removed as we want strict source of truth. 
-        // If the item doesn't have classification (unlikely due to migration), it will error or be null, which we can catch.
-        if (!newGrade.classification) {
-             // Fallback just in case of data inconsistency
-             if (gradableType === 'quiz') newGrade.classification = 'knowledge';
-             else newGrade.classification = 'execution';
-        }
+		// Enforce classification from source entity
+		newGrade.classification = gradableItem.classification;
+
+		// Fallback or override logic removed as we want strict source of truth.
+		// If the item doesn't have classification (unlikely due to migration), it will error or be null, which we can catch.
+		if (!newGrade.classification) {
+			// Fallback just in case of data inconsistency
+			if (gradableType === 'quiz') newGrade.classification = 'knowledge';
+			else newGrade.classification = 'execution';
+		}
 
 		newGrade.user = await this.userRepository.findOneByOrFail({ id: userId });
 		newGrade.period = await this.periodRepository.findOneByOrFail({

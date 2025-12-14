@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	ForbiddenException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 
@@ -18,10 +22,19 @@ export class PeriodsService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async getPeriods(queryPeriod: QueryPeriodDto, user : User): Promise<Period[]> {
+	async getPeriods(queryPeriod: QueryPeriodDto, user: User): Promise<Period[]> {
 		if (queryPeriod) {
 			return await this.periodRepository.find({
-				where: { name: queryPeriod.name, exist: queryPeriod.exist, institute: { id: user.rol == Role.Admin ? queryPeriod.instituteId : user.institute.id } },
+				where: {
+					name: queryPeriod.name,
+					exist: queryPeriod.exist,
+					institute: {
+						id:
+							user.rol == Role.Admin
+								? queryPeriod.instituteId
+								: user.institute.id,
+					},
+				},
 				relations: ['institute'],
 			});
 		} else {
@@ -37,15 +50,15 @@ export class PeriodsService {
 			.catch(() => {
 				throw new NotFoundException('Period not found');
 			});
-			if(user.institute.id !== period.institute.id)
-				throw new ForbiddenException('You are not allowed to see this period',
-				);
+		if (user.institute.id !== period.institute.id)
+			throw new ForbiddenException('You are not allowed to see this period');
 
 		return period;
 	}
 	async createPeriod(periodDto: CreatePeriodDto, user: User): Promise<Period> {
-		if(user.institute.id !== periodDto.instituteId)
-			throw new ForbiddenException('You are not allowed to create a period for this institute',
+		if (user.institute.id !== periodDto.instituteId)
+			throw new ForbiddenException(
+				'You are not allowed to create a period for this institute',
 			);
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
@@ -59,13 +72,16 @@ export class PeriodsService {
 			institute,
 			exist: periodDto.exist,
 		});
-		
+
 		return this.periodRepository.save(period);
 	}
-	async updatePeriod(id: number, periodDto: UpdatePeriodDto, user: User): Promise<Period> {
-		if(user.institute.id !== periodDto.instituteId)
-			throw new ForbiddenException('You are not allowed to update this period',
-			);
+	async updatePeriod(
+		id: number,
+		periodDto: UpdatePeriodDto,
+		user: User,
+	): Promise<Period> {
+		if (user.institute.id !== periodDto.instituteId)
+			throw new ForbiddenException('You are not allowed to update this period');
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
 				where: { id: periodDto.instituteId },
@@ -110,10 +126,8 @@ export class PeriodsService {
 				throw new NotFoundException('Period not found');
 			});
 
-			if(user.institute.id !== period.institute.id)
-				throw new ForbiddenException('You are not allowed to see this period',
-				);
-		
+		if (user.institute.id !== period.institute.id)
+			throw new ForbiddenException('You are not allowed to see this period');
 
 		return period.lessons;
 	}

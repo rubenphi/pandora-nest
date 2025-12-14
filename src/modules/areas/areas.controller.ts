@@ -25,7 +25,7 @@ export class AreasController {
 	constructor(private readonly areaService: AreasService) {}
 	@Auth()
 	@Get()
-	getAreas( queryArea: QueryAreaDto, @User() user: UserEntity): Promise<Area[]> {
+	getAreas(queryArea: QueryAreaDto, @User() user: UserEntity): Promise<Area[]> {
 		return this.areaService.getAreas(queryArea, user);
 	}
 
@@ -37,7 +37,10 @@ export class AreasController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post()
-	createArea(@Body() area: CreateAreaDto, @User() user: UserEntity): Promise<Area> {
+	createArea(
+		@Body() area: CreateAreaDto,
+		@User() user: UserEntity,
+	): Promise<Area> {
 		return this.areaService.createArea(area, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
@@ -46,9 +49,9 @@ export class AreasController {
 	updateArea(
 		@Param('id') id: number,
 		@Body() area: UpdateAreaDto,
-		@User() user: UserEntity,)
-	: Promise<Area> {
-		return this.areaService.updateArea(id, area,user);
+		@User() user: UserEntity,
+	): Promise<Area> {
+		return this.areaService.updateArea(id, area, user);
 	}
 	@Roles(Role.Admin)
 	@Auth()
@@ -58,7 +61,10 @@ export class AreasController {
 	}
 	@Auth()
 	@Get(':id/lessons')
-	getLessonsByArea(@Param('id') id: number, @User() user: UserEntity): Promise<Lesson[]> {
+	getLessonsByArea(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Lesson[]> {
 		return this.areaService.getLessonsByArea(id, user);
 	}
 }

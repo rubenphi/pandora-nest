@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -16,23 +15,16 @@ import { UsersModule } from '../users/users.module';
 import { LessonItemsModule } from '../lesson-items/lesson-items.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Lesson,
-      Course,
-      Area,
-      Institute,
-      Period
-    ]),
-    ActivitiesModule,
-    QuizzesModule,
-    MaterialsModule,
-    UsersModule,
-    LessonItemsModule,
-  ],
-  providers: [LessonsService],
-  controllers: [LessonsController],
-  exports: [LessonsService, TypeOrmModule.forFeature([Lesson])],
+	imports: [
+		TypeOrmModule.forFeature([Lesson, Course, Area, Institute, Period]),
+		ActivitiesModule,
+		QuizzesModule,
+		MaterialsModule,
+		UsersModule,
+		LessonItemsModule,
+	],
+	providers: [LessonsService],
+	controllers: [LessonsController],
+	exports: [LessonsService, TypeOrmModule.forFeature([Lesson])],
 })
 export class LessonsModule {}
-

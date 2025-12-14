@@ -16,7 +16,6 @@ import { Course } from '../courses/course.entity';
 import { ReinforcementGradableItem } from './reinforcement-gradable-item.entity';
 import { Lesson } from '../lessons/lesson.entity';
 
-
 @Entity()
 export class Reinforcement {
 	@PrimaryGeneratedColumn('increment')
@@ -44,11 +43,9 @@ export class Reinforcement {
 	@JoinColumn({ name: 'periodId' })
 	period: Period;
 
-
 	@ManyToOne(() => Course)
 	@JoinColumn({ name: 'courseId' })
 	course: Course;
-
 
 	@OneToMany(
 		() => ReinforcementGradableItem,
@@ -56,9 +53,7 @@ export class Reinforcement {
 	)
 	gradableItems: ReinforcementGradableItem[];
 
-
 	@CreateDateColumn()
-
 	createdAt: Date;
 
 	@UpdateDateColumn()
@@ -67,5 +62,4 @@ export class Reinforcement {
 	@ManyToOne(() => Lesson)
 	@JoinColumn({ name: 'lessonId' })
 	lesson: Lesson;
-
 }

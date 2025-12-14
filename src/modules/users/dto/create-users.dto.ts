@@ -5,9 +5,7 @@ import {
 	IsEmail,
 	IsOptional,
 	ValidateIf,
-	isNotEmpty,
 	IsNotEmpty,
-	IsInt,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -33,6 +31,13 @@ export class CreateUserDto {
 	})
 	@IsString()
 	readonly code: string;
+	@ApiProperty({
+		description: 'Telephone number of user',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	readonly telephone?: string;
 	@ApiProperty({
 		description: 'Institute invitation of user',
 	})

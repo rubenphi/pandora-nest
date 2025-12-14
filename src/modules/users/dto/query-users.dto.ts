@@ -34,12 +34,20 @@ export class QueryUserDto {
 	@IsEmail()
 	readonly email?: string;
 	@ApiProperty({
-		description: 'Search user user by code',
+		description: 'Search user by code(s)',
 		required: false,
+		type: [String],
 	})
 	@IsOptional()
-	@IsString()
-	readonly code?: string;
+	@IsArray()
+	@IsString({ each: true })
+	@Transform(({ value }) => {
+		if (typeof value === 'string') {
+			return value.split(',');
+		}
+		return value;
+	})
+	readonly code?: string[];
 	@ApiProperty({
 		description: 'Roles of user',
 		required: false,
