@@ -72,8 +72,6 @@ export class QuizzesService {
 	// Replicating getLessons as getQuizzes
 	async getQuizzes(queryQuiz: QueryQuizDto): Promise<Quiz[]> {
 		if (queryQuiz) {
-			console.log(queryQuiz);
-
 			return await this.quizRepository.find({
 				where: {
 					title: queryQuiz.title ? Like(`%${queryQuiz.title}%`) : null,
@@ -499,7 +497,6 @@ export class QuizzesService {
 			const answersCount = await this.answerRepository.count({
 				where: { quiz: { id: quiz.id } },
 			});
-			console.log(quiz.lesson.topic, ':', answersCount);
 
 			const gradesCount = await this.gradeRepository.count({
 				where: {
@@ -508,10 +505,7 @@ export class QuizzesService {
 				},
 			});
 
-			console.log(quiz.lesson.topic, ':', gradesCount);
-
 			if (answersCount > 0 && gradesCount === 0) {
-				console.log(quiz.title);
 				quizzesWithPendingGrading.push(quiz);
 			}
 		}

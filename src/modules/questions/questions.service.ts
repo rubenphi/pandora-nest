@@ -210,7 +210,7 @@ export class QuestionsService {
 		if (
 			question.photo &&
 			!(await this.questionRepository.findOne({
-				where: { id: Not(id), photo: imagePath },
+				where: { id: Not(id), photo: question.photo },
 			}))
 		) {
 			fs.unlinkSync(imagePath);
@@ -499,9 +499,6 @@ export class QuestionsService {
 					lastTitleIndex >= 0
 						? numerosOrdinales[lastTitleIndex + index + 1] // +1 because we want the next title
 						: numerosOrdinales[index];
-				console.log(numerosOrdinales[lastTitleIndex]);
-
-				console.log(numerosOrdinales[lastTitleIndex + index + 1]);
 
 				return this.questionRepository.create({
 					title,

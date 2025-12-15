@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Material } from './material.entity';
 import { CreateMaterialDto, QueryMaterialDto, UpdateMaterialDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
 import { Lesson } from '../lessons/lesson.entity';
+import * as fs from 'fs';
+import { log } from 'console';
 
 @Injectable()
 export class MaterialsService {
@@ -97,6 +99,21 @@ export class MaterialsService {
 		const lesson: Lesson = await this.lessonRepository.findOne({
 			where: { id: updateMaterialDto.lessonId },
 		});
+		const oldMaterial: Material = await this.materialRepository.findOneBy({
+			id,
+		});
+		if (!updateMaterialDto.url || oldMaterial.url !== updateMaterialDto.url) {
+			const filePath = oldMaterial.url
+				? oldMaterial.url.replace('files/', '')
+				: '';
+
+			const existeMaterial = !(await this.materialRepository.findOne({
+				where: { id: Not(id), url: oldMaterial.url },
+			}));
+			if (oldMaterial.url && existeMaterial) {
+				fs.unlinkSync(filePath);
+			}
+		}
 		const material: Material = await this.materialRepository.preload({
 			id,
 			content: updateMaterialDto.content,
@@ -112,9 +129,30 @@ export class MaterialsService {
 	}
 
 	async remove(id: number): Promise<void> {
-		const result = await this.materialRepository.delete(id);
-		if (result.affected === 0) {
-			throw new NotFoundException(`Material with ID ${id} not found`);
+		const material = await this.materialRepository
+			.findOneOrFail({
+				where: { id },
+			})
+			.catch(() => {
+				throw new NotFoundException(
+					'The material you want to delete does not exist',
+				);
+			});
+		const filePath = material.url ? material.url.replace('files/', '') : '';
+
+		const existeMaterial = !(await this.materialRepository.findOne({
+			where: { id: Not(id), url: material.url },
+		}));
+
+		console.log('URL: ', filePath);
+
+		console.log('EXISTE MATERIAL: ', existeMaterial);
+
+		if (material.url && existeMaterial) {
+			console.log('Se borrará el material');
+
+			fs.unlinkSync(filePath);
 		}
+		await this.materialRepository.delete(id);
 	}
 }

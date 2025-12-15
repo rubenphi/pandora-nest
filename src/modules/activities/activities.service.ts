@@ -61,8 +61,6 @@ export class ActivitiesService {
 	}
 
 	async findAll(query: QueryActivityDto): Promise<Activity[]> {
-		console.log(query.lessonId);
-
 		return await this.activityRepository.find({
 			where: {
 				title: query.title ? ILike(`%${query.title}%`) : null,
@@ -206,7 +204,6 @@ export class ActivitiesService {
 			const scoresCount = await this.studentCriterionScoreRepository.count({
 				where: { activity: { id: activity.id } },
 			});
-			console.log(activity.lesson.topic, ':', scoresCount);
 
 			const gradesCount = await this.gradeRepository.count({
 				where: {
@@ -215,10 +212,7 @@ export class ActivitiesService {
 				},
 			});
 
-			console.log(activity.lesson.topic, ':', gradesCount);
-
 			if (scoresCount > 0 && gradesCount === 0) {
-				console.log(activity.title);
 				activitiesWithPendingGrading.push(activity);
 			}
 		}

@@ -411,9 +411,7 @@ export class StudentCriterionScoresService {
 				relations: ['activity'],
 			});
 
-		returnData.forEach((permission) => {
-			console.log(JSON.stringify(permission));
-		});
+		returnData.forEach((permission) => {});
 		return returnData;
 	}
 
