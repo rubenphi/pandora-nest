@@ -24,6 +24,7 @@ import { Material } from '../materials/material.entity';
 export enum LessonType {
 	STANDARD = 'standard',
 	REINFORCEMENT = 'reinforcement',
+	REMEDIAL = 'remedial',
 }
 
 @Entity()

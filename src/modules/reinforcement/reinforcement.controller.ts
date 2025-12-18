@@ -14,6 +14,7 @@ import {
 	UpdateReinforcementDto,
 	CreateReinforcementLessonDto,
 	UpdateReinforcementLessonDto,
+	FindReinforcementByContextDto,
 } from './dto';
 
 @Controller('reinforcement')
@@ -31,18 +32,8 @@ export class ReinforcementController {
 	}
 
 	@Get('by-context')
-	findAllByContext(
-		@Query('courseId') courseId: string,
-		@Query('areaId') areaId: string,
-		@Query('periodId') periodId: string,
-		@Query('year') year: string,
-	) {
-		return this.reinforcementService.findAllByContext(
-			+courseId,
-			+areaId,
-			+periodId,
-			+year,
-		);
+	findAllByContext(@Query() query: FindReinforcementByContextDto) {
+		return this.reinforcementService.findAllByContext(query);
 	}
 
 	@Post('lesson')
@@ -77,6 +68,7 @@ export class ReinforcementController {
 		@Query('areaId') areaId: string,
 		@Query('periodId') periodId: string,
 		@Query('year') year: string,
+		@Query('lessonType') lessonType?: string,
 	) {
 		return this.reinforcementService.countStudentReinforcements(
 			+studentId,
@@ -84,6 +76,7 @@ export class ReinforcementController {
 			+areaId,
 			+periodId,
 			+year,
+			lessonType as any,
 		);
 	}
 

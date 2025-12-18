@@ -6,7 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Reinforcement } from './reinforcement.entity';
-import { CreateReinforcementDto, UpdateReinforcementDto } from './dto';
+import {
+	CreateReinforcementDto,
+	UpdateReinforcementDto,
+	FindReinforcementByContextDto,
+} from './dto';
 import { User } from '../users/user.entity';
 import { Area } from '../areas/area.entity';
 import { Period } from '../periods/period.entity';
@@ -110,20 +114,21 @@ export class ReinforcementService {
 		});
 	}
 
-	async findAllByContext(
-		courseId: number,
-		areaId: number,
-		periodId: number,
-		year: number,
-	) {
+	async findAllByContext(query: FindReinforcementByContextDto) {
+		const whereClause: any = {
+			course: { id: query.courseId },
+			area: { id: query.areaId },
+			period: { id: query.periodId },
+			year: query.year,
+		};
+
+		if (query.lessonType) {
+			whereClause.lesson = { type: query.lessonType };
+		}
+
 		return this.reinforcementRepository.find({
-			where: {
-				course: { id: courseId },
-				area: { id: areaId },
-				period: { id: periodId },
-				year: year,
-			},
-			relations: ['student'],
+			where: whereClause,
+			relations: ['student', 'lesson'],
 		});
 	}
 
@@ -278,7 +283,7 @@ export class ReinforcementService {
 			topic,
 			date,
 			year,
-			type: LessonType.REINFORCEMENT,
+			type: dto.lessonType || LessonType.REINFORCEMENT,
 			exist: true,
 			author: teacher,
 			area,
@@ -418,15 +423,22 @@ export class ReinforcementService {
 		areaId: number,
 		periodId: number,
 		year: number,
+		lessonType?: LessonType,
 	) {
+		const whereClause: any = {
+			student: { id: studentId },
+			course: { id: courseId },
+			area: { id: areaId },
+			period: { id: periodId },
+			year: year,
+		};
+
+		if (lessonType) {
+			whereClause.lesson = { type: lessonType };
+		}
+
 		return this.reinforcementRepository.count({
-			where: {
-				student: { id: studentId },
-				course: { id: courseId },
-				area: { id: areaId },
-				period: { id: periodId },
-				year: year,
-			},
+			where: whereClause,
 		});
 	}
 }
