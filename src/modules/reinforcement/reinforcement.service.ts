@@ -126,6 +126,10 @@ export class ReinforcementService {
 			whereClause.lesson = { type: query.lessonType };
 		}
 
+		if (query.studentId) {
+			whereClause.student = { id: query.studentId };
+		}
+
 		return this.reinforcementRepository.find({
 			where: whereClause,
 			relations: ['student', 'lesson'],

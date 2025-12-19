@@ -31,4 +31,10 @@ export class FindReinforcementByContextDto {
 	@IsOptional()
 	@IsEnum(LessonType)
 	readonly lessonType?: LessonType;
+
+	@ApiPropertyOptional()
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly studentId?: number;
 }
