@@ -110,7 +110,8 @@ export class AreasService {
 					'The area you want to delete does not exist',
 				);
 			});
-		this.areaRepository.remove(area);
+		area.exist = false;
+		await this.areaRepository.save(area);
 	}
 
 	async getLessonsByArea(id: number, user: User): Promise<Lesson[]> {

@@ -9,6 +9,7 @@ import { Institute } from '../institutes/institute.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { User } from '../users/user.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
+import { CourseAreaTeacher } from './course-area-teacher.entity';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { UserToGroup } from '../users/userToGroup.entity';
 			UserToGroup,
 			UserToCourse,
 			User,
+			CourseAreaTeacher,
 		]),
 	],
 	controllers: [CoursesController],

@@ -26,6 +26,8 @@ import { UserToCourse } from '../users/userToCourse.entity';
 import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
 import { QueryUsersOfCourseDto } from './dto/query-user.dto';
 import { UserToGroup } from '../users/userToGroup.entity';
+import { CourseAreaTeacher } from './course-area-teacher.entity';
+import { AssignAreaTeacherDto } from './dto/assign-area-teacher.dto';
 
 @Injectable()
 export class CoursesService {
@@ -42,7 +44,123 @@ export class CoursesService {
 		private readonly areaRepository: Repository<Area>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(CourseAreaTeacher)
+		private readonly courseAreaTeacherRepository: Repository<CourseAreaTeacher>,
 	) {}
+
+	async getCourseAreasTeachers(
+		id: number,
+		year: number,
+		user: User,
+	): Promise<CourseAreaTeacher[]> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['institute'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
+			throw new ForbiddenException(
+				'You are not allowed to see areas of this course',
+			);
+		}
+
+		return await this.courseAreaTeacherRepository.find({
+			where: { course: { id }, year },
+			relations: ['area', 'teacher'],
+		});
+	}
+
+	async assignAreaTeacher(
+		id: number,
+		assignDto: AssignAreaTeacherDto,
+		user: User,
+	): Promise<CourseAreaTeacher> {
+		const course: Course = await this.courseRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['institute', 'areas'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Course not found');
+			});
+
+		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
+			throw new ForbiddenException(
+				'You are not allowed to assign areas to this course',
+			);
+		}
+
+		const area = await this.areaRepository.findOneBy({ id: assignDto.areaId });
+		if (!area) {
+			throw new NotFoundException('Area not found');
+		}
+
+		// Ensure area is linked to course
+		if (!course.areas.find((a) => a.id === area.id)) {
+			course.areas.push(area);
+			await this.courseRepository.save(course);
+		}
+
+		let teacher = null;
+		if (assignDto.teacherId) {
+			teacher = await this.userRepository.findOneBy({ id: assignDto.teacherId });
+			if (!teacher) {
+				throw new NotFoundException('Teacher not found');
+			}
+		}
+
+		let assignment = await this.courseAreaTeacherRepository.findOne({
+			where: {
+				course: { id },
+				area: { id: area.id },
+				year: assignDto.year,
+			},
+		});
+
+		if (assignment) {
+			assignment.teacher = teacher;
+			if (assignDto.active !== undefined) {
+				assignment.active = assignDto.active;
+			}
+		} else {
+			assignment = this.courseAreaTeacherRepository.create({
+				course,
+				area,
+				teacher,
+				year: assignDto.year,
+				active: assignDto.active !== undefined ? assignDto.active : true,
+			});
+		}
+
+		return await this.courseAreaTeacherRepository.save(assignment);
+	}
+
+	async deleteAreaTeacher(
+		id: number,
+		areaId: number,
+		year: number,
+		user: User,
+	): Promise<void> {
+		const assignment = await this.courseAreaTeacherRepository.findOneOrFail({
+			where: { course: { id }, area: { id: areaId }, year },
+			relations: ['course', 'course.institute'],
+		});
+
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== assignment.course.institute.id
+		) {
+			throw new ForbiddenException(
+				'You are not allowed to delete this assignment',
+			);
+		}
+
+		await this.courseAreaTeacherRepository.remove(assignment);
+	}
 
 	async getCourses(queryCourse: QueryCourseDto, user: User): Promise<Course[]> {
 		if (queryCourse) {

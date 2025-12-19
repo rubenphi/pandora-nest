@@ -16,6 +16,7 @@ import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Area } from 'src/modules/areas/area.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { Institute } from '../institutes/institute.entity';
+import { CourseAreaTeacher } from './course-area-teacher.entity';
 
 @Entity()
 export class Course {
@@ -37,6 +38,11 @@ export class Course {
 	lessons: Lesson[];
 	@OneToMany(() => UserToCourse, (userToCourse) => userToCourse.course)
 	users: UserToCourse[];
+	@OneToMany(
+		() => CourseAreaTeacher,
+		(courseAreaTeacher) => courseAreaTeacher.course,
+	)
+	courseAreaTeachers: CourseAreaTeacher[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

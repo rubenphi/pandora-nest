@@ -25,6 +25,7 @@ import { AddUserToCourseDto } from './dto/add-user.dto';
 import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
 import { QueryUsersOfCourseDto } from './dto/query-user.dto';
 import { UserToCourse } from '../users/userToCourse.entity';
+import { AssignAreaTeacherDto } from './dto';
 
 @ApiTags('Courses Routes')
 @Controller('courses')
@@ -99,6 +100,25 @@ export class CoursesController {
 		@User() user: UserEntity,
 	): Promise<any> {
 		return this.courseService.deleteAreaFromCourse(id, courseAreas, user);
+	}
+	@Auth()
+	@Get(':id/areas-teachers')
+	getCourseAreasTeachers(
+		@Param('id') id: number,
+		@Query('year') year: number,
+		@User() user: UserEntity,
+	): Promise<any> {
+		return this.courseService.getCourseAreasTeachers(id, year, user);
+	}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Auth()
+	@Post(':id/areas-teachers')
+	assignAreaTeacher(
+		@Param('id') id: number,
+		@Body() assignDto: AssignAreaTeacherDto,
+		@User() user: UserEntity,
+	): Promise<any> {
+		return this.courseService.assignAreaTeacher(id, assignDto, user);
 	}
 	@Auth()
 	@Get(':id/groups')
