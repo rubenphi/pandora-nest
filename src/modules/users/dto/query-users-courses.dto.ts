@@ -28,5 +28,5 @@ export class QueryUserCoursesDto {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
 	})
 	@IsBoolean()
-	readonly exist?: boolean;
+	readonly active?: boolean;
 }

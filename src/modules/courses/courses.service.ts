@@ -212,6 +212,29 @@ export class CoursesService {
 		return await this.courseAreaTeacherRepository.save(assignment);
 	}
 
+	async getTeacherAssignments(
+		teacherId: number,
+		user: User,
+	): Promise<CourseAreaTeacher[]> {
+		// Ensure the requesting user is either an Admin/Director/Coordinator
+		// or the teacher themselves.
+		if (
+			user.rol !== Role.Admin &&
+			user.rol !== Role.Director &&
+			user.rol !== Role.Coordinator &&
+			user.id !== teacherId
+		) {
+			throw new ForbiddenException(
+				'You are not allowed to see these assignments',
+			);
+		}
+
+		return await this.courseAreaTeacherRepository.find({
+			where: { teacher: { id: teacherId } },
+			relations: ['area', 'course', 'course.institute'],
+		});
+	}
+
 	async getCourses(queryCourse: QueryCourseDto, user: User): Promise<Course[]> {
 		if (queryCourse) {
 			return await this.courseRepository.find({

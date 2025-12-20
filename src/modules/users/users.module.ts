@@ -10,6 +10,7 @@ import { UserToCourse } from './userToCourse.entity';
 import { UserToGroup } from './userToGroup.entity';
 import { AlumnosController } from './colonline.controller';
 import { Course } from '../courses/course.entity';
+import { CourseArea } from '../courses/course-area.entity';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { Course } from '../courses/course.entity';
 			UserToCourse,
 			UserToGroup,
 			Course, // Add Course entity here
+			CourseArea,
 		]),
 	],
 	providers: [UsersService],

@@ -299,8 +299,9 @@ export class UsersService {
 				where: {
 					year: queryCourses.year,
 					user: { id },
+					active: queryCourses.active,
 				},
-				relations: ['course', 'course.courseAreas.area'],
+				relations: ['course', 'course.courseAreas', 'course.courseAreas.area'],
 			});
 		} else {
 			throw new ForbiddenException('userId is required');

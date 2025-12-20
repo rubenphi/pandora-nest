@@ -193,6 +193,15 @@ export class CoursesController {
 		return this.courseService.addUserToCourse(id, usersToAdd, user);
 	}
 
+	@Auth()
+	@Get('teacher-assignments/:teacherId')
+	getTeacherAssignments(
+		@Param('teacherId') teacherId: number,
+		@User() user: UserEntity,
+	): Promise<CourseAreaTeacher[]> {
+		return this.courseService.getTeacherAssignments(teacherId, user);
+	}
+
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Delete(':id/users')
