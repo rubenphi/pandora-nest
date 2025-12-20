@@ -30,9 +30,6 @@ export class CourseAreaTeacher {
 	@JoinColumn({ name: 'teacherId' })
 	teacher: User;
 
-	@Column({ nullable: false })
-	year: number;
-
 	@Column({ default: true })
 	active: boolean;
 

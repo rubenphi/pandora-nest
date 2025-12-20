@@ -16,6 +16,7 @@ import {
 	UpdateCourseDto,
 	QueryCourseDto,
 	QueryCourseAreaDto,
+	UpdateCourseAreaTeacherDto,
 } from './dto';
 import { AssignAreaToCourseDto } from './dto/assign-area-to-course.dto'; // New import
 import { Institute } from '../institutes/institute.entity';
@@ -53,7 +54,6 @@ export class CoursesService {
 
 	async getCourseAreasTeachers(
 		id: number,
-		year: number,
 		user: User,
 	): Promise<CourseAreaTeacher[]> {
 		const course: Course = await this.courseRepository
@@ -72,7 +72,7 @@ export class CoursesService {
 		}
 
 		return await this.courseAreaTeacherRepository.find({
-			where: { course: { id }, year },
+			where: { course: { id } },
 			relations: ['area', 'teacher'],
 		});
 	}
@@ -126,40 +126,37 @@ export class CoursesService {
 			}
 		}
 
-		let assignment = await this.courseAreaTeacherRepository.findOne({
+		//check if area is already assigned to teacher
+		const assignment = await this.courseAreaTeacherRepository.findOne({
 			where: {
 				course: { id },
-				area: { id: area.id },
-				year: assignDto.year,
+				area: { id: assignDto.areaId },
+				teacher: { id: assignDto.teacherId },
+				active: true,
 			},
 		});
-
 		if (assignment) {
-			assignment.teacher = teacher;
-			if (assignDto.active !== undefined) {
-				assignment.active = assignDto.active;
-			}
-		} else {
-			assignment = this.courseAreaTeacherRepository.create({
-				course,
-				area,
-				teacher,
-				year: assignDto.year,
-				active: assignDto.active !== undefined ? assignDto.active : true,
-			});
+			return assignment;
 		}
 
-		return await this.courseAreaTeacherRepository.save(assignment);
+		// Simply create a new assignment without checking for existence
+		const newAssignment = this.courseAreaTeacherRepository.create({
+			course,
+			area,
+			teacher,
+			active: assignDto.active !== undefined ? assignDto.active : true,
+		});
+
+		return await this.courseAreaTeacherRepository.save(newAssignment);
 	}
 
 	async deleteAreaTeacher(
 		id: number,
 		areaId: number,
-		year: number,
 		user: User,
 	): Promise<void> {
 		const assignment = await this.courseAreaTeacherRepository.findOneOrFail({
-			where: { course: { id }, area: { id: areaId }, year },
+			where: { course: { id }, area: { id: areaId } },
 			relations: ['course', 'course.institute'],
 		});
 
@@ -173,6 +170,46 @@ export class CoursesService {
 		}
 
 		await this.courseAreaTeacherRepository.remove(assignment);
+	}
+
+	async updateCourseAreaTeacher(
+		assignmentId: number,
+		updateDto: UpdateCourseAreaTeacherDto,
+		user: User,
+	): Promise<CourseAreaTeacher> {
+		const assignment = await this.courseAreaTeacherRepository.findOneOrFail({
+			where: { id: assignmentId },
+			relations: ['course', 'course.institute'],
+		});
+
+		if (
+			user.rol !== Role.Admin &&
+			user.institute.id !== assignment.course.institute.id
+		) {
+			throw new ForbiddenException(
+				'You are not allowed to update this assignment',
+			);
+		}
+
+		if (updateDto.active !== undefined) {
+			assignment.active = updateDto.active;
+		}
+
+		if (updateDto.teacherId !== undefined) {
+			if (updateDto.teacherId === null) {
+				assignment.teacher = null;
+			} else {
+				const teacher = await this.userRepository.findOneBy({
+					id: updateDto.teacherId,
+				});
+				if (!teacher) {
+					throw new NotFoundException('Teacher not found');
+				}
+				assignment.teacher = teacher;
+			}
+		}
+
+		return await this.courseAreaTeacherRepository.save(assignment);
 	}
 
 	async getCourses(queryCourse: QueryCourseDto, user: User): Promise<Course[]> {

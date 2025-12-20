@@ -1,32 +1,35 @@
 import {
+	Body,
 	Controller,
+	Delete,
 	Get,
 	Param,
+	Patch, // Import Patch
 	Post,
 	Query,
-	Body,
-	Patch,
-	Delete,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { Auth, User } from 'src/common/decorators';
-import { Course } from './course.entity';
-import { CoursesService } from './courses.service';
-import {
-	CreateCourseDto,
-	UpdateCourseDto,
-	QueryCourseDto,
-	AssignAreaToCourseDto,
-	QueryCourseAreaDto, // New import
-} from './dto';
-import { Role, Roles } from '../auth/roles.decorator';
+
 import { User as UserEntity } from '../users/user.entity';
+import {
+	AssignAreaTeacherDto,
+	CreateCourseDto,
+	QueryCourseDto,
+	QueryCourseAreaDto,
+	QueryUsersOfCourseDto,
+	RemoveUserFromCourseDto,
+	UpdateCourseDto,
+	UpdateCourseAreaTeacherDto,
+	AssignAreaToCourseDto, // Import UpdateCourseAreaTeacherDto
+} from './dto';
+import { Auth, User } from 'src/common/decorators';
+import { CoursesService } from './courses.service';
+import { Course } from './course.entity';
+import { Role, Roles } from '../auth/roles.decorator';
+import { CourseArea } from './course-area.entity';
+import { CourseAreaTeacher } from './course-area-teacher.entity';
 import { AddUserToCourseDto } from './dto/add-user.dto';
-import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
-import { QueryUsersOfCourseDto } from './dto/query-user.dto';
 import { UserToCourse } from '../users/userToCourse.entity';
-import { AssignAreaTeacherDto } from './dto';
-import { CourseArea } from './course-area.entity'; // New import for return type
 
 @ApiTags('Courses Routes')
 @Controller('courses')
@@ -111,10 +114,9 @@ export class CoursesController {
 	@Get(':id/areas-teachers')
 	getCourseAreasTeachers(
 		@Param('id') id: number,
-		@Query('year') year: number,
 		@User() user: UserEntity,
 	): Promise<any> {
-		return this.courseService.getCourseAreasTeachers(id, year, user);
+		return this.courseService.getCourseAreasTeachers(id, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
@@ -125,6 +127,21 @@ export class CoursesController {
 		@User() user: UserEntity,
 	): Promise<any> {
 		return this.courseService.assignAreaTeacher(id, assignDto, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Auth()
+	@Patch('areas-teachers/:assignmentId')
+	async updateCourseAreaTeacher(
+		@Param('assignmentId') assignmentId: number,
+		@Body() updateDto: UpdateCourseAreaTeacherDto,
+		@User() user: UserEntity,
+	): Promise<CourseAreaTeacher> {
+		return await this.courseService.updateCourseAreaTeacher(
+			assignmentId,
+			updateDto,
+			user,
+		);
 	}
 	@Auth()
 	@Get(':id/groups')

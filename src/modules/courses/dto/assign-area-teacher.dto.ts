@@ -11,10 +11,6 @@ export class AssignAreaTeacherDto {
 	@IsNumber()
 	teacherId?: number;
 
-	@ApiProperty()
-	@IsNumber()
-	year: number;
-
 	@ApiProperty({ default: true })
 	@IsOptional()
 	active?: boolean;
