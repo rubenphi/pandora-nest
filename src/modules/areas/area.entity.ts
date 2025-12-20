@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Institute } from '../institutes/institute.entity';
+import { CourseArea } from '../courses/course-area.entity'; // New import
 
 @Entity()
 export class Area {
@@ -23,6 +24,8 @@ export class Area {
 	institute: Institute;
 	@OneToMany(() => Lesson, (lesson) => lesson.area)
 	lessons: Lesson[];
+	@OneToMany(() => CourseArea, (courseArea) => courseArea.area) // New relation
+	courseAreas: CourseArea[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@CreateDateColumn()

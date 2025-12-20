@@ -300,7 +300,7 @@ export class UsersService {
 					year: queryCourses.year,
 					user: { id },
 				},
-				relations: ['course', 'course.areas'],
+				relations: ['course', 'course.courseAreas.area'],
 			});
 		} else {
 			throw new ForbiddenException('userId is required');

@@ -10,6 +10,7 @@ import { UserToCourse } from '../users/userToCourse.entity';
 import { User } from '../users/user.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { CourseAreaTeacher } from './course-area-teacher.entity';
+import { CourseArea } from './course-area.entity';
 
 @Module({
 	imports: [
@@ -21,6 +22,7 @@ import { CourseAreaTeacher } from './course-area-teacher.entity';
 			UserToCourse,
 			User,
 			CourseAreaTeacher,
+			CourseArea,
 		]),
 	],
 	controllers: [CoursesController],

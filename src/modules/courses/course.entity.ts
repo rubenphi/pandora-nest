@@ -5,8 +5,6 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	OneToMany,
-	ManyToMany,
-	JoinTable,
 	ManyToOne,
 	JoinColumn,
 } from 'typeorm';
@@ -17,6 +15,7 @@ import { Area } from 'src/modules/areas/area.entity';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { Institute } from '../institutes/institute.entity';
 import { CourseAreaTeacher } from './course-area-teacher.entity';
+import { CourseArea } from './course-area.entity'; // New import
 
 @Entity()
 export class Course {
@@ -27,9 +26,6 @@ export class Course {
 	@ManyToOne(() => Institute, (institute) => institute.courses)
 	@JoinColumn({ name: 'instituteId' })
 	institute: Institute;
-	@ManyToMany(() => Area)
-	@JoinTable()
-	areas: Area[];
 	@Column({ nullable: false })
 	exist: boolean;
 	@OneToMany(() => Group, (group) => group.course)
@@ -43,6 +39,8 @@ export class Course {
 		(courseAreaTeacher) => courseAreaTeacher.course,
 	)
 	courseAreaTeachers: CourseAreaTeacher[];
+	@OneToMany(() => CourseArea, (courseArea) => courseArea.course) // New relation
+	courseAreas: CourseArea[];
 	@CreateDateColumn()
 	createdAt: Date;
 	@UpdateDateColumn()

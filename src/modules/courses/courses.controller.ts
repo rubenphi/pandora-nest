@@ -15,9 +15,9 @@ import { CoursesService } from './courses.service';
 import {
 	CreateCourseDto,
 	UpdateCourseDto,
-	AddAreaToCourseDto,
-	DeleteAreaFromCourseDto,
 	QueryCourseDto,
+	AssignAreaToCourseDto,
+	QueryCourseAreaDto, // New import
 } from './dto';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
@@ -26,6 +26,7 @@ import { RemoveUserFromCourseDto } from './dto/remove-users.dto';
 import { QueryUsersOfCourseDto } from './dto/query-user.dto';
 import { UserToCourse } from '../users/userToCourse.entity';
 import { AssignAreaTeacherDto } from './dto';
+import { CourseArea } from './course-area.entity'; // New import for return type
 
 @ApiTags('Courses Routes')
 @Controller('courses')
@@ -77,29 +78,34 @@ export class CoursesController {
 	@Get(':id/areas')
 	getAreasByCourse(
 		@Param('id') id: number,
+		@Query() queryCourseAreas: QueryCourseAreaDto,
 		@User() user: UserEntity,
 	): Promise<any> {
-		return this.courseService.getAreasByCourse(id, user);
+		return this.courseService.getAreasByCourse(id, user, queryCourseAreas);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post(':id/areas')
+	@ApiBody({ type: [AssignAreaToCourseDto] }) // For Swagger documentation
 	addAreaToCourse(
 		@Param('id') id: number,
-		@Body() courseAreas: AddAreaToCourseDto,
+		@Body() assignAreaDtos: AssignAreaToCourseDto[], // Changed DTO
 		@User() user: UserEntity,
-	): Promise<any> {
-		return this.courseService.addAreaToCourse(id, courseAreas, user);
+	): Promise<CourseArea[]> {
+		// Changed return type
+		return this.courseService.addAreaToCourse(id, assignAreaDtos, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Delete(':id/areas')
+	@ApiBody({ type: [Number] }) // For Swagger documentation, assuming array of numbers
 	deleteAreaToCourse(
 		@Param('id') id: number,
-		@Body() courseAreas: DeleteAreaFromCourseDto,
+		@Body() areaIdsToDelete: number[], // Changed DTO
 		@User() user: UserEntity,
-	): Promise<any> {
-		return this.courseService.deleteAreaFromCourse(id, courseAreas, user);
+	): Promise<void> {
+		// Changed return type
+		return this.courseService.deleteAreaFromCourse(id, areaIdsToDelete, user);
 	}
 	@Auth()
 	@Get(':id/areas-teachers')

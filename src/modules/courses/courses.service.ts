@@ -14,10 +14,10 @@ import { Lesson } from '../lessons/lesson.entity';
 import {
 	CreateCourseDto,
 	UpdateCourseDto,
-	AddAreaToCourseDto,
-	DeleteAreaFromCourseDto,
 	QueryCourseDto,
+	QueryCourseAreaDto,
 } from './dto';
+import { AssignAreaToCourseDto } from './dto/assign-area-to-course.dto'; // New import
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
@@ -28,6 +28,7 @@ import { QueryUsersOfCourseDto } from './dto/query-user.dto';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { CourseAreaTeacher } from './course-area-teacher.entity';
 import { AssignAreaTeacherDto } from './dto/assign-area-teacher.dto';
+import { CourseArea } from './course-area.entity'; // New import
 
 @Injectable()
 export class CoursesService {
@@ -46,6 +47,8 @@ export class CoursesService {
 		private readonly instituteRepository: Repository<Institute>,
 		@InjectRepository(CourseAreaTeacher)
 		private readonly courseAreaTeacherRepository: Repository<CourseAreaTeacher>,
+		@InjectRepository(CourseArea) // New repository injection
+		private readonly courseAreaRepository: Repository<CourseArea>,
 	) {}
 
 	async getCourseAreasTeachers(
@@ -82,7 +85,7 @@ export class CoursesService {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['institute', 'areas'],
+				relations: ['institute', 'courseAreas.area'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -100,14 +103,24 @@ export class CoursesService {
 		}
 
 		// Ensure area is linked to course
-		if (!course.areas.find((a) => a.id === area.id)) {
-			course.areas.push(area);
+		if (!course.courseAreas.find((a) => a.area.id === area.id && a.active)) {
+			course.courseAreas.push(
+				this.courseAreaRepository.create({
+					course,
+					area,
+					start_date: new Date(),
+					end_date: null,
+					active: true,
+				}) as CourseArea,
+			);
 			await this.courseRepository.save(course);
 		}
 
 		let teacher = null;
 		if (assignDto.teacherId) {
-			teacher = await this.userRepository.findOneBy({ id: assignDto.teacherId });
+			teacher = await this.userRepository.findOneBy({
+				id: assignDto.teacherId,
+			});
 			if (!teacher) {
 				throw new NotFoundException('Teacher not found');
 			}
@@ -264,13 +277,14 @@ export class CoursesService {
 
 	async addAreaToCourse(
 		id: number,
-		courseAreas: AddAreaToCourseDto,
+		assignAreaDtos: AssignAreaToCourseDto[], // Changed parameter type
 		user: User,
-	): Promise<any> {
+	): Promise<CourseArea[]> {
+		// Changed return type
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['areas', 'institute'],
+				relations: ['institute'], // 'areas' relation is no longer needed here
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -280,48 +294,90 @@ export class CoursesService {
 				'You are not allowed to add areas to this course',
 			);
 		}
-		const areas: Area[] = await this.areaRepository.find({
-			where: { id: In(courseAreas.areasId) },
-		});
 
-		course.areas = course.areas.concat(areas);
+		const createdCourseAreas: CourseArea[] = [];
 
-		return this.courseRepository.save(course);
+		for (const assignDto of assignAreaDtos) {
+			const area = await this.areaRepository.findOneBy({
+				id: assignDto.areaId,
+			});
+			if (!area) {
+				throw new NotFoundException(
+					`Area with ID ${assignDto.areaId} not found`,
+				);
+			}
+
+			// Check if a similar CourseArea assignment already exists
+			const existingCourseArea = await this.courseAreaRepository.findOne({
+				where: {
+					course: { id: course.id },
+					area: { id: area.id },
+					start_date: assignDto.start_date, // Consider uniqueness based on dates if needed
+				},
+			});
+
+			if (existingCourseArea) {
+				// Optionally update existing or throw error
+				throw new BadRequestException(
+					`Area ${area.name} is already assigned to this course for the given period.`,
+				);
+			}
+
+			const courseArea = this.courseAreaRepository.create({
+				course,
+				area,
+				start_date: assignDto.start_date,
+				end_date: assignDto.end_date,
+				active: assignDto.active !== undefined ? assignDto.active : true,
+			});
+			createdCourseAreas.push(await this.courseAreaRepository.save(courseArea));
+		}
+
+		return createdCourseAreas;
 	}
 
 	async deleteAreaFromCourse(
 		id: number,
-		courseAreas: DeleteAreaFromCourseDto,
+		areaIdsToDelete: number[], // Assuming a simple array of area IDs for deletion
 		user: User,
-	): Promise<any> {
+	): Promise<void> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['areas', 'institute'],
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
 			throw new ForbiddenException(
-				'You are not allowed to delete areas to this course',
+				'You are not allowed to delete areas from this course',
 			);
 		}
 
-		courseAreas.areasId.forEach((areaId) => {
-			course.areas = course.areas.filter((area) => {
-				return area.id !== areaId;
+		for (const areaId of areaIdsToDelete) {
+			const courseArea = await this.courseAreaRepository.findOne({
+				where: {
+					course: { id: course.id },
+					area: { id: areaId },
+				},
 			});
-		});
 
-		return this.courseRepository.save(course);
+			if (courseArea) {
+				await this.courseAreaRepository.remove(courseArea);
+			}
+		}
 	}
 
-	async getAreasByCourse(id: number, user: User): Promise<Area[]> {
+	async getAreasByCourse(
+		id: number,
+		user: User,
+		query: QueryCourseAreaDto,
+	): Promise<Area[]> {
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['areas', 'institute'],
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Course not found');
@@ -340,7 +396,12 @@ export class CoursesService {
 			}
 		}
 
-		return course.areas;
+		const courseAreas = await this.courseAreaRepository.find({
+			where: { course: { id }, active: query.active },
+			relations: ['area'],
+		});
+
+		return courseAreas.map((ca) => ca.area);
 	}
 
 	async getLessonsByCourse(id: number, user: User): Promise<Lesson[]> {
