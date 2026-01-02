@@ -9,8 +9,7 @@ import { FilesModule } from './modules/files/files.module';
 import { OptionsModule } from './modules/options/options.module';
 import { AnswersModule } from './modules/answers/answers.module';
 import { AreasModule } from './modules/areas/areas.module';
-import { ConfigModule } from './config/config.module';
-import { ConfigService } from './config/config.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Configuration } from './config/config.keys';
 import { UsersModule } from './modules/users/users.module';
 import { PeriodsModule } from './modules/periods/periods.module';
@@ -26,22 +25,26 @@ import { LessonItemsModule } from './modules/lesson-items/lesson-items.module';
 import { StudentCriterionScoresModule } from './modules/student-criterion-scores/student-criterion-scores.module';
 import { ReinforcementModule } from './modules/reinforcement/reinforcement.module';
 
-import * as dotenv from 'dotenv';
-
-dotenv.config();
-
 @Module({
 	imports: [
-		TypeOrmModule.forRoot({
-			type: process.env.DB_TYPE as any,
-			host: process.env.DB_HOST,
-			database: process.env.DB_NAME,
-			username: process.env.DB_USER,
-			password: process.env.DB_PASSWORD,
-			dropSchema: false,
-			synchronize: true,
-			entities: ['dist/**/**/*.entity{.js,.ts}'],
-			migrations: ['dist/database/migrations/*{.js,.ts}'],
+		ConfigModule.forRoot({
+			isGlobal: true,
+			envFilePath: process.env.NODE_ENV === 'production' ? 'backend/.env' : '.env',
+		}),
+		TypeOrmModule.forRootAsync({
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => ({
+				type: 'postgres',
+				host: configService.get<string>('DB_HOST'),
+				database: configService.get<string>('DB_NAME'),
+				username: configService.get<string>('DB_USER'),
+				password: configService.get<string>('DB_PASSWORD'),
+				port: parseInt(configService.get<string>('DB_PORT'), 10) || 5432,
+				synchronize: true,
+				dropSchema: false,
+				entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+			}),
 		}),
 		CoursesModule,
 		GroupsModule,
@@ -51,7 +54,6 @@ dotenv.config();
 		OptionsModule,
 		AnswersModule,
 		AreasModule,
-		ConfigModule,
 		UsersModule,
 		PeriodsModule,
 		AuthModule,
