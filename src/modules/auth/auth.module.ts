@@ -5,17 +5,18 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy, LocalStrategy } from './strategies';
 import { JwtModule } from '@nestjs/jwt';
-
-import * as dotenv from 'dotenv';
-
-dotenv.config();
+import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigModule and ConfigService
 
 @Module({
 	imports: [
 		PassportModule.register({ defaultStrategy: 'jwt' }),
-		JwtModule.register({
-			secret: process.env.HASH_KEY,
-			signOptions: { expiresIn: '604800s' },
+		JwtModule.registerAsync({
+			imports: [ConfigModule], // Import ConfigModule
+			inject: [ConfigService], // Inject ConfigService
+			useFactory: async (configService: ConfigService) => ({
+				secret: configService.get<string>('HASH_KEY'), // Get HASH_KEY from ConfigService
+				signOptions: { expiresIn: '604800s' },
+			}),
 		}),
 		UsersModule,
 	],

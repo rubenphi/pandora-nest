@@ -29,7 +29,7 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
-			envFilePath: process.env.NODE_ENV === 'production' ? 'backend/.env' : '.env',
+			envFilePath: '.env',
 		}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
@@ -44,6 +44,8 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
 				synchronize: true,
 				dropSchema: false,
 				entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+				retryAttempts: 2,
+				retryDelay: 2000,
 			}),
 		}),
 		CoursesModule,

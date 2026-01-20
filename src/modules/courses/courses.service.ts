@@ -626,13 +626,7 @@ export class CoursesService {
 
 		// Process each user assignment individually
 		for (const userToAdd of usersToAdd) {
-			// 1. Deactivate all existing course assignments for this user for the given year
-			await this.userToCourseRepository.update(
-				{ user: { id: userToAdd.userId }, year: userToAdd.year },
-				{ active: false },
-			);
-
-			// 2. Check if the user is already in the target course for that year
+			// Check if the user is already in the target course for that year
 			const existingAssignment = await this.userToCourseRepository.findOne({
 				where: {
 					user: { id: userToAdd.userId },
@@ -642,16 +636,17 @@ export class CoursesService {
 			});
 
 			if (existingAssignment) {
-				// If they are, just reactivate the assignment
-				existingAssignment.active = true;
+				// Update the existing assignment
+				existingAssignment.active = userToAdd.active;
+				existingAssignment.rol = userToAdd.rol;
 				await this.userToCourseRepository.save(existingAssignment);
 			} else {
-				// If not, create a new active assignment
+				// Create a new assignment
 				const userToAssign = await this.userRepository.findOneBy({
 					id: userToAdd.userId,
 				});
 				if (!userToAssign) {
-					// Optional: throw an error or just skip this user if not found
+					// Skip this user if not found
 					continue;
 				}
 				const newAssignment = this.userToCourseRepository.create({
@@ -659,7 +654,7 @@ export class CoursesService {
 					course,
 					rol: userToAdd.rol,
 					year: userToAdd.year,
-					active: true, // Explicitly set as active
+					active: userToAdd.active,
 				});
 				await this.userToCourseRepository.save(newAssignment);
 			}
