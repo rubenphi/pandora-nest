@@ -47,6 +47,10 @@ export class ImportQuestionVariableOptionDto {
 	@IsInt()
 	points: number;
 
+	@ApiProperty()
+	@IsBoolean()
+	shuffleOptions: boolean;
+
 	@ApiProperty({ type: [ImportQuestionVariableOption] })
 	@IsArray()
 	@ValidateNested({ each: true })

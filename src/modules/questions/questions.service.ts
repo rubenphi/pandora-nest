@@ -519,9 +519,11 @@ export class QuestionsService {
 		);
 		const optionsToSave: Option[] = savedQuestions.flatMap(
 			(question, index) => {
-				importationData.questions[index].options = shuffleArray(
-					importationData.questions[index].options,
-				);
+				if (importationData.shuffleOptions) {
+					importationData.questions[index].options = shuffleArray(
+						importationData.questions[index].options,
+					);
+				}
 				const optionsForQuestion: Option[] = importationData.questions[
 					index
 				].options.map((optionDto, indexOption) => {
