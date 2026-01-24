@@ -227,6 +227,7 @@ export class QuizzesService {
 					'answers.question',
 					'answers.group',
 					'answers.option',
+					'answers.user',
 					'institute',
 				],
 			})

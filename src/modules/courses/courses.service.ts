@@ -248,10 +248,10 @@ export class CoursesService {
 								: user.institute.id,
 					},
 				},
-				relations: ['institute'],
+				relations: ['institute', 'courseAreas', 'courseAreas.area'],
 			});
 		} else {
-			return await this.courseRepository.find({ relations: ['institute'] });
+			return await this.courseRepository.find({ relations: ['institute', 'courseAreas', 'courseAreas.area'] });
 		}
 	}
 	async getCourse(id: number, user: User): Promise<Course> {
