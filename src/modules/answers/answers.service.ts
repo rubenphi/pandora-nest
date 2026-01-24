@@ -390,126 +390,115 @@ export class AnswersService {
 		return savedAnswers;
 	}
 
-	async updateAnswer(
-		id: number,
-		answerDto: UpdateAnswerDto,
-		user: User,
-	): Promise<Answer> {
-		if (
-			user.rol !== Role.Admin &&
-			user.institute.id !== answerDto.instituteId
-		) {
-			throw new ForbiddenException('You are not allowed to update this answer');
-		}
-		const quiz: Quiz = await this.quizRepository
-			.findOneOrFail({
-				where: { id: answerDto.quizId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Quiz not found');
-			});
+async updateAnswer(
+    id: number,
+    answerDto: UpdateAnswerDto,
+    user: User,
+): Promise<Answer> {
+    if (
+        user.rol !== Role.Admin &&
+        user.institute.id !== answerDto.instituteId
+    ) {
+        throw new ForbiddenException('You are not allowed to update this answer');
+    }
+    
+    const quiz: Quiz = await this.quizRepository
+        .findOneOrFail({
+            where: { id: answerDto.quizId },
+        })
+        .catch(() => {
+            throw new NotFoundException('Quiz not found');
+        });
 
-		let group: Group | undefined;
-		let userEntity: User | undefined;
-		const existingAnswerWhere: any = {
-			question: { id: answerDto.questionId },
-			quiz: { id: answerDto.quizId },
-		};
+    let group: Group | undefined;
+    let userEntity: User | undefined;
 
-		if (quiz.quizType === 'individual') {
-			if (!answerDto.userId) {
-				throw new BadRequestException(
-					'For individual quizzes, userId is required.',
-				);
-			}
-			if (answerDto.groupId) {
-				throw new BadRequestException(
-					'For individual quizzes, groupId should not be provided.',
-				);
-			}
-			userEntity = await this.userRepository
-				.findOneOrFail({
-					where: { id: answerDto.userId },
-				})
-				.catch(() => {
-					throw new NotFoundException('User not found');
-				});
-			existingAnswerWhere.user = { id: answerDto.userId };
-		} else if (quiz.quizType === 'group') {
-			if (!answerDto.userId) {
-				throw new BadRequestException('For group quizzes, userId is required.');
-			}
-			if (!answerDto.groupId) {
-				throw new BadRequestException(
-					'For group quizzes, groupId is required.',
-				);
-			}
-			userEntity = await this.userRepository
-				.findOneOrFail({
-					where: { id: answerDto.userId },
-				})
-				.catch(() => {
-					throw new NotFoundException('User not found');
-				});
-			group = await this.groupRepository
-				.findOneOrFail({
-					where: { id: answerDto.groupId },
-				})
-				.catch(() => {
-					throw new NotFoundException('Group not found');
-				});
-			existingAnswerWhere.group = { id: answerDto.groupId };
-		} else {
-			throw new BadRequestException('Invalid quiz type.');
-		}
+    if (quiz.quizType === 'individual') {
+        if (!answerDto.userId) {
+            throw new BadRequestException(
+                'For individual quizzes, userId is required.',
+            );
+        }
+        if (answerDto.groupId) {
+            throw new BadRequestException(
+                'For individual quizzes, groupId should not be provided.',
+            );
+        }
+        userEntity = await this.userRepository
+            .findOneOrFail({
+                where: { id: answerDto.userId },
+            })
+            .catch(() => {
+                throw new NotFoundException('User not found');
+            });
+    } else if (quiz.quizType === 'group') {
+        if (!answerDto.userId) {
+            throw new BadRequestException('For group quizzes, userId is required.');
+        }
+        if (!answerDto.groupId) {
+            throw new BadRequestException(
+                'For group quizzes, groupId is required.',
+            );
+        }
+        userEntity = await this.userRepository
+            .findOneOrFail({
+                where: { id: answerDto.userId },
+            })
+            .catch(() => {
+                throw new NotFoundException('User not found');
+            });
+        group = await this.groupRepository
+            .findOneOrFail({
+                where: { id: answerDto.groupId },
+            })
+            .catch(() => {
+                throw new NotFoundException('Group not found');
+            });
+    } else {
+        throw new BadRequestException('Invalid quiz type.');
+    }
 
-		if (await this.answerRepository.findOne({ where: existingAnswerWhere })) {
-			throw new BadRequestException(
-				`Esta pregunta ya fue respondida por este ${
-					quiz.quizType === 'individual' ? 'usuario' : 'grupo'
-				} en este quiz.`,
-			);
-		}
+    const option: Option = await this.optionRepository
+        .findOneOrFail({
+            where: { id: answerDto.optionId },
+        })
+        .catch(() => {
+            throw new NotFoundException('Option not found');
+        });
+    const question: Question = await this.questionRepository
+        .findOneOrFail({
+            where: { id: answerDto.questionId },
+        })
+        .catch(() => {
+            throw new NotFoundException('Question not found');
+        });
+    const institute: Institute = await this.instituteRepository
+        .findOneOrFail({
+            where: { id: answerDto.instituteId },
+        })
+        .catch(() => {
+            throw new NotFoundException('Institute not found');
+        });
 
-		const option: Option = await this.optionRepository
-			.findOneOrFail({
-				where: { id: answerDto.optionId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Option not found');
-			});
-		const question: Question = await this.questionRepository
-			.findOneOrFail({
-				where: { id: answerDto.questionId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Question not found');
-			});
-		const institute: Institute = await this.instituteRepository
-			.findOneOrFail({
-				where: { id: answerDto.instituteId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Institute not found');
-			});
-
-		const answer: Answer = await this.answerRepository.preload({
-			id: id,
-			option,
-			question,
-			group,
-			user: userEntity,
-			institute,
-			exist: answerDto.exist,
-		});
-		answer.points = option.correct ? question.points : 0;
-		if (!answer) {
-			throw new NotFoundException(
-				'The answer you want to update does not exist',
-			);
-		}
-		return this.answerRepository.save(answer);
-	}
+    const answer: Answer = await this.answerRepository.preload({
+        id: id,
+        option,
+        question,
+        group,
+        user: userEntity,
+        institute,
+        exist: answerDto.exist,
+    });
+    
+    if (!answer) {
+        throw new NotFoundException(
+            'The answer you want to update does not exist',
+        );
+    }
+    
+    answer.points = option.correct ? question.points : 0;
+    return this.answerRepository.save(answer);
+}
 
 	async deleteAnswer(id: number): Promise<void> {
 		const answer: Answer = await this.answerRepository
