@@ -48,4 +48,18 @@ export class AuthController {
 		}
 		return { ip: 'localhost' };
 	}
+
+	@Get('server-time')
+	getServerTime() {
+		const now = new Date();
+		return {
+			year: now.getFullYear(),
+			month: now.getMonth() + 1, // Months are 0-indexed in JS
+			day: now.getDate(),
+			hour: now.getHours(),
+			min: now.getMinutes(),
+			second: now.getSeconds(),
+			miliseconds: now.getMilliseconds(),
+		};
+	}
 }
