@@ -215,10 +215,15 @@ export class InstitutesService {
 
 			usersWithoutCourses = await this.userRepository
 				.createQueryBuilder('user')
-				.leftJoin('user.courses', 'course')
+				.leftJoin('user.courses', 'course', 'course.active = :active', {
+					active: true,
+				})
 				.where('user.instituteId = :instituteId', { instituteId: id })
 				.andWhere('course.id IS NULL')
 				.getMany();
+
+				
+				
 		}
 
 		return usersWithoutCourses;
