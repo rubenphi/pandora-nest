@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Not, Repository, ILike } from 'typeorm';
 import { Material } from './material.entity';
 import { CreateMaterialDto, QueryMaterialDto, UpdateMaterialDto } from './dto';
 import { Institute } from '../institutes/institute.entity';
@@ -67,6 +67,10 @@ export class MaterialsService {
 
 		if (query.instituteId) {
 			where.institute = { id: query.instituteId };
+		}
+
+		if (query.title) {
+			where.title = ILike(`%${query.title}%`);
 		}
 
 		return this.materialRepository.find({

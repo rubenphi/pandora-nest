@@ -9,7 +9,14 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Like, QueryFailedError, Repository } from 'typeorm';
+import {
+	DataSource,
+	In,
+	Like,
+	QueryFailedError,
+	Repository,
+	ILike,
+} from 'typeorm';
 
 import { Quiz } from './quiz.entity';
 import {
@@ -74,7 +81,7 @@ export class QuizzesService {
 		if (queryQuiz) {
 			return await this.quizRepository.find({
 				where: {
-					title: queryQuiz.title ? Like(`%${queryQuiz.title}%`) : null,
+					title: queryQuiz.title ? ILike(`%${queryQuiz.title}%`) : null,
 					quizType: queryQuiz.quizType,
 					lesson: {
 						id: queryQuiz.lessonId,

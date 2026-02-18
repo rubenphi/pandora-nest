@@ -7,7 +7,7 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { QueryFailedError, Repository, ILike } from 'typeorm';
 
 import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
 import { Lesson } from './lesson.entity';
@@ -49,7 +49,9 @@ export class LessonsService {
 					year: queryLesson.year,
 					course: { id: queryLesson.courseId },
 					area: { id: queryLesson.areaId },
-					topic: queryLesson.topic,
+					topic: queryLesson.topic
+						? ILike(`%${queryLesson.topic}%`)
+						: undefined,
 					date: queryLesson.date,
 					exist: queryLesson.exist,
 					period: { id: queryLesson.periodId },

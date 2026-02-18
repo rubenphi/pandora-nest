@@ -55,6 +55,7 @@ export class UsersController {
 		return this.userService.createUser(user, userLoged);
 	}
 
+	@Auth()
 	@Post('bulk')
 	createBulkUsers(
 		@Body() createBulkUserDto: CreateBulkUserDto,
