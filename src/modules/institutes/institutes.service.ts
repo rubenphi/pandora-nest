@@ -29,6 +29,8 @@ export class InstitutesService {
 		private readonly instituteRepository: Repository<Institute>,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
+		@InjectRepository(UserToCourse)
+		private readonly userToCourseRepository: Repository<UserToCourse>,
 	) {}
 
 	async getInstitutes(queryInstitute: QueryInstituteDto): Promise<Institute[]> {
@@ -190,11 +192,14 @@ export class InstitutesService {
 			throw new ForbiddenException('You are not allowed to see this course');
 		}
 		if (user.rol === Role.Student) {
-			const studentInSameCourse = user.courses.find(
-				(course) =>
-					course.id === course.course.id && course.year === course.year,
-			);
-			if (!studentInSameCourse) {
+			const isStudentEnrolled = await this.userToCourseRepository.count({
+				where: {
+					user: { id: user.id },
+					course: { id },
+					active: true,
+				},
+			});
+			if (isStudentEnrolled === 0) {
 				throw new ForbiddenException('You are not allowed to see this course');
 			}
 		}

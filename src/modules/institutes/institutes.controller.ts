@@ -17,7 +17,7 @@ import {
 	UpdateInstituteDto,
 	QueryInstituteDto,
 } from './dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Course } from '../courses/course.entity';
 import { Group } from '../groups/group.entity';
@@ -32,6 +32,8 @@ export class InstitutesController {
 
 	@Auth()
 	@Get()
+	@ApiOperation({ summary: 'Get all institutes' })
+	@ApiResponse({ status: 200, description: 'Return all institutes.' })
 	getInstitutes(
 		@Query() queryInstitute: QueryInstituteDto,
 	): Promise<Institute[]> {
@@ -39,11 +41,17 @@ export class InstitutesController {
 	}
 	@Auth()
 	@Get(':id')
+	@ApiOperation({ summary: 'Get an institute by id' })
+	@ApiResponse({ status: 200, description: 'Return an institute.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	getInstitute(@Param('id') id: number): Promise<Institute> {
 		return this.instituteService.getInstitute(id);
 	}
 	@Auth()
 	@Post()
+	@ApiOperation({ summary: 'Create an institute' })
+	@ApiResponse({ status: 201, description: 'The institute has been successfully created.' })
+	@ApiResponse({ status: 403, description: 'Forbidden.' })
 	createInstitute(
 		@Body() institute: CreateInstituteDto,
 		@User() user: UserEntity,
@@ -53,6 +61,9 @@ export class InstitutesController {
 	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Patch(':id')
+	@ApiOperation({ summary: 'Update an institute' })
+	@ApiResponse({ status: 200, description: 'The institute has been successfully updated.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	updateInstitute(
 		@Param('id') id: number,
 		@Body() institute: UpdateInstituteDto,
@@ -63,11 +74,17 @@ export class InstitutesController {
 	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
+	@ApiOperation({ summary: 'Delete an institute' })
+	@ApiResponse({ status: 200, description: 'The institute has been successfully deleted.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	deleteInstitute(@Param('id') id: number): Promise<void> {
 		return this.instituteService.deleteInstitute(id);
 	}
 	@Auth()
 	@Get(':id/lessons')
+	@ApiOperation({ summary: 'Get lessons by institute' })
+	@ApiResponse({ status: 200, description: 'Return lessons.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	getLessonsByInstitute(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -76,6 +93,9 @@ export class InstitutesController {
 	}
 	@Auth()
 	@Get(':id/courses')
+	@ApiOperation({ summary: 'Get courses by institute' })
+	@ApiResponse({ status: 200, description: 'Return courses.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	getCoursesByInstitute(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -85,6 +105,9 @@ export class InstitutesController {
 
 	@Auth()
 	@Get(':id/usersNoCourse')
+	@ApiOperation({ summary: 'Get users without course by institute' })
+	@ApiResponse({ status: 200, description: 'Return users.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	getUsersWhithoutCourse(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -95,6 +118,9 @@ export class InstitutesController {
 
 	@Auth()
 	@Get(':id/groups')
+	@ApiOperation({ summary: 'Get groups by institute' })
+	@ApiResponse({ status: 200, description: 'Return groups.' })
+	@ApiResponse({ status: 404, description: 'Institute not found.' })
 	getGroupsByInstitute(
 		@Param('id') id: number,
 		@User() user: UserEntity,

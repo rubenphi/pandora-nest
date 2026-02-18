@@ -8,7 +8,7 @@ import {
 	Post,
 	Query,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { User as UserEntity } from '../users/user.entity';
 import {
@@ -38,6 +38,8 @@ export class CoursesController {
 
 	@Auth()
 	@Get()
+	@ApiOperation({ summary: 'Get all courses' })
+	@ApiResponse({ status: 200, description: 'Return all courses.' })
 	getCourses(
 		@Query() queryCourse: QueryCourseDto,
 		@User() user: UserEntity,
@@ -46,6 +48,9 @@ export class CoursesController {
 	}
 	@Auth()
 	@Get(':id')
+	@ApiOperation({ summary: 'Get a course by id' })
+	@ApiResponse({ status: 200, description: 'Return a course.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getCourse(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -55,6 +60,9 @@ export class CoursesController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post()
+	@ApiOperation({ summary: 'Create a course' })
+	@ApiResponse({ status: 201, description: 'The course has been successfully created.' })
+	@ApiResponse({ status: 403, description: 'Forbidden.' })
 	createCourse(
 		@Body() course: CreateCourseDto,
 		@User() user: UserEntity,
@@ -64,6 +72,9 @@ export class CoursesController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Patch(':id')
+	@ApiOperation({ summary: 'Update a course' })
+	@ApiResponse({ status: 200, description: 'The course has been successfully updated.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	updateCourse(
 		@Param('id') id: number,
 		@Body() course: UpdateCourseDto,
@@ -74,11 +85,17 @@ export class CoursesController {
 	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
+	@ApiOperation({ summary: 'Delete a course' })
+	@ApiResponse({ status: 200, description: 'The course has been successfully deleted.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	deleteCourse(@Param('id') id: number): Promise<void> {
 		return this.courseService.deleteCourse(id);
 	}
 	@Auth()
 	@Get(':id/areas')
+	@ApiOperation({ summary: 'Get areas by course' })
+	@ApiResponse({ status: 200, description: 'Return areas.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getAreasByCourse(
 		@Param('id') id: number,
 		@Query() queryCourseAreas: QueryCourseAreaDto,
@@ -90,6 +107,9 @@ export class CoursesController {
 	@Auth()
 	@Post(':id/areas')
 	@ApiBody({ type: [AssignAreaToCourseDto] }) // For Swagger documentation
+	@ApiOperation({ summary: 'Add area to course' })
+	@ApiResponse({ status: 201, description: 'Area has been successfully added to course.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	addAreaToCourse(
 		@Param('id') id: number,
 		@Body() assignAreaDtos: AssignAreaToCourseDto[], // Changed DTO
@@ -102,6 +122,9 @@ export class CoursesController {
 	@Auth()
 	@Delete(':id/areas')
 	@ApiBody({ type: [Number] }) // For Swagger documentation, assuming array of numbers
+	@ApiOperation({ summary: 'Delete area from course' })
+	@ApiResponse({ status: 200, description: 'Area has been successfully deleted from course.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	deleteAreaToCourse(
 		@Param('id') id: number,
 		@Body() areaIdsToDelete: number[], // Changed DTO
@@ -112,6 +135,9 @@ export class CoursesController {
 	}
 	@Auth()
 	@Get(':id/areas-teachers')
+	@ApiOperation({ summary: 'Get course areas teachers' })
+	@ApiResponse({ status: 200, description: 'Return course areas teachers.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getCourseAreasTeachers(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -121,6 +147,9 @@ export class CoursesController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Post(':id/areas-teachers')
+	@ApiOperation({ summary: 'Assign area teacher' })
+	@ApiResponse({ status: 201, description: 'Area teacher has been successfully assigned.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	assignAreaTeacher(
 		@Param('id') id: number,
 		@Body() assignDto: AssignAreaTeacherDto,
@@ -132,6 +161,9 @@ export class CoursesController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator)
 	@Auth()
 	@Patch('areas-teachers/:assignmentId')
+	@ApiOperation({ summary: 'Update course area teacher' })
+	@ApiResponse({ status: 200, description: 'Course area teacher has been successfully updated.' })
+	@ApiResponse({ status: 404, description: 'Course area teacher not found.' })
 	async updateCourseAreaTeacher(
 		@Param('assignmentId') assignmentId: number,
 		@Body() updateDto: UpdateCourseAreaTeacherDto,
@@ -145,6 +177,9 @@ export class CoursesController {
 	}
 	@Auth()
 	@Get(':id/groups')
+	@ApiOperation({ summary: 'Get groups by course' })
+	@ApiResponse({ status: 200, description: 'Return groups.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getGroupsByCourse(
 		@Param('id') id: number,
 		@Query('year') year: number,
@@ -154,6 +189,9 @@ export class CoursesController {
 	}
 	@Auth()
 	@Get(':id/lessons')
+	@ApiOperation({ summary: 'Get lessons by course' })
+	@ApiResponse({ status: 200, description: 'Return lessons.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getLessonsByCourse(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -163,6 +201,9 @@ export class CoursesController {
 
 	@Auth()
 	@Get(':id/users')
+	@ApiOperation({ summary: 'Get users by course' })
+	@ApiResponse({ status: 200, description: 'Return users.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getUsersByCourse(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -173,6 +214,9 @@ export class CoursesController {
 
 	@Auth()
 	@Get(':id/usersNoGroup')
+	@ApiOperation({ summary: 'Get users without group by course' })
+	@ApiResponse({ status: 200, description: 'Return users.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getUsersWhithoutGroup(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -185,6 +229,9 @@ export class CoursesController {
 	@Auth()
 	@Post(':id/users')
 	@ApiBody({ type: [AddUserToCourseDto] })
+	@ApiOperation({ summary: 'Add user to course' })
+	@ApiResponse({ status: 201, description: 'User has been successfully added to course.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	addUserToCourse(
 		@Param('id') id: number,
 		@Body() usersToAdd: AddUserToCourseDto[],
@@ -195,6 +242,9 @@ export class CoursesController {
 
 	@Auth()
 	@Get('teacher-assignments/:teacherId')
+	@ApiOperation({ summary: 'Get teacher assignments' })
+	@ApiResponse({ status: 200, description: 'Return teacher assignments.' })
+	@ApiResponse({ status: 404, description: 'Teacher not found.' })
 	getTeacherAssignments(
 		@Param('teacherId') teacherId: number,
 		@User() user: UserEntity,
@@ -205,6 +255,9 @@ export class CoursesController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Delete(':id/users')
+	@ApiOperation({ summary: 'Remove user from course' })
+	@ApiResponse({ status: 200, description: 'User has been successfully removed from course.' })
+	@ApiResponse({ status: 404, description: 'Course not found.' })
 	removeUserFromCourse(
 		@Param('id') id: number,
 		@Body() usersToRemove: RemoveUserFromCourseDto,

@@ -18,6 +18,7 @@ import { Period } from '../periods/period.entity';
 import { AddUserToGroupDto } from './dto/add-user.dto';
 import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
 import { UpdateUserFromGroupDto } from './dto/update-users.dto';
+import { UserToCourse } from '../users/userToCourse.entity';
 
 @Injectable()
 export class GroupsService {
@@ -32,6 +33,8 @@ export class GroupsService {
 		private readonly periodRepository: Repository<Period>,
 		@InjectRepository(UserToGroup)
 		private readonly userToGroupRepository: Repository<UserToGroup>,
+		@InjectRepository(UserToCourse)
+		private readonly userToCourseRepository: Repository<UserToCourse>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
@@ -74,10 +77,14 @@ export class GroupsService {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 		if (user.rol === Role.Student) {
-			const studentInSameCourse = user.courses.find(
-				(course) => course.id === group.course.id,
-			);
-			if (!studentInSameCourse) {
+			const isStudentEnrolled = await this.userToCourseRepository.count({
+				where: {
+					user: { id: user.id },
+					course: { id: group.course.id },
+					active: true,
+				},
+			});
+			if (isStudentEnrolled === 0) {
 				throw new ForbiddenException('You are not allowed to see this group');
 			}
 		}
@@ -184,7 +191,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['answers'],
+				relations: ['answers', 'course', 'institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -193,10 +200,14 @@ export class GroupsService {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 		if (user.rol === Role.Student) {
-			const studentInSameCourse = user.courses.find(
-				(course) => course.id === group.course.id && course.year,
-			);
-			if (!studentInSameCourse) {
+			const isStudentEnrolled = await this.userToCourseRepository.count({
+				where: {
+					user: { id: user.id },
+					course: { id: group.course.id },
+					active: true,
+				},
+			});
+			if (isStudentEnrolled === 0) {
 				throw new ForbiddenException('You are not allowed to see this group');
 			}
 		}
@@ -211,7 +222,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['usersToGroup', 'usersToGroup.user', 'institute'],
+				relations: ['usersToGroup', 'usersToGroup.user', 'institute', 'course'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -220,10 +231,14 @@ export class GroupsService {
 			throw new ForbiddenException('You are not allowed to see this group');
 		}
 		if (user.rol === Role.Student) {
-			const studentInSameCourse = user.courses.find(
-				(course) => course.id === group.course.id && course.year,
-			);
-			if (!studentInSameCourse) {
+			const isStudentEnrolled = await this.userToCourseRepository.count({
+				where: {
+					user: { id: user.id },
+					course: { id: group.course.id },
+					active: true,
+				},
+			});
+			if (isStudentEnrolled === 0) {
 				throw new ForbiddenException('You are not allowed to see this group');
 			}
 		}

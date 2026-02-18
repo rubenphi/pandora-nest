@@ -28,7 +28,7 @@ import {
 } from './dto';
 import { Option } from '../options/option.entity';
 import { Answer } from '../answers/answer.entity';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
@@ -40,11 +40,16 @@ export class QuestionsController {
 	constructor(private readonly questionService: QuestionsService) {}
 	@Auth()
 	@Get()
+	@ApiOperation({ summary: 'Get all questions' })
+	@ApiResponse({ status: 200, description: 'Return all questions.' })
 	getQuestions(@Query() queryQuestion: QueryQuestionDto): Promise<Question[]> {
 		return this.questionService.getQuestions(queryQuestion);
 	}
 	@Auth()
 	@Get(':id')
+	@ApiOperation({ summary: 'Get a question by id' })
+	@ApiResponse({ status: 200, description: 'Return a question.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	getQuestion(@Param('id') id: number): Promise<Question> {
 		return this.questionService.getQuestion(id);
 	}
@@ -63,6 +68,9 @@ export class QuestionsController {
 			}),
 		}),
 	)
+	@ApiOperation({ summary: 'Create a question' })
+	@ApiResponse({ status: 201, description: 'The question has been successfully created.' })
+	@ApiResponse({ status: 403, description: 'Forbidden.' })
 	createQuestion(
 		@Body() question: CreateQuestionDto,
 		@UploadedFile() file: Express.Multer.File,
@@ -89,6 +97,9 @@ export class QuestionsController {
 			}),
 		}),
 	)
+	@ApiOperation({ summary: 'Update a question' })
+	@ApiResponse({ status: 200, description: 'The question has been successfully updated.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	updateQuestion(
 		@Param('id') id: number,
 		@Body() question: UpdateQuestionDto,
@@ -103,11 +114,17 @@ export class QuestionsController {
 	@Roles(Role.Admin)
 	@Auth()
 	@Delete(':id')
+	@ApiOperation({ summary: 'Delete a question' })
+	@ApiResponse({ status: 200, description: 'The question has been successfully deleted.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	deleteQuestion(@Param('id') id: number): Promise<void> {
 		return this.questionService.deleteQuestion(id);
 	}
 	@Auth()
 	@Get(':id/options')
+	@ApiOperation({ summary: 'Get options by question' })
+	@ApiResponse({ status: 200, description: 'Return options.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	getOptionByQuestion(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -116,6 +133,9 @@ export class QuestionsController {
 	}
 	@Auth()
 	@Get(':id/answers')
+	@ApiOperation({ summary: 'Get answers by question' })
+	@ApiResponse({ status: 200, description: 'Return answers.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	getAnswersByQuestion(
 		@Param('id') id: number,
 		@User() user: UserEntity,
@@ -124,6 +144,9 @@ export class QuestionsController {
 	}
 	@Auth()
 	@Patch(':id/options/import')
+	@ApiOperation({ summary: 'Import options to question' })
+	@ApiResponse({ status: 200, description: 'Options have been successfully imported.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	importOptionsToQuestion(
 		@Param('id') id: number,
 		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
@@ -136,6 +159,9 @@ export class QuestionsController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id/photo/import')
+	@ApiOperation({ summary: 'Import photo to question' })
+	@ApiResponse({ status: 200, description: 'Photo have been successfully imported.' })
+	@ApiResponse({ status: 404, description: 'Question not found.' })
 	importPhotoToQuestion(
 		@Param('id') id: number,
 		@Body() ImportFromQuestionDto: ImportFromQuestionDto,
@@ -149,6 +175,8 @@ export class QuestionsController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Get('reset/index')
+	@ApiOperation({ summary: 'Reset questions index' })
+	@ApiResponse({ status: 200, description: 'Questions index reset successfully.' })
 	async resetIndex(): Promise<{ message: string }> {
 		await this.questionService.resetIndex();
 		return { message: 'Question index reset successfully' };
@@ -157,6 +185,9 @@ export class QuestionsController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post('import/types')
+	@ApiOperation({ summary: 'Import questions by types' })
+	@ApiResponse({ status: 201, description: 'Questions have been successfully imported.' })
+	@ApiResponse({ status: 403, description: 'Forbidden.' })
 	importQuestionsByType(
 		@Body() importationData: ImportQuestionByTypeDto,
 		@User() user: UserEntity,
@@ -166,6 +197,9 @@ export class QuestionsController {
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post('import/variable-option')
+	@ApiOperation({ summary: 'Import questions by variable option' })
+	@ApiResponse({ status: 201, description: 'Questions have been successfully imported.' })
+	@ApiResponse({ status: 403, description: 'Forbidden.' })
 	importQuestionsByVariableOption(
 		@Body() importationData: ImportQuestionVariableOptionDto,
 		@User() user: UserEntity,

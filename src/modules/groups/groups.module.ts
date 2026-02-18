@@ -9,6 +9,7 @@ import { Institute } from '../institutes/institute.entity';
 import { Period } from '../periods/period.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { User } from '../users/user.entity';
+import { UserToCourse } from '../users/userToCourse.entity';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { User } from '../users/user.entity';
 			Period,
 			UserToGroup,
 			User,
+			UserToCourse,
 		]),
 	],
 	providers: [GroupsService],
