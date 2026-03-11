@@ -14,7 +14,7 @@ import { Course } from '../courses/course.entity';
 import { Period } from '../periods/period.entity';
 import { UserToGroup } from '../users/userToGroup.entity';
 import { User } from '../users/user.entity';
-import { CastVoteDto, CreatePollDto, QueryPollDto } from './dto';
+import { CastVoteDto, CreatePollDto, QueryPollDto, UpdatePollDto } from './dto';
 import { Role } from '../auth/roles.decorator';
 
 @Injectable()
@@ -172,14 +172,14 @@ export class PollsService {
 		if (poll.mode === 'individual') {
 			// Check if YOU already voted
 			const existingVote = await this.pollVoteRepository.findOne({
-				where: { poll: { id }, student: { id: user.id } },
+				where: { poll: { id }, user: { id: user.id } },
 			});
 			if (existingVote) {
 				throw new ConflictException('You have already voted in this poll');
 			}
 		} else {
 			// GROUP MODE
-			// 1. Find the student's group for this course + period + year
+			// 1. Find the user's group for this course + period + year
 			// Use UserToGroup to find a group that matches the poll's course, period, and year
 			// Note: UserToGroup links User <-> Group. Group links to Course, Period. Group has 'year'.
 			const userToGroup = await this.userToGroupRepository.findOne({
@@ -216,7 +216,7 @@ export class PollsService {
 
 		const vote = this.pollVoteRepository.create({
 			poll,
-			student: user,
+			user: user,
 			group: voteGroup,
 			option,
 		});
@@ -228,9 +228,9 @@ export class PollsService {
 		
 		if (poll.mode === 'individual') {
 			return this.pollVoteRepository.findOne({
-				where: { poll: { id }, student: { id: user.id } },
-				relations: ['option'],
-			});
+				where: { poll: { id }, user: { id: user.id } },
+				relations: ['option'], 
+			}); 
 		} else {
 			// Group mode: find if MY GROUP voted
 			// Need to find my group first, similar to castVote logic
@@ -302,5 +302,67 @@ export class PollsService {
 			closedAt: poll.closedAt,
 			results,
 		};
+	}
+
+	async update(id: number, updatePollDto: UpdatePollDto, user: User): Promise<Poll> {
+		const poll = await this.pollRepository
+			.findOneOrFail({
+				where: { id },
+				relations: ['creator'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Poll not found');
+			});
+
+		if (
+			user.rol !== Role.Admin &&
+			user.rol !== Role.Director &&
+			user.rol !== Role.Coordinator &&
+			user.rol !== Role.Teacher &&
+			poll.creator.id !== user.id
+		) {
+			throw new ForbiddenException('You are not allowed to update this poll');
+		}
+
+		// Apply updates for simple properties
+		if (updatePollDto.title !== undefined) poll.title = updatePollDto.title;
+		if (updatePollDto.question !== undefined) poll.question = updatePollDto.question;
+		if (updatePollDto.mode !== undefined) poll.mode = updatePollDto.mode;
+		if (updatePollDto.year !== undefined) poll.year = updatePollDto.year;
+		if (updatePollDto.active !== undefined) poll.active = updatePollDto.active;
+
+		// Handle courseId
+		if (updatePollDto.courseId !== undefined) {
+			const course = await this.courseRepository
+				.findOneOrFail({ where: { id: updatePollDto.courseId } })
+				.catch(() => {
+					throw new NotFoundException('Course not found');
+				});
+			poll.course = course;
+		}
+
+		// Handle periodId
+		if (updatePollDto.periodId !== undefined) {
+			const period = await this.periodRepository
+				.findOneOrFail({ where: { id: updatePollDto.periodId } })
+				.catch(() => {
+					throw new NotFoundException('Period not found');
+				});
+			poll.period = period;
+		}
+
+		// Handle options
+		if (updatePollDto.options !== undefined) {
+			// Delete existing options
+			await this.pollOptionRepository.delete({ poll: { id: poll.id } });
+
+			// Create and save new options
+			const newOptions = updatePollDto.options.map((opt) =>
+				this.pollOptionRepository.create({ text: opt.text, poll: poll }),
+			);
+			poll.options = await this.pollOptionRepository.save(newOptions);
+		}
+
+		return this.pollRepository.save(poll);
 	}
 }

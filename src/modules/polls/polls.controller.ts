@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PollsService } from './polls.service';
-import { CastVoteDto, CreatePollDto, QueryPollDto } from './dto';
+import { CastVoteDto, CreatePollDto, QueryPollDto, UpdatePollDto } from './dto';
 import { Auth, User } from 'src/common/decorators';
 import { User as UserEntity } from '../users/user.entity';
 import { Roles, Role } from '../auth/roles.decorator';
@@ -33,7 +33,7 @@ export class PollsController {
 	@Get()
 	@ApiOperation({ summary: 'Get all polls (optionally filtered by groupId)' })
 	@ApiResponse({ status: 200, description: 'Return polls.' })
-	findAll(@Query() query: QueryPollDto, @User() user: UserEntity) {
+	findAll(@Query() query: QueryPollDto) {
 		return this.pollsService.findAll(query);
 	}
 
@@ -85,5 +85,20 @@ export class PollsController {
 	@ApiResponse({ status: 403, description: 'Poll is still active.' })
 	getResults(@Param('id') id: number) {
 		return this.pollsService.getResults(id);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Patch(':id')
+	@ApiOperation({ summary: 'Update a poll' })
+	@ApiResponse({ status: 200, description: 'Poll updated successfully.' })
+	@ApiResponse({ status: 403, description: 'Forbidden.' })
+	@ApiResponse({ status: 404, description: 'Poll not found.' })
+	update(
+		@Param('id') id: number,
+		@Body() updatePollDto: UpdatePollDto,
+		@User() user: UserEntity,
+	) {
+		return this.pollsService.update(id, updatePollDto, user);
 	}
 }

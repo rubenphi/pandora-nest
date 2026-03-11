@@ -12,7 +12,7 @@ import { User } from '../users/user.entity';
 import { Group } from '../groups/group.entity';
 
 @Entity({ name: 'poll_votes' })
-@Unique(['poll', 'student']) // For individual votes
+@Unique(['poll', 'user']) // For individual votes
 // @Unique(['poll', 'group']) // For group votes - cannot easily express "unique if group is not null" in decorator, handled value-side or with partial index
 export class PollVote {
 	@PrimaryGeneratedColumn('increment')
@@ -23,8 +23,8 @@ export class PollVote {
 	poll: Poll;
 
 	@ManyToOne(() => User, { onDelete: 'CASCADE' })
-	@JoinColumn({ name: 'studentId' })
-	student: User;
+	@JoinColumn({ name: 'userId' })
+	user: User;
 
 	@ManyToOne(() => Group, { onDelete: 'CASCADE', nullable: true })
 	@JoinColumn({ name: 'groupId' })
