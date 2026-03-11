@@ -12,7 +12,7 @@ import {
 	Patch,
 } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
-import { CreateActivityDto, QueryActivityDto, UpdateActivityDto } from './dto';
+import { CreateActivityDto, QueryActivityDto, UpdateActivityDto, ImportActivitiesDto } from './dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from 'src/modules/auth/roles.decorator';
@@ -45,6 +45,19 @@ export class ActivitiesController {
 	@ApiResponse({ status: 200, description: 'List of activities.' })
 	async findAll(@Query() query: QueryActivityDto) {
 		return this.activitiesService.findAll(query);
+	}
+
+	@Roles(Role.Admin, Role.Teacher)
+	@Auth()
+	@Post('import')
+	@ApiOperation({ summary: 'Importa y duplica múltiples actividades con sus criterios hacia un nuevo Lesson' })
+	@ApiResponse({ status: 201, description: 'Actividades importadas exitosamente' })
+	@ApiResponse({ status: 400, description: 'Bad Request.' })
+	async importActivities(
+		@Body() importDto: ImportActivitiesDto,
+		@User() user: UserEntity,
+	) {
+		return this.activitiesService.importActivities(importDto, user);
 	}
 
 	@Roles(Role.Admin, Role.Teacher)

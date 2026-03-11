@@ -165,26 +165,42 @@ export class UsersService {
 	): Promise<User[]> {
 		const createdUsers: User[] = [];
 		for (const userItemDto of createBulkUserDto.users) {
-			// Extract CreateUserDto properties for the base user creation
-			const baseUserDto: CreateUserDto = {
-				name: userItemDto.name,
-				lastName: userItemDto.lastName,
-				email: userItemDto.email,
-				code: userItemDto.code,
-				password: userItemDto.password,
-				exist: userItemDto.exist,
-				instituteInvitation: userItemDto.instituteInvitation, // This will be undefined for bulk imports, which is fine
-			};
+			let targetUser = await this.userRepository.findOne({
+				where: { code: userItemDto.code },
+			});
 
-			// Create the user using the base createUser logic
-			const createdUser = await this.createUser(baseUserDto, userLoged);
+			if (targetUser) {
+				// Update existing user
+				targetUser.name = userItemDto.name;
+				targetUser.lastName = userItemDto.lastName;
+				if (userItemDto.email) targetUser.email = userItemDto.email;
+				if (userItemDto.password) targetUser.password = userItemDto.password;
+				targetUser.exist = userItemDto.exist;
+				targetUser.rol = userItemDto.systemRol;
+				targetUser = await this.userRepository.save(targetUser);
+			} else {
+				// Extract CreateUserDto properties for the base user creation
+				const baseUserDto: CreateUserDto = {
+					name: userItemDto.name,
+					lastName: userItemDto.lastName,
+					email: userItemDto.email,
+					code: userItemDto.code,
+					password: userItemDto.password,
+					exist: userItemDto.exist,
+					instituteInvitation: userItemDto.instituteInvitation, // This will be undefined for bulk imports, which is fine
+				};
 
-			// Now handle systemRol and course assignment for the bulk user
-			if (createdUser) {
-				// Update the user's role based on systemRol from bulk DTO
-				createdUser.rol = userItemDto.systemRol;
-				await this.userRepository.save(createdUser);
+				// Create the user using the base createUser logic
+				targetUser = await this.createUser(baseUserDto, userLoged);
 
+				// Now handle systemRol for the bulk user
+				if (targetUser) {
+					targetUser.rol = userItemDto.systemRol;
+					targetUser = await this.userRepository.save(targetUser);
+				}
+			}
+
+			if (targetUser) {
 				// Handle course assignment only if the user is a student and courseId is provided
 				if (userItemDto.systemRol === 'student' && userItemDto.courseId) {
 					const course = await this.courseRepository
@@ -197,17 +213,40 @@ export class UsersService {
 							);
 						});
 
-					const userToCourse = this.userToCourseRepository.create({
-						user: { id: createdUser.id },
-						course: course, // Assign the fetched course entity
-						rol: 'student', // Default to 'student' role for course assignment
-						year: new Date().getFullYear(), // Assuming current year for assignment
-						active: true,
+					// Find existing course assignments
+					const existingAssignments = await this.userToCourseRepository.find({
+						where: { user: { id: targetUser.id } },
+						relations: ['course'],
 					});
-					await this.userToCourseRepository.save(userToCourse);
+
+					let assignmentUpdated = false;
+
+					for (const assignment of existingAssignments) {
+						if (assignment.course.id === course.id) {
+							assignment.active = true;
+							assignment.year = new Date().getFullYear();
+							await this.userToCourseRepository.save(assignment);
+							assignmentUpdated = true;
+						} else if (assignment.active) {
+							assignment.active = false;
+							await this.userToCourseRepository.save(assignment);
+						}
+					}
+
+					if (!assignmentUpdated) {
+						const userToCourse = this.userToCourseRepository.create({
+							user: { id: targetUser.id },
+							course: course, // Assign the fetched course entity
+							rol: 'student', // Default to 'student' role for course assignment
+							year: new Date().getFullYear(), // Assuming current year for assignment
+							active: true,
+						});
+						await this.userToCourseRepository.save(userToCourse);
+					}
 				}
+				delete targetUser.password;
 			}
-			createdUsers.push(createdUser);
+			createdUsers.push(targetUser);
 		}
 		return createdUsers;
 	}

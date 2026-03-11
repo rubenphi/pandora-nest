@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, In } from 'typeorm';
 import { Activity } from './activity.entity';
-import { CreateActivityDto, QueryActivityDto, UpdateActivityDto } from './dto';
+import { CreateActivityDto, QueryActivityDto, UpdateActivityDto, ImportActivitiesDto } from './dto';
 import { User } from 'src/modules/users/user.entity';
 import { Lesson } from 'src/modules/lessons/lesson.entity';
 import { Institute } from 'src/modules/institutes/institute.entity';
 import { Grade } from '../grades/grade.entity';
 import { StudentCriterionScore } from '../student-criterion-scores/student-criterion-score.entity';
+import { Criterion } from '../criteria/criterion.entity';
 
 @Injectable()
 export class ActivitiesService {
@@ -22,6 +23,8 @@ export class ActivitiesService {
 		private readonly gradeRepository: Repository<Grade>,
 		@InjectRepository(StudentCriterionScore)
 		private readonly studentCriterionScoreRepository: Repository<StudentCriterionScore>,
+		@InjectRepository(Criterion)
+		private readonly criterionRepository: Repository<Criterion>,
 	) {}
 
 	async create(
@@ -58,6 +61,76 @@ export class ActivitiesService {
 			institute,
 		});
 		return this.activityRepository.save(activity);
+	}
+
+	async importActivities(
+		dto: ImportActivitiesDto,
+		user: User,
+	): Promise<Activity[]> {
+		const lesson = await this.lessonRepository.findOne({
+			where: { id: dto.lessonId },
+		});
+		if (!lesson) {
+			throw new NotFoundException(`Lesson with ID ${dto.lessonId} not found`);
+		}
+
+		let institute: Institute | undefined;
+		if (dto.instituteId) {
+			institute = await this.instituteRepository.findOne({
+				where: { id: dto.instituteId },
+			});
+			if (!institute) {
+				throw new NotFoundException(`Institute with ID ${dto.instituteId} not found`);
+			}
+		} else if (user.institute) {
+			institute = user.institute;
+		}
+
+		const sourceActivities = await this.activityRepository.find({
+			where: { id: In(dto.sourceActivityIds) },
+			relations: ['criteria'],
+		});
+
+		const importedActivities: Activity[] = [];
+
+		// Process in order of the ids requested
+		for (const sourceId of dto.sourceActivityIds) {
+			const sourceActivity = sourceActivities.find((a) => a.id === sourceId);
+			if (!sourceActivity) continue; // Skip if ID doesn't exist
+
+			// Create a brand new activity copying basic required info
+			const newActivity = this.activityRepository.create({
+				title: sourceActivity.title,
+				classification: sourceActivity.classification,
+				instructions: sourceActivity.instructions,
+				lesson,
+				institute,
+			});
+			const savedActivity = await this.activityRepository.save(newActivity);
+
+			if (sourceActivity.criteria && sourceActivity.criteria.length > 0) {
+				// Sort criteria by id to preserve original order
+				const sortedCriteria = sourceActivity.criteria.sort((a, b) => a.id - b.id);
+				for (const criterion of sortedCriteria) {
+					const newCriterion = this.criterionRepository.create({
+						description: criterion.description,
+						score: criterion.score,
+						activity: savedActivity,
+						institute,
+					});
+					await this.criterionRepository.save(newCriterion);
+				}
+			}
+			
+			// Reload the new activity with its criteria for returning it completely
+			const completedActivity = await this.activityRepository.findOne({
+				where: { id: savedActivity.id },
+				relations: ['criteria', 'lesson', 'institute'],
+			});
+			if (completedActivity) importedActivities.push(completedActivity);
+		}
+
+		return importedActivities;
 	}
 
 	async findAll(query: QueryActivityDto): Promise<Activity[]> {

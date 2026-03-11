@@ -7,6 +7,7 @@ import { Lesson } from '../lessons/lesson.entity';
 import { Institute } from '../institutes/institute.entity';
 import { Grade } from '../grades/grade.entity';
 import { StudentCriterionScore } from '../student-criterion-scores/student-criterion-score.entity';
+import { Criterion } from '../criteria/criterion.entity';
 
 @Module({
 	imports: [
@@ -16,6 +17,7 @@ import { StudentCriterionScore } from '../student-criterion-scores/student-crite
 			Institute,
 			Grade,
 			StudentCriterionScore,
+			Criterion,
 		]),
 	],
 	controllers: [ActivitiesController],
