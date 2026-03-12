@@ -22,12 +22,8 @@ export class Activity {
 	@Column({ type: 'text', nullable: true })
 	instructions: string;
 
-	@Column({
-		type: 'enum',
-		enum: ['knowledge', 'execution', 'behavior'],
-		default: 'execution',
-	})
-	classification: 'knowledge' | 'execution' | 'behavior';
+	@Column({ type: 'simple-array', nullable: true })
+	classifications: string[];
 
 	@ManyToOne(() => Lesson, (lesson) => lesson.activities)
 	@JoinColumn({ name: 'lessonId' })

@@ -32,7 +32,7 @@ export class GradesService {
 		private readonly instituteRepository: Repository<Institute>,
 	) {}
 
-	async create(createGradeDto: CreateGradeDto): Promise<Grade> {
+	async create(createGradeDto: CreateGradeDto): Promise<Grade | Grade[]> {
 		const {
 			userId,
 			gradableId,
@@ -43,55 +43,59 @@ export class GradesService {
 			registrarMayor,
 		} = createGradeDto;
 
-		// Removed redundant findGradableItem call here.
-		// We will call it when creating new grade or validating.
-		// Actually, we need to check existence efficiently.
-		// Optimally, we fetch it once.
 		const gradableItem = await this.findGradableItem(gradableId, gradableType);
+		let classificationsToProcess: string[];
+		
+		if (createGradeDto.classification) {
+			classificationsToProcess = [createGradeDto.classification];
+		} else {
+			const itemAsAny = gradableItem as any;
+			classificationsToProcess = itemAsAny.classifications?.length
+				? itemAsAny.classifications
+				: [gradableType === 'quiz' ? itemAsAny.classification : 'execution'];
+		}
 
-		const gradeExist = await this.gradeRepository.findOne({
-			where: {
-				user: { id: userId },
-				gradableId,
-				gradableType,
-			},
-		});
+		const savedGrades: Grade[] = [];
 
-		if (gradeExist) {
-			if (registrarMayor && grade <= gradeExist.grade) {
-				return gradeExist;
+		for (const cls of classificationsToProcess) {
+			let gradeExist = await this.gradeRepository.findOne({
+				where: {
+					user: { id: userId },
+					gradableId,
+					gradableType,
+					classification: cls as any
+				},
+			});
+
+			if (gradeExist) {
+				if (registrarMayor && grade <= gradeExist.grade) {
+					savedGrades.push(gradeExist);
+					continue;
+				}
+				gradeExist.grade = grade;
+				gradeExist.classification = cls as any;
+				savedGrades.push(await this.gradeRepository.save(gradeExist));
+				continue;
 			}
-			gradeExist.grade = grade;
-			// Always update classification from source to ensure consistency
-			gradeExist.classification = gradableItem.classification;
-			return this.gradeRepository.save(gradeExist);
+
+			const newGrade = new Grade();
+			newGrade.grade = grade;
+			newGrade.gradableId = gradableId;
+			newGrade.gradableType = gradableType;
+			newGrade.classification = cls as any;
+
+			newGrade.user = await this.userRepository.findOneByOrFail({ id: userId });
+			newGrade.period = await this.periodRepository.findOneByOrFail({
+				id: periodId,
+			});
+			newGrade.institute = await this.instituteRepository.findOneByOrFail({
+				id: instituteId,
+			});
+
+			savedGrades.push(await this.gradeRepository.save(newGrade));
 		}
 
-		const newGrade = new Grade();
-		newGrade.grade = grade;
-		newGrade.gradableId = gradableId;
-		newGrade.gradableType = gradableType;
-
-		// Enforce classification from source entity
-		newGrade.classification = gradableItem.classification;
-
-		// Fallback or override logic removed as we want strict source of truth.
-		// If the item doesn't have classification (unlikely due to migration), it will error or be null, which we can catch.
-		if (!newGrade.classification) {
-			// Fallback just in case of data inconsistency
-			if (gradableType === 'quiz') newGrade.classification = 'knowledge';
-			else newGrade.classification = 'execution';
-		}
-
-		newGrade.user = await this.userRepository.findOneByOrFail({ id: userId });
-		newGrade.period = await this.periodRepository.findOneByOrFail({
-			id: periodId,
-		});
-		newGrade.institute = await this.instituteRepository.findOneByOrFail({
-			id: instituteId,
-		});
-
-		return this.gradeRepository.save(newGrade);
+		return savedGrades.length === 1 ? savedGrades[0] : savedGrades;
 	}
 
 	async findAll(queryGrades: QueryGradeDto): Promise<Grade[]> {

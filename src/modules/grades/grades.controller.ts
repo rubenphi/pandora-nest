@@ -19,7 +19,7 @@ export class GradesController {
 	constructor(private readonly gradesService: GradesService) {}
 
 	@Post()
-	create(@Body() createGradeDto: CreateGradeDto): Promise<Grade> {
+	create(@Body() createGradeDto: CreateGradeDto): Promise<Grade | Grade[]> {
 		return this.gradesService.create(createGradeDto);
 	}
 

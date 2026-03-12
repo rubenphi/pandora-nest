@@ -55,8 +55,13 @@ export class ActivitiesService {
 			institute = user.institute;
 		}
 
+		const classifications = createActivityDto.classifications?.length
+			? createActivityDto.classifications
+			: [];
+
 		const activity = this.activityRepository.create({
 			...createActivityDto,
+			classifications,
 			lesson,
 			institute,
 		});
@@ -98,10 +103,9 @@ export class ActivitiesService {
 			const sourceActivity = sourceActivities.find((a) => a.id === sourceId);
 			if (!sourceActivity) continue; // Skip if ID doesn't exist
 
-			// Create a brand new activity copying basic required info
 			const newActivity = this.activityRepository.create({
 				title: sourceActivity.title,
-				classification: sourceActivity.classification,
+				classifications: sourceActivity.classifications?.length ? sourceActivity.classifications : [],
 				instructions: sourceActivity.instructions,
 				lesson,
 				institute,
@@ -176,6 +180,13 @@ export class ActivitiesService {
 			throw new NotFoundException(`Activity with ID ${id} not found`);
 		}
 
+		// Normalize old classifications (simple-array can come as string from DB)
+		const oldClassifications: string[] = Array.isArray(activity.classifications)
+			? activity.classifications
+			: activity.classifications
+				? String(activity.classifications).split(',').map(s => s.trim()).filter(Boolean)
+				: [];
+
 		let lesson: Lesson | undefined;
 		if (updateActivityDto.lessonId) {
 			lesson = await this.lessonRepository.findOne({
@@ -200,13 +211,41 @@ export class ActivitiesService {
 			}
 		}
 
+		const newClassifications = updateActivityDto.classifications !== undefined
+			? updateActivityDto.classifications
+			: oldClassifications;
+
 		const updatedActivity = this.activityRepository.merge(activity, {
 			...updateActivityDto,
+			classifications: newClassifications,
 			lesson: lesson || activity.lesson,
 			institute: institute || activity.institute,
 		});
 
-		return this.activityRepository.save(updatedActivity);
+		const savedActivity = await this.activityRepository.save(updatedActivity);
+
+		// Delete grades for classifications that were removed
+		if (updateActivityDto.classifications !== undefined) {
+			const removedClassifications = oldClassifications.filter(
+				(c) => !newClassifications.includes(c)
+			);
+
+			if (removedClassifications.length > 0) {
+				const gradesToDelete = await this.gradeRepository.find({
+					where: {
+						gradableId: id,
+						gradableType: 'activity',
+						classification: In(removedClassifications) as any,
+					},
+				});
+
+				if (gradesToDelete.length > 0) {
+					await this.gradeRepository.remove(gradesToDelete);
+				}
+			}
+		}
+
+		return savedActivity;
 	}
 
 	async remove(id: number): Promise<void> {

@@ -29,6 +29,6 @@ export class CreateActivityDto {
 	instituteId?: number;
 
 	@IsOptional()
-	@IsEnum(['knowledge', 'execution', 'behavior'])
-	classification: 'knowledge' | 'execution' | 'behavior';
+	@IsEnum(['knowledge', 'execution', 'behavior'], { each: true })
+	classifications?: ('knowledge' | 'execution' | 'behavior')[];
 }
