@@ -434,6 +434,10 @@ export class CoursesService {
 		user: User,
 		query: QueryCourseAreaDto,
 	): Promise<Area[]> {
+		const userCourses: UserToCourse[] = await this.userToCourseRepository.find({
+			where: { user: { id: user.id }, active: true },
+			relations: ['course'],
+		});
 		const course: Course = await this.courseRepository
 			.findOneOrFail({
 				where: { id },
@@ -448,7 +452,7 @@ export class CoursesService {
 			);
 		}
 		if (user.rol === Role.Student) {
-			const courseIndex = user.courses.findIndex((course) => course.id === id);
+			const courseIndex = userCourses.findIndex((course) => course.course.id === id);
 			if (courseIndex === -1) {
 				throw new NotFoundException(
 					'You are not allowed to see areas of this course',

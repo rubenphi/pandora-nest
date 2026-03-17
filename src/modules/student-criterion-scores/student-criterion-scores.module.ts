@@ -8,6 +8,7 @@ import { Activity } from 'src/modules/activities/activity.entity';
 import { Criterion } from 'src/modules/criteria/criterion.entity';
 import { Institute } from 'src/modules/institutes/institute.entity';
 import { StudentCriterionPermission } from './student-criterion-permission.entity';
+import { Group } from '../groups/group.entity';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { StudentCriterionPermission } from './student-criterion-permission.entit
 			Activity,
 			Criterion,
 			Institute,
+			Group,
 		]),
 	],
 	controllers: [StudentCriterionScoresController],

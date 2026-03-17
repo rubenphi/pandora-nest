@@ -22,9 +22,12 @@ import { Criterion } from 'src/modules/criteria/criterion.entity';
 import { Institute } from 'src/modules/institutes/institute.entity';
 import { Role } from 'src/modules/auth/roles.decorator';
 import { StudentCriterionPermission } from './student-criterion-permission.entity';
+import { Group } from '../groups/group.entity';
 
 @Injectable()
 export class StudentCriterionScoresService {
+
+
 	constructor(
 		@InjectRepository(StudentCriterionScore)
 		private readonly studentCriterionScoreRepository: Repository<StudentCriterionScore>,
@@ -38,6 +41,8 @@ export class StudentCriterionScoresService {
 		private readonly criterionRepository: Repository<Criterion>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		@InjectRepository(Group)
+		private readonly groupRepository: Repository<Group>,
 	) {}
 
 	async create(
@@ -139,23 +144,27 @@ export class StudentCriterionScoresService {
 			criterion: { id: criterionId },
 		};
 
-		if (user.rol === Role.Student) {
-			const userGroup = await this.userRepository.findOne({
-				where: { id: user.id },
-				relations: ['groups', 'groups.group'],
-			});
+		if (user.rol === Role.Student || user.rol === Role.User) {
+		const userGroups = await this.userRepository.findOne({
+			where: { id: user.id },
+			relations: ['groups', 'groups.group'],
+		}); 
 
-			const activeGroup = userGroup.groups.find((g) => g.group.active);
-
+		const activeGroup = userGroups.groups.find((g) => g.active);
+ 
 			if (activeGroup) {
+	
+				
 				const groupUsers = await this.userRepository.find({
-					where: { groups: { id: activeGroup.group.id } },
+					where: { groups: { id: activeGroup.id } },
 				});
 				where.student = { id: In(groupUsers.map((u) => u.id)) };
 			} else {
-				where.student = { id: user.id };
+				
+				where.student  = { id: user.id };
 			}
 		} else if (studentId) {
+		
 			where.student = { id: studentId };
 		}
 
