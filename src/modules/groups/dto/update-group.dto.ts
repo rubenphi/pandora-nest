@@ -25,13 +25,6 @@ export class UpdateGroupDto {
 	@IsInt()
 	readonly instituteId: number;
 	@ApiProperty({
-		description: 'Period id of group',
-	})
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	readonly periodId: number;
-	@ApiProperty({
 		description: 'Year of the group',
 	})
 	@IsOptional()

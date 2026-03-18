@@ -30,14 +30,6 @@ export class QueryGroupDto {
 		description: 'Search group if exist or not',
 		required: false,
 	})
-	@IsOptional()
-	@ApiProperty({
-		description: 'Period of the group',
-	})
-	@IsInt()
-	@Type(() => Number)
-	readonly periodId: number;
-
 	@ApiProperty({
 		description: 'Year of the group',
 		required: false,

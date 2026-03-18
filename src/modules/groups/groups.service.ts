@@ -14,7 +14,6 @@ import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
 import { UserToGroup } from '../users/userToGroup.entity';
-import { Period } from '../periods/period.entity';
 import { AddUserToGroupDto } from './dto/add-user.dto';
 import { RemoveUserFromGroupDto } from './dto/remove-users.dto';
 import { UpdateUserFromGroupDto } from './dto/update-users.dto';
@@ -29,8 +28,6 @@ export class GroupsService {
 		private readonly courseRepository: Repository<Course>,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
-		@InjectRepository(Period)
-		private readonly periodRepository: Repository<Period>,
 		@InjectRepository(UserToGroup)
 		private readonly userToGroupRepository: Repository<UserToGroup>,
 		@InjectRepository(UserToCourse)
@@ -45,7 +42,6 @@ export class GroupsService {
 				where: {
 					name: queryGroup.name,
 					course: { id: queryGroup.courseId },
-					period: { id: queryGroup.periodId },
 					year: queryGroup.year,
 					exist: queryGroup.exist,
 					institute: {
@@ -55,7 +51,7 @@ export class GroupsService {
 								: user.institute.id,
 					},
 				},
-				relations: ['course', 'institute', 'period', 'usersToGroup'],
+				relations: ['course', 'institute', 'usersToGroup'],
 			});
 		} else {
 			return await this.groupRepository.find({
@@ -68,7 +64,7 @@ export class GroupsService {
 		const group: Group = await this.groupRepository
 			.findOneOrFail({
 				where: { id },
-				relations: ['course', 'institute', 'period', 'usersToGroup'],
+				relations: ['course', 'institute', 'usersToGroup'],
 			})
 			.catch(() => {
 				throw new NotFoundException('Group not found');
@@ -108,19 +104,11 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-		const period: Period = await this.periodRepository
-			.findOneOrFail({
-				where: { id: groupDto.periodId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Period not found');
-			});
 
 		const group: Group = await this.groupRepository.create({
 			name: groupDto.name,
 			institute,
 			course,
-			period,
 			year: groupDto.year,
 			exist: groupDto.exist,
 			active: groupDto.active,
@@ -149,13 +137,6 @@ export class GroupsService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-		const period: Period = await this.periodRepository
-			.findOneOrFail({
-				where: { id: groupDto.periodId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Period not found');
-			});
 
 		const group: Group = await this.groupRepository.preload({
 			id: id,
@@ -163,7 +144,6 @@ export class GroupsService {
 			institute,
 			course,
 			year: groupDto.year,
-			period,
 			exist: groupDto.exist,
 			active: groupDto.active,
 		});

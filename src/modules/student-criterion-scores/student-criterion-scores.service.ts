@@ -61,7 +61,7 @@ export class StudentCriterionScoresService {
 				const userGroup = await this.userRepository.findOne({
 					where: {
 						id: user.id,
-						groups: { id: permission.reviserId, group: { active: true } },
+						groups: { group: { id: permission.reviserId, active: true }, active: true },
 					},
 					relations: ['groups', 'groups.group'],
 				});
@@ -88,7 +88,7 @@ export class StudentCriterionScoresService {
 				const studentGroup = await this.userRepository.findOne({
 					where: {
 						id: createStudentCriterionScoreDto.studentId,
-						groups: { id: permission.revisedId, group: { active: true } },
+						groups: { group: { id: permission.revisedId, active: true }, active: true },
 					},
 					relations: ['groups', 'groups.group'],
 				});
@@ -145,24 +145,39 @@ export class StudentCriterionScoresService {
 		};
 
 		if (user.rol === Role.Student || user.rol === Role.User) {
-		const userGroups = await this.userRepository.findOne({
-			where: { id: user.id },
-			relations: ['groups', 'groups.group'],
-		}); 
+			const permissionsMap = await this.studentCriterionPermissionRepository.find({
+				where: [
+					{ reviserId: user.id, reviserType: 'User', activity: { id: activityId }, expired: false },
+				],
+			});
 
-		const activeGroup = userGroups.groups.find((g) => g.active);
- 
+			const userGroups = await this.userRepository.findOne({
+				where: { id: user.id },
+				relations: ['groups', 'groups.group'],
+			});
+			const activeGroup = userGroups.groups.find((g) => g.active);
 			if (activeGroup) {
-	
-				
-				const groupUsers = await this.userRepository.find({
-					where: { groups: { id: activeGroup.id } },
+				const groupPermissions = await this.studentCriterionPermissionRepository.find({
+					where: [
+						{ reviserId: activeGroup.group.id, reviserType: 'Group', activity: { id: activityId }, expired: false }
+					]
 				});
-				where.student = { id: In(groupUsers.map((u) => u.id)) };
-			} else {
-				
-				where.student  = { id: user.id };
+				permissionsMap.push(...groupPermissions);
 			}
+
+			const allowedStudentIds = new Set<number>();
+			for (const perm of permissionsMap) {
+				if (perm.revisedType === 'User') {
+					allowedStudentIds.add(perm.revisedId);
+				} else if (perm.revisedType === 'Group') {
+					const groupUsers = await this.userRepository.find({
+						where: { groups: { group: { id: perm.revisedId, active: true }, active: true } },
+					});
+					groupUsers.forEach(u => allowedStudentIds.add(u.id));
+				}
+			}
+
+			where.student = { id: In(Array.from(allowedStudentIds)) };
 		} else if (studentId) {
 		
 			where.student = { id: studentId };
@@ -187,24 +202,39 @@ export class StudentCriterionScoresService {
 		}
 
 		if (user.rol === Role.Student) {
+			const permissionsMap = await this.studentCriterionPermissionRepository.find({
+				where: [
+					{ reviserId: user.id, reviserType: 'User', activity: { id: score.activity.id }, expired: false },
+				],
+			});
+
 			const userGroup = await this.userRepository.findOne({
 				where: { id: user.id },
 				relations: ['groups', 'groups.group'],
 			});
-
 			const activeGroup = userGroup.groups.find((g) => g.group.active);
-
 			if (activeGroup) {
-				const groupUsers = await this.userRepository.find({
-					where: { groups: { id: activeGroup.group.id } },
+				const groupPermissions = await this.studentCriterionPermissionRepository.find({
+					where: [
+						{ reviserId: activeGroup.group.id, reviserType: 'Group', activity: { id: score.activity.id }, expired: false }
+					]
 				});
-				const groupUserIds = groupUsers.map((u) => u.id);
-				if (!groupUserIds.includes(score.student.id)) {
-					throw new UnauthorizedException(
-						`You are not authorized to view this score.`,
-					);
+				permissionsMap.push(...groupPermissions);
+			}
+
+			const allowedStudentIds = new Set<number>();
+			for (const perm of permissionsMap) {
+				if (perm.revisedType === 'User') {
+					allowedStudentIds.add(perm.revisedId);
+				} else if (perm.revisedType === 'Group') {
+					const groupUsers = await this.userRepository.find({
+						where: { groups: { group: { id: perm.revisedId, active: true }, active: true } },
+					});
+					groupUsers.forEach(u => allowedStudentIds.add(u.id));
 				}
-			} else if (score.student.id !== user.id) {
+			}
+
+			if (!allowedStudentIds.has(score.student.id)) {
 				throw new UnauthorizedException(
 					`You are not authorized to view this score.`,
 				);
@@ -237,7 +267,7 @@ export class StudentCriterionScoresService {
 				const userGroup = await this.userRepository.findOne({
 					where: {
 						id: user.id,
-						groups: { id: permission.reviserId, group: { active: true } },
+						groups: { group: { id: permission.reviserId, active: true }, active: true },
 					},
 					relations: ['groups', 'groups.group'],
 				});
@@ -264,7 +294,7 @@ export class StudentCriterionScoresService {
 				const studentGroup = await this.userRepository.findOne({
 					where: {
 						id: updateStudentCriterionScoreDto.studentId,
-						groups: { id: permission.revisedId, group: { active: true } },
+						groups: { group: { id: permission.revisedId, active: true }, active: true },
 					},
 					relations: ['groups', 'groups.group'],
 				});

@@ -187,7 +187,6 @@ export class PollsService {
 					user: { id: user.id },
 					group: {
 						course: { id: poll.course.id },
-						period: { id: poll.period.id },
 						year: poll.year,
 						active: true,
 					},
@@ -242,7 +241,6 @@ export class PollsService {
 					user: { id: user.id },
 					group: {
 						course: { id: poll.course.id },
-						period: { id: poll.period.id },
 						year: poll.year,
 						active: true,
 					},
