@@ -36,6 +36,28 @@ export class QueryGradeDto {
 	readonly gradableType?: string;
 
 	@ApiProperty({
+		type: String,
+		description: 'Type of the grade to search (regular or support)',
+		enum: ['regular', 'support'],
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	@IsIn(['regular', 'support'])
+	readonly gradeType?: 'regular' | 'support';
+
+	@ApiProperty({
+		type: String,
+		description: 'Classification of the grade to search (knowledge, execution, behavior)',
+		enum: ['knowledge', 'execution', 'behavior'],
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	@IsIn(['knowledge', 'execution', 'behavior'])
+	readonly classification?: 'knowledge' | 'execution' | 'behavior';
+
+	@ApiProperty({
 		type: Number,
 		description: 'Course to search',
 		required: false,
