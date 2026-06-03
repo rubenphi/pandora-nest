@@ -500,17 +500,48 @@ async updateAnswer(
     return this.answerRepository.save(answer);
 }
 
-	async deleteAnswer(id: number): Promise<void> {
+	async deleteAnswer(id: number, user: User): Promise<void> {
 		const answer: Answer = await this.answerRepository
 			.findOneOrFail({
 				where: { id },
+				relations: ['institute'],
 			})
 			.catch(() => {
 				throw new NotFoundException(
 					'The answer you want to delete does not exist',
 				);
 			});
-		this.answerRepository.remove(answer);
+
+		if (user.rol !== Role.Admin && user.institute.id !== answer.institute.id) {
+			throw new ForbiddenException('You are not allowed to delete this answer');
+		}
+
+		await this.answerRepository.remove(answer);
+	}
+
+	async deleteAnswersByQuestion(questionId: number, user: User): Promise<void> {
+		const question = await this.questionRepository
+			.findOneOrFail({
+				where: { id: questionId },
+				relations: ['institute'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Question not found');
+			});
+
+		if (user.rol !== Role.Admin && user.institute.id !== question.institute.id) {
+			throw new ForbiddenException(
+				'You are not allowed to delete answers for this question',
+			);
+		}
+
+		const answers: Answer[] = await this.answerRepository.find({
+			where: { question: { id: questionId } },
+		});
+
+		if (answers.length > 0) {
+			await this.answerRepository.remove(answers);
+		}
 	}
 
 	async bonusToAnswer(id: number, user: User): Promise<void> {

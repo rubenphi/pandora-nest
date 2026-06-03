@@ -76,10 +76,23 @@ export class AnswersController {
 	): Promise<Answer> {
 		return this.answerService.updateAnswer(id, answer, user);
 	}
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Delete(':id')
-	deleteAnswer(@Param('id') id: number): Promise<void> {
-		return this.answerService.deleteAnswer(id);
+	deleteAnswer(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<void> {
+		return this.answerService.deleteAnswer(id, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Delete('question/:id')
+	deleteAnswersByQuestion(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<void> {
+		return this.answerService.deleteAnswersByQuestion(id, user);
 	}
 }

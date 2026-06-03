@@ -4,6 +4,8 @@ import {
 	Delete,
 	Get,
 	Param,
+	ParseBoolPipe,
+	ParseIntPipe,
 	Patch, // Import Patch
 	Post,
 	Query,
@@ -173,7 +175,7 @@ export class CoursesController {
 			assignmentId,
 			updateDto,
 			user,
-		);
+		); 
 	}
 	@Auth()
 	@Get(':id/groups')
@@ -182,10 +184,11 @@ export class CoursesController {
 	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getGroupsByCourse(
 		@Param('id') id: number,
-		@Query('year') year: number,
+		@Query('year' , ParseIntPipe) year: number,
+		@Query('active',  ParseBoolPipe) active: boolean,
 		@User() user: UserEntity,
 	): Promise<any> {
-		return this.courseService.getGroupsByCourse(id, year, user);
+		return this.courseService.getGroupsByCourse(id, year, user, active);
 	}
 	@Auth()
 	@Get(':id/lessons')

@@ -145,41 +145,30 @@ export class StudentCriterionScoresService {
 		};
 
 		if (user.rol === Role.Student || user.rol === Role.User) {
-			const permissionsMap = await this.studentCriterionPermissionRepository.find({
-				where: [
-					{ reviserId: user.id, reviserType: 'User', activity: { id: activityId }, expired: false },
-				],
-			});
+			const allowedStudentIds = new Set<number>();
+			allowedStudentIds.add(user.id);
 
 			const userGroups = await this.userRepository.findOne({
 				where: { id: user.id },
 				relations: ['groups', 'groups.group'],
 			});
-			const activeGroup = userGroups.groups.find((g) => g.active);
-			if (activeGroup) {
-				const groupPermissions = await this.studentCriterionPermissionRepository.find({
-					where: [
-						{ reviserId: activeGroup.group.id, reviserType: 'Group', activity: { id: activityId }, expired: false }
-					]
-				});
-				permissionsMap.push(...groupPermissions);
-			}
-
-			const allowedStudentIds = new Set<number>();
-			for (const perm of permissionsMap) {
-				if (perm.revisedType === 'User') {
-					allowedStudentIds.add(perm.revisedId);
-				} else if (perm.revisedType === 'Group') {
+			if (userGroups && userGroups.groups) {
+				const activeGroup = userGroups.groups.find((g) => g.active);
+				if (activeGroup) {
 					const groupUsers = await this.userRepository.find({
-						where: { groups: { group: { id: perm.revisedId, active: true }, active: true } },
+						where: {
+							groups: {
+								group: { id: activeGroup.group.id, active: true },
+								active: true,
+							},
+						},
 					});
-					groupUsers.forEach(u => allowedStudentIds.add(u.id));
+					groupUsers.forEach((u) => allowedStudentIds.add(u.id));
 				}
 			}
 
 			where.student = { id: In(Array.from(allowedStudentIds)) };
 		} else if (studentId) {
-		
 			where.student = { id: studentId };
 		}
 

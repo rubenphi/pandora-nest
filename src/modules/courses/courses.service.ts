@@ -498,8 +498,9 @@ export class CoursesService {
 		id: number,
 		year: number,
 		user: User,
+		active: boolean
 	): Promise<Group[]> {
-		const course: Course = await this.courseRepository
+		const course: Course = await this.courseRepository 
 			.findOneOrFail({
 				where: { id },
 				relations: [
@@ -513,7 +514,7 @@ export class CoursesService {
 				throw new NotFoundException('Course not found');
 			});
 		if (user.rol !== Role.Admin && user.institute.id !== course.institute.id) {
-			throw new ForbiddenException(
+			throw new ForbiddenException( 
 				'You are not allowed to see groups of this course',
 			);
 		}
@@ -524,11 +525,21 @@ export class CoursesService {
 					'You are not allowed to see groups of this course',
 				);
 			}
+		} 
+		console.log(year);
+		
+
+		// Filter groups by year if year parameter is provided 
+		if (year) {
+			course.groups = course.groups.filter((group) => group.year === Number(year));
 		}
 
-		// Filter groups by year if year parameter is provided
-		if (year) {
-			return course.groups.filter((group) => group.year === Number(year));
+		if (active === true) {
+			course.groups =  course.groups.filter((group) => group.active === true);
+		}
+
+		if (active === false) {
+			course.groups = course.groups.filter((group) => group.active === true);
 		}
 
 		return course.groups;
