@@ -38,6 +38,13 @@ export class Quiz {
 	})
 	evaluationType: EvaluationType;
 
+	@Column({
+		type: 'enum',
+		enum: ['regular', 'improvement'],
+		default: 'regular',
+	})
+	category: 'regular' | 'improvement';
+
 	@OneToMany(() => Question, (question) => question.quiz)
 	questions: Question[];
 

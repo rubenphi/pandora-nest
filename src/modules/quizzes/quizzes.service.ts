@@ -83,6 +83,7 @@ export class QuizzesService {
 				where: {
 					title: queryQuiz.title ? ILike(`%${queryQuiz.title}%`) : null,
 					quizType: queryQuiz.quizType,
+					category: queryQuiz.category,
 					lesson: {
 						id: queryQuiz.lessonId,
 						course: { id: queryQuiz.courseId },
@@ -155,6 +156,7 @@ export class QuizzesService {
 			title: quizDto.title,
 			quizType: quizDto.quizType,
 			evaluationType: quizDto.evaluationType,
+			category: quizDto.category,
 			lesson,
 			institute,
 		});
@@ -191,6 +193,7 @@ export class QuizzesService {
 			title: quizDto.title,
 			quizType: quizDto.quizType,
 			evaluationType: quizDto.evaluationType,
+			category: quizDto.category,
 			lesson,
 			institute,
 		});

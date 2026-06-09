@@ -82,4 +82,13 @@ export class QueryQuizDto {
 	})
 	@IsBoolean()
 	readonly exist?: boolean;
+
+	@ApiProperty({
+		description: 'Search quiz by category (regular or improvement)',
+		enum: ['regular', 'improvement'],
+		required: false,
+	})
+	@IsOptional()
+	@IsEnum(['regular', 'improvement'])
+	readonly category?: 'regular' | 'improvement';
 }

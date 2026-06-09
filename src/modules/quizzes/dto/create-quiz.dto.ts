@@ -47,4 +47,14 @@ export class CreateQuizDto {
 	@IsOptional()
 	@IsEnum(EvaluationType)
 	readonly evaluationType?: EvaluationType;
+
+	@ApiProperty({
+		description: 'Category of the quiz (regular or improvement)',
+		enum: ['regular', 'improvement'],
+		default: 'regular',
+		required: false,
+	})
+	@IsOptional()
+	@IsEnum(['regular', 'improvement'])
+	readonly category?: 'regular' | 'improvement';
 }
