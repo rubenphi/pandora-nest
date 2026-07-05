@@ -489,7 +489,7 @@ export class QuizzesService {
 	}
 
 	async getPendingGrading(query: QueryQuizDto): Promise<Quiz[]> {
-		const { courseId, periodId, year, instituteId } = query;
+		const { courseId, periodId, year, instituteId, category } = query;
 
 		const quizzes: Quiz[] = await this.quizRepository.find({
 			relations: ['lesson'],
@@ -499,6 +499,7 @@ export class QuizzesService {
 					period: { id: periodId },
 					year: year,
 				},
+				category: category,
 				institute: { id: instituteId },
 			},
 		});
