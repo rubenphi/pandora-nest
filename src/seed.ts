@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Institute } from './modules/institutes/institute.entity';
 import { User } from './modules/users/user.entity';
 import { Role } from './modules/auth/roles.decorator';
+import { SurveyTemplate } from './modules/surveys/survey-template.entity';
 
 async function bootstrap() {
 	// Set NODE_ENV to production for seeding context, so it uses the correct .env path
@@ -69,6 +70,96 @@ async function bootstrap() {
 		adminUser.institute = institute;
 		await usersRepository.save(adminUser);
 		console.log('Updated admin user with institute relationship.');
+
+		// 4. Create survey templates
+		const templateRepository = app.get(getRepositoryToken(SurveyTemplate));
+
+		const parentTemplate = await templateRepository.findOne({
+			where: { slug: 'parent-survey' },
+		});
+		if (!parentTemplate) {
+			await templateRepository.save({
+				name: 'Encuesta a Padres',
+				slug: 'parent-survey',
+				questionsConfig: {
+					sections: [
+						{
+							id: 'seccion1',
+							title: 'Preguntas 1 a 14',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 14,
+						},
+						{
+							id: 'seccion2',
+							title: 'Preguntas 15 a 18',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 4,
+						},
+					],
+				},
+			});
+			console.log('Survey template "parent-survey" created.');
+		} else {
+			console.log('Survey template "parent-survey" already exists, skipping.');
+		}
+
+		const studentTemplate = await templateRepository.findOne({
+			where: { slug: 'student-survey' },
+		});
+		if (!studentTemplate) {
+			await templateRepository.save({
+				name: 'Encuesta a Estudiantes',
+				slug: 'student-survey',
+				questionsConfig: {
+					sections: [
+						{
+							id: 'seccion1',
+							title: 'Pregunta 1',
+							type: 'yesno',
+							options: ['Sí', 'No'],
+							count: 1,
+						},
+						{
+							id: 'seccion2',
+							title: 'Preguntas 2 a 15',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 14,
+						},
+						{
+							id: 'seccion3',
+							title: 'Preguntas 16 a 19',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 4,
+						},
+						{
+							id: 'seccion4',
+							title: 'Pregunta 20 - Multiselect',
+							type: 'multiselect',
+							options: [
+								'Tablero',
+								'Películas y videos',
+								'Láminas y otros materiales gráficos',
+								'Computadores',
+								'Diapositivas o acetatos',
+								'Música',
+								'Libros de texto',
+								'Laboratorios',
+								'Otros',
+								'Programas educativos computarizados',
+								'Mapas',
+							],
+						},
+					],
+				},
+			});
+			console.log('Survey template "student-survey" created.');
+		} else {
+			console.log('Survey template "student-survey" already exists, skipping.');
+		}
 
 		console.log('Seeding completed successfully!');
 	} catch (error) {

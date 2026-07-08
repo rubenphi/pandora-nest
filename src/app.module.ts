@@ -25,6 +25,7 @@ import { LessonItemsModule } from './modules/lesson-items/lesson-items.module';
 import { StudentCriterionScoresModule } from './modules/student-criterion-scores/student-criterion-scores.module';
 import { ReinforcementModule } from './modules/reinforcement/reinforcement.module';
 import { PollsModule } from './modules/polls/polls.module';
+import { SurveysModule } from './modules/surveys/surveys.module';
 
 @Module({
 	imports: [
@@ -71,6 +72,7 @@ import { PollsModule } from './modules/polls/polls.module';
 		StudentCriterionScoresModule,
 		ReinforcementModule,
 		PollsModule,
+		SurveysModule,
 	],
 })
 export class AppModule {
