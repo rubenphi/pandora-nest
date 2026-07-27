@@ -16,8 +16,7 @@ async function bootstrap() {
 
 	SwaggerModule.setup('api/docs', app, document, {
 		explorer: true,
-		swaggerOptions: { filter: true, displayRequestDuration: true },
-		uiConfig: { tagsSorter: 'alpha' },
+		swaggerOptions: { filter: true, displayRequestDuration: true, tagsSorter: 'alpha' },
 	});
 	app.useGlobalPipes(
 		new ValidationPipe({

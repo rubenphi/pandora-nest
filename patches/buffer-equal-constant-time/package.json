@@ -1,0 +1,7 @@
+{
+  "name": "buffer-equal-constant-time",
+  "version": "1.0.1",
+  "description": "Patched version compatible with Node.js 10+ (SlowBuffer removed)",
+  "main": "index.js",
+  "license": "BSD-3-Clause"
+}
