@@ -8,6 +8,8 @@ import {
 	IsDefined,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Question } from '../question.entity';
+import { Institute } from 'src/modules/institutes/institute.entity';
 
 // 1️⃣ Opción individual
 export class OptionQuestionVariableOptionDto {
@@ -18,8 +20,8 @@ export class OptionQuestionVariableOptionDto {
 	@ApiProperty()
 	@IsBoolean()
 	correct: boolean;
-	question: import('c:/Users/ruben/GitHub/pandora-nest/src/modules/questions/question.entity').Question;
-	institute: import('c:/Users/ruben/GitHub/pandora-nest/src/modules/institutes/institute.entity').Institute;
+	question: Question;
+	institute: Institute;
 	identifier: string;
 }
 
