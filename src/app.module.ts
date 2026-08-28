@@ -26,6 +26,7 @@ import { StudentCriterionScoresModule } from './modules/student-criterion-scores
 import { ReinforcementModule } from './modules/reinforcement/reinforcement.module';
 import { PollsModule } from './modules/polls/polls.module';
 import { SurveysModule } from './modules/surveys/surveys.module';
+import { ActivityEvidencesModule } from './modules/activity-evidences/activity-evidences.module';
 
 @Module({
 	imports: [
@@ -73,6 +74,7 @@ import { SurveysModule } from './modules/surveys/surveys.module';
 		ReinforcementModule,
 		PollsModule,
 		SurveysModule,
+		ActivityEvidencesModule,
 	],
 })
 export class AppModule {

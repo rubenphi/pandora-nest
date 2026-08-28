@@ -184,9 +184,9 @@ export class CoursesController {
 	@ApiResponse({ status: 404, description: 'Course not found.' })
 	getGroupsByCourse(
 		@Param('id') id: number,
-		@Query('year' , ParseIntPipe) year: number,
-		@Query('active',  ParseBoolPipe) active: boolean,
 		@User() user: UserEntity,
+		@Query('year', new ParseIntPipe({ optional: true })) year?: number,
+		@Query('active', new ParseBoolPipe({ optional: true })) active?: boolean,
 	): Promise<any> {
 		return this.courseService.getGroupsByCourse(id, year, user, active);
 	}
