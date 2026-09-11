@@ -146,12 +146,15 @@ export class StudentCriterionScoresService {
 
 		if (user.rol === Role.Student || user.rol === Role.User) {
 			const allowedStudentIds = new Set<number>();
+			// Always allow viewing one's own score
 			allowedStudentIds.add(user.id);
 
 			const userGroups = await this.userRepository.findOne({
 				where: { id: user.id },
 				relations: ['groups', 'groups.group'],
 			});
+
+			// VerRevision.vue: user sees their own scores and those of their active group
 			if (userGroups && userGroups.groups) {
 				const activeGroup = userGroups.groups.find((g) => g.active);
 				if (activeGroup) {
@@ -164,6 +167,38 @@ export class StudentCriterionScoresService {
 						},
 					});
 					groupUsers.forEach((u) => allowedStudentIds.add(u.id));
+				}
+			}
+
+			// EvaluarPares.vue: user also sees scores of students they are permitted to evaluate
+			// (revised side of permissions), which may be a different group than their own.
+			const permissions = await this.studentCriterionPermissionRepository.find({
+				where: [
+					{ reviserId: user.id, reviserType: 'User', activity: { id: activityId }, expired: false },
+				],
+			});
+			const activeGroup = userGroups?.groups?.find((g) => g.active);
+			if (activeGroup) {
+				const groupPermissions = await this.studentCriterionPermissionRepository.find({
+					where: [
+						{ reviserId: activeGroup.group.id, reviserType: 'Group', activity: { id: activityId }, expired: false },
+					],
+				});
+				permissions.push(...groupPermissions);
+			}
+			for (const perm of permissions) {
+				if (perm.revisedType === 'User') {
+					allowedStudentIds.add(perm.revisedId);
+				} else if (perm.revisedType === 'Group') {
+					const revisedGroupUsers = await this.userRepository.find({
+						where: {
+							groups: {
+								group: { id: perm.revisedId, active: true },
+								active: true,
+							},
+						},
+					});
+					revisedGroupUsers.forEach((u) => allowedStudentIds.add(u.id));
 				}
 			}
 
