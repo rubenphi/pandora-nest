@@ -16,6 +16,7 @@ import { Quiz } from '../quizzes/quiz.entity';
 import { Institute } from '../institutes/institute.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../auth/roles.decorator';
+import { CourseAccessService } from 'src/common/authorization/course-access.service';
 
 @Injectable()
 export class AnswersService {
@@ -34,7 +35,31 @@ export class AnswersService {
 		private readonly quizRepository: Repository<Quiz>,
 		@InjectRepository(Institute)
 		private readonly instituteRepository: Repository<Institute>,
+		private readonly courseAccessService: CourseAccessService,
 	) {}
+
+	private async resolveQuizForAnswer(quizId: number): Promise<Quiz> {
+		return this.quizRepository
+			.findOneOrFail({
+				where: { id: quizId },
+				relations: ['institute', 'lesson', 'lesson.course', 'lesson.institute'],
+			})
+			.catch(() => {
+				throw new NotFoundException('Quiz not found');
+			});
+	}
+
+	private getQuizInstituteId(quiz: Quiz): number | null {
+		return quiz.institute?.id ?? quiz.lesson?.institute?.id ?? null;
+	}
+
+	private resolveInstituteId(quiz: Quiz, fallback: number): number {
+		return this.getQuizInstituteId(quiz) ?? fallback;
+	}
+
+	private getQuizCourseId(quiz: Quiz): number | null {
+		return quiz.lesson?.course?.id ?? null;
+	}
 
 	async getAnswers(queryAnswer: QueryAnswerDto, user: User): Promise<Answer[]> {
 		if (queryAnswer) {
@@ -102,22 +127,33 @@ export class AnswersService {
 		return answer;
 	}
 	async createAnswer(answerDto: CreateAnswerDto, user: User): Promise<Answer> {
+		const quiz: Quiz = await this.resolveQuizForAnswer(answerDto.quizId);
+
+		const quizInstituteId = this.getQuizInstituteId(quiz);
 		if (
+			quizInstituteId !== null &&
 			user.rol !== Role.Admin &&
-			user.institute.id !== answerDto.instituteId
+			user.institute.id !== quizInstituteId
 		) {
 			throw new ForbiddenException('You are not allowed to create this answer');
 		}
 
-		let existingAnswerWhere: Answer | null = null;
-
-		const quiz: Quiz = await this.quizRepository
+		const question: Question = await this.questionRepository
 			.findOneOrFail({
-				where: { id: answerDto.quizId },
+				where: { id: answerDto.questionId },
+				relations: ['quiz'],
 			})
 			.catch(() => {
-				throw new NotFoundException('Quiz not found');
+				throw new NotFoundException('Question not found');
 			});
+
+		if (!question.quiz || question.quiz.id !== quiz.id) {
+			throw new BadRequestException(
+				'La pregunta no pertenece al cuestionario indicado.',
+			);
+		}
+
+		let existingAnswerWhere: Answer | null = null;
 
 		let group: Group | undefined;
 		let userEntity: User | undefined;
@@ -185,6 +221,13 @@ export class AnswersService {
 			throw new BadRequestException('Invalid quiz type.');
 		}
 
+		await this.courseAccessService.assertAnswerScope({
+			actor: user,
+			courseId: this.getQuizCourseId(quiz),
+			answerUserId: userEntity.id,
+			groupId: answerDto.groupId,
+		});
+
 		if (existingAnswerWhere) {
 			throw new BadRequestException(
 				'Esta pregunta ya fue respondida por este grupo o usuario en este quiz',
@@ -199,22 +242,16 @@ export class AnswersService {
 			.catch(() => {
 				throw new NotFoundException('Option not found');
 			});
-		const question: Question = await this.questionRepository
-			.findOneOrFail({
-				where: { id: answerDto.questionId },
-			})
-			.catch(() => {
-				throw new NotFoundException('Question not found');
-			});
 
 		if (!question.available || option.question.id !== question.id) {
 			throw new ForbiddenException(
 				'Debe esperar que la pregunta esté disponible',
 			);
 		}
+
 		const institute: Institute = await this.instituteRepository
 			.findOneOrFail({
-				where: { id: answerDto.instituteId },
+				where: { id: this.resolveInstituteId(quiz, answerDto.instituteId) },
 			})
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
@@ -241,32 +278,44 @@ export class AnswersService {
 		const savedAnswers: Answer[] = [];
 
 		for (const answerDto of answersDto) {
+			const quiz: Quiz = await this.resolveQuizForAnswer(answerDto.quizId);
+
+			const quizInstituteId = this.getQuizInstituteId(quiz);
 			if (
+				quizInstituteId !== null &&
 				user.rol !== Role.Admin &&
-				user.institute.id !== answerDto.instituteId
+				user.institute.id !== quizInstituteId
 			) {
 				throw new ForbiddenException(
 					'You are not allowed to create answers for this institute',
 				);
 			}
 
-			const quiz: Quiz = await this.quizRepository
+			const question: Question = await this.questionRepository
 				.findOneOrFail({
-					where: { id: answerDto.quizId },
+					where: { id: answerDto.questionId },
+					relations: ['quiz'],
 				})
 				.catch(() => {
 					throw new NotFoundException(
-						`Quiz with ID ${answerDto.quizId} not found`,
+						`Question with ID ${answerDto.questionId} not found`,
 					);
 				});
 
+			if (!question.quiz || question.quiz.id !== quiz.id) {
+				throw new BadRequestException(
+					'La pregunta no pertenece al cuestionario indicado.',
+				);
+			}
+
+			const instituteId = this.resolveInstituteId(quiz, answerDto.instituteId);
 			const institute: Institute = await this.instituteRepository
 				.findOneOrFail({
-					where: { id: answerDto.instituteId },
+					where: { id: instituteId },
 				})
 				.catch(() => {
 					throw new NotFoundException(
-						`Institute with ID ${answerDto.instituteId} not found`,
+						`Institute with ID ${instituteId} not found`,
 					);
 				});
 
@@ -333,6 +382,13 @@ export class AnswersService {
 				throw new BadRequestException('Invalid quiz type.');
 			}
 
+			await this.courseAccessService.assertAnswerScope({
+				actor: user,
+				courseId: this.getQuizCourseId(quiz),
+				answerUserId: userEntity.id,
+				groupId: answerDto.groupId,
+			});
+
 			const existingAnswer = await this.answerRepository.findOne({
 				where: existingAnswerWhere,
 			});
@@ -347,15 +403,12 @@ export class AnswersService {
 						`Option with ID ${answerDto.optionId} not found`,
 					);
 				});
-			const question: Question = await this.questionRepository
-				.findOneOrFail({
-					where: { id: answerDto.questionId },
-				})
-				.catch(() => {
-					throw new NotFoundException(
-						`Question with ID ${answerDto.questionId} not found`,
-					);
-				});
+
+			if (option.question.id !== question.id) {
+				throw new BadRequestException(
+					'La opción seleccionada no pertenece a la pregunta indicada.',
+				);
+			}
 
 			const points: number = option.correct ? question.points : 0;
 			let answerToSave: Answer;

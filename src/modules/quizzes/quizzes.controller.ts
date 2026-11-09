@@ -24,12 +24,14 @@ import { User as UserEntity } from '../users/user.entity';
 import { Answer } from '../answers/answer.entity';
 import { Question } from '../questions/question.entity';
 import { ResultLessonDto } from '../lessons/dto/result-lesson.dto';
+import { CourseAccessCheck } from 'src/common/authorization/course-access.service';
 
 @ApiTags('Quizzes Routes')
 @Controller('quizzes')
 export class QuizzesController {
 	constructor(private readonly quizzesService: QuizzesService) {}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Get()
 	getQuizzes(@Query() queryQuiz: QueryQuizDto): Promise<Quiz[]> {
@@ -47,6 +49,15 @@ export class QuizzesController {
 	@Get(':id')
 	getQuiz(@Param('id') id: number, @User() user: UserEntity): Promise<Quiz> {
 		return this.quizzesService.getQuiz(id, user);
+	}
+
+	@Auth()
+	@Get(':id/access')
+	getQuizAccess(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<CourseAccessCheck> {
+		return this.quizzesService.getQuizAccess(id, user);
 	}
 
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)

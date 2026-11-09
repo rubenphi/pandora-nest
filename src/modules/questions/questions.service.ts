@@ -30,6 +30,10 @@ import { ImportQuestionByTypeDto } from './dto/import-question-by-type.dto';
 import { numerosOrdinales, shuffleArray } from 'src/common/vars/vars';
 import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
 import { Quiz } from '../quizzes/quiz.entity';
+import {
+	CourseAccessCheck,
+	CourseAccessService,
+} from 'src/common/authorization/course-access.service';
 
 @Injectable()
 export class QuestionsService {
@@ -42,6 +46,7 @@ export class QuestionsService {
 		private readonly instituteRepository: Repository<Institute>,
 		@InjectRepository(Quiz)
 		private readonly quizRepository: Repository<Quiz>,
+		private readonly courseAccessService: CourseAccessService,
 	) {}
 
 	async getQuestions(queryQuestion: QueryQuestionDto): Promise<Question[]> {
@@ -68,7 +73,7 @@ export class QuestionsService {
 			});
 		}
 	}
-	async getQuestion(id: number): Promise<Question> {
+	async getQuestion(id: number, user: User): Promise<Question> {
 		const question: Question = await this.questionRepository
 			.findOneOrFail({
 				where: { id },
@@ -83,7 +88,12 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+		await this.courseAccessService.assertQuestionAccess(id, user);
 		return question;
+	}
+
+	async getQuestionAccess(id: number, user: User): Promise<CourseAccessCheck> {
+		return this.courseAccessService.checkQuestionAccess(id, user);
 	}
 	async createQuestion(
 		questionDto: CreateQuestionDto,
@@ -231,6 +241,7 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Question not found');
 			});
+		await this.courseAccessService.assertQuestionAccess(id, user);
 
 		let response: Partial<Option>[] = question.options;
 		if (user.rol == Role.Student) {
@@ -277,6 +288,7 @@ export class QuestionsService {
 		if (user.institute.id !== question.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this question');
 		}
+		await this.courseAccessService.assertQuestionAccess(id, user);
 		//order Answers by created (DESC) and points (ASC)
 		return question.answers.sort(comparar);
 	}
@@ -443,7 +455,7 @@ export class QuestionsService {
 					sentence: question.sentence,
 					quiz,
 					points: 10,
-					photo: null,
+					photo: question.photo ?? null,
 					visible: false,
 					exist: true,
 					institute: user.institute,
@@ -505,7 +517,7 @@ export class QuestionsService {
 					sentence: question.sentence,
 					quiz,
 					points: importationData.points,
-					photo: null,
+					photo: question.photo ?? null,
 					visible: false,
 					exist: true,
 					institute: user.institute,

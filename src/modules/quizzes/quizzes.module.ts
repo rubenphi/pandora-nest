@@ -15,6 +15,7 @@ import { Option } from '../options/option.entity'; // New import
 import { ActivitiesModule } from '../activities/activities.module';
 import { MaterialsModule } from '../materials/materials.module';
 import { Grade } from '../grades/grade.entity';
+import { CourseAccessModule } from 'src/common/authorization/course-access.module';
 
 @Module({
 	imports: [
@@ -32,6 +33,7 @@ import { Grade } from '../grades/grade.entity';
 		]),
 		ActivitiesModule,
 		MaterialsModule,
+		CourseAccessModule,
 	],
 	controllers: [QuizzesController],
 	providers: [QuizzesService],

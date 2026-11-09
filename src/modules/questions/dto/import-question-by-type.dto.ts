@@ -5,6 +5,7 @@ import {
 	IsArray,
 	ValidateNested,
 	IsDefined,
+	IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -16,6 +17,16 @@ export class QuestionOfTypesDto {
 	@ApiProperty()
 	@IsString()
 	sentence: string;
+
+	@ApiProperty({
+		description:
+			'Path of the already uploaded image, as returned by ' +
+			'POST /files/upload-multiple (e.g. "files/uploads/abc123.png").',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	photo?: string;
 }
 
 export class ImportQuestionByTypeDto {

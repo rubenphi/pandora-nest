@@ -40,6 +40,10 @@ import { Area } from '../areas/area.entity';
 import { Period } from '../periods/period.entity';
 import { ResultLessonDto } from '../lessons/dto/result-lesson.dto';
 import { Grade } from '../grades/grade.entity';
+import {
+	CourseAccessCheck,
+	CourseAccessService,
+} from 'src/common/authorization/course-access.service';
 
 @Injectable()
 export class QuizzesService {
@@ -67,6 +71,7 @@ export class QuizzesService {
 		private readonly gradeRepository: Repository<Grade>,
 		private readonly activitiesService: ActivitiesService,
 		private readonly materialsService: MaterialsService,
+		private readonly courseAccessService: CourseAccessService,
 	) {}
 
 	async findOne(id: number): Promise<Quiz> {
@@ -126,8 +131,13 @@ export class QuizzesService {
 		if (user.institute.id !== quiz.lesson.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this quiz');
 		}
+		await this.courseAccessService.assertQuizAccess(id, user);
 
 		return quiz;
+	}
+
+	async getQuizAccess(id: number, user: User): Promise<CourseAccessCheck> {
+		return this.courseAccessService.checkQuizAccess(id, user);
 	}
 
 	// Replicating createLesson as createQuiz
@@ -247,6 +257,7 @@ export class QuizzesService {
 		if (user.institute.id !== quiz.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this quiz');
 		}
+		await this.courseAccessService.assertQuizAccess(id, user);
 		return quiz.answers;
 	}
 
@@ -270,6 +281,7 @@ export class QuizzesService {
 		if (user.institute.id !== quiz.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this quiz');
 		}
+		await this.courseAccessService.assertQuizAccess(id, user);
 
 		const resultQuiz = [];
 
@@ -482,6 +494,7 @@ export class QuizzesService {
 		if (user.institute.id !== quiz.institute.id) {
 			throw new ForbiddenException('You are not allowed to see this quiz');
 		}
+		await this.courseAccessService.assertQuizAccess(id, user);
 
 		const points = quiz.questions.reduce((res, value) => res + value.points, 0);
 

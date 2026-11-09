@@ -6,6 +6,7 @@ import {
 	IsArray,
 	ValidateNested,
 	IsDefined,
+	IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Question } from '../question.entity';
@@ -30,6 +31,16 @@ export class ImportQuestionVariableOption {
 	@ApiProperty()
 	@IsString()
 	sentence: string;
+
+	@ApiProperty({
+		description:
+			'Path of the already uploaded image, as returned by ' +
+			'POST /files/upload-multiple (e.g. "files/uploads/abc123.png").',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	photo?: string;
 
 	@ApiProperty({ type: [OptionQuestionVariableOptionDto] })
 	@IsArray()

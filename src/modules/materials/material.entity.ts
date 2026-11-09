@@ -1,9 +1,11 @@
 import {
 	Column,
+	CreateDateColumn,
 	Entity,
 	JoinColumn,
 	ManyToOne,
 	PrimaryGeneratedColumn,
+	UpdateDateColumn,
 } from 'typeorm';
 import { Institute } from '../institutes/institute.entity';
 import { Lesson } from '../lessons/lesson.entity';
@@ -47,4 +49,10 @@ export class Material {
 	@ManyToOne(() => Lesson, (lesson) => lesson.materials)
 	@JoinColumn({ name: 'lessonId' })
 	lesson: Lesson;
+
+	@CreateDateColumn()
+	createdAt: Date;
+
+	@UpdateDateColumn()
+	updatedAt: Date;
 }

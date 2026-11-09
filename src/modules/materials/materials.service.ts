@@ -76,6 +76,7 @@ export class MaterialsService {
 		return this.materialRepository.find({
 			where,
 			relations: ['lesson', 'lesson.course', 'lesson.area', 'institute'],
+			order: { createdAt: 'ASC', id: 'ASC' },
 		});
 	}
 

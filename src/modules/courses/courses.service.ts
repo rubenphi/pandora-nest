@@ -52,6 +52,17 @@ export class CoursesService {
 		private readonly courseAreaRepository: Repository<CourseArea>,
 	) {}
 
+	private async isStudentEnrolledInCourse(
+		userId: number,
+		courseId: number,
+	): Promise<boolean> {
+		const userCourses: UserToCourse[] = await this.userToCourseRepository.find({
+			where: { user: { id: userId }, active: true },
+			relations: ['course'],
+		});
+		return userCourses.some((userCourse) => userCourse.course?.id === courseId);
+	}
+
 	async getCourseAreasTeachers(
 		id: number,
 		user: User,
@@ -483,8 +494,8 @@ export class CoursesService {
 			);
 		}
 		if (user.rol === Role.Student) {
-			const courseIndex = user.courses.findIndex((course) => course.id === id);
-			if (courseIndex === -1) {
+			const enrolled = await this.isStudentEnrolledInCourse(user.id, id);
+			if (!enrolled) {
 				throw new NotFoundException(
 					'You are not allowed to see lessons of this course',
 				);
@@ -519,8 +530,8 @@ export class CoursesService {
 			);
 		}
 		if (user.rol === Role.Student) {
-			const courseIndex = user.courses.findIndex((course) => course.id === id);
-			if (courseIndex === -1) {
+			const enrolled = await this.isStudentEnrolledInCourse(user.id, id);
+			if (!enrolled) {
 				throw new NotFoundException(
 					'You are not allowed to see groups of this course',
 				);
@@ -563,9 +574,9 @@ export class CoursesService {
 			throw new ForbiddenException('You are not allowed to see this course');
 		}
 		if (user.rol === Role.Student) {
-			const studentInSameCourse = user.courses.find(
-				(course) =>
-					course.id === course.course.id && course.year === course.year,
+			const studentInSameCourse = await this.isStudentEnrolledInCourse(
+				user.id,
+				id,
 			);
 			if (!studentInSameCourse) {
 				throw new ForbiddenException('You are not allowed to see this course');
@@ -589,8 +600,9 @@ export class CoursesService {
 			throw new ForbiddenException('You are not allowed to see this course');
 		}
 		if (user.rol === Role.Student) {
-			const studentInSameCourse = user.courses.find(
-				(c) => c.id === course.id && c.year === queryUser.year,
+			const studentInSameCourse = await this.isStudentEnrolledInCourse(
+				user.id,
+				id,
 			);
 			if (!studentInSameCourse) {
 				throw new ForbiddenException('You are not allowed to see this course');

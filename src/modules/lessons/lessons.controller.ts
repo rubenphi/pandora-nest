@@ -11,7 +11,7 @@ import {
 import { Lesson } from './lesson.entity';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto, UpdateLessonDto, QueryLessonDto } from './dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
@@ -23,8 +23,21 @@ export class LessonsController {
 	constructor(private readonly lessonService: LessonsService) {}
 	@Auth()
 	@Get()
-	getLessons(@Query() queryLesson: QueryLessonDto): Promise<Lesson[]> {
-		return this.lessonService.getLessons(queryLesson);
+	getLessons(
+		@Query() queryLesson: QueryLessonDto,
+		@User() user: UserEntity,
+	): Promise<Lesson[]> {
+		return this.lessonService.getLessons(queryLesson, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Get('full')
+	@ApiOperation({ summary: 'Get lessons with full enriched data' })
+	@ApiBearerAuth()
+	@ApiResponse({ status: 200, description: 'Lessons with materials, quiz questions and activities' })
+	getFullLessons(@Query() queryLesson: QueryLessonDto): Promise<any[]> {
+		return this.lessonService.getFullLessons(queryLesson);
 	}
 
 	@Auth()

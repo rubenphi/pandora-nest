@@ -14,6 +14,7 @@ import { Quiz } from '../quizzes/quiz.entity';
 import { UsersModule } from '../users/users.module';
 import { QuizzesModule } from '../quizzes/quizzes.module';
 import { LessonsModule } from '../lessons/lessons.module';
+import { CourseAccessModule } from 'src/common/authorization/course-access.module';
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { LessonsModule } from '../lessons/lessons.module';
 		UsersModule,
 		QuizzesModule,
 		LessonsModule,
+		CourseAccessModule,
 	],
 	providers: [AnswersService],
 	controllers: [AnswersController],

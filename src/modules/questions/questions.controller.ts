@@ -33,11 +33,13 @@ import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
 import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
+import { CourseAccessCheck } from 'src/common/authorization/course-access.service';
 
 @ApiTags('Questions Routes')
 @Controller('questions')
 export class QuestionsController {
 	constructor(private readonly questionService: QuestionsService) {}
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Get()
 	@ApiOperation({ summary: 'Get all questions' })
@@ -50,8 +52,21 @@ export class QuestionsController {
 	@ApiOperation({ summary: 'Get a question by id' })
 	@ApiResponse({ status: 200, description: 'Return a question.' })
 	@ApiResponse({ status: 404, description: 'Question not found.' })
-	getQuestion(@Param('id') id: number): Promise<Question> {
-		return this.questionService.getQuestion(id);
+	getQuestion(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<Question> {
+		return this.questionService.getQuestion(id, user);
+	}
+	@Auth()
+	@Get(':id/access')
+	@ApiOperation({ summary: 'Check course access for a question' })
+	@ApiResponse({ status: 200, description: 'Return the access verdict.' })
+	getQuestionAccess(
+		@Param('id') id: number,
+		@User() user: UserEntity,
+	): Promise<CourseAccessCheck> {
+		return this.questionService.getQuestionAccess(id, user);
 	}
 	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()

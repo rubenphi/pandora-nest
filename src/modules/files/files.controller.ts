@@ -4,17 +4,21 @@ import {
 	StreamableFile,
 	Param,
 	NotFoundException,
+	BadRequestException,
 	Post,
 	UseInterceptors,
 	UploadedFile,
+	UploadedFiles,
 	Res,
 	Delete,
 	HttpStatus,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { createReadStream, existsSync } from 'fs';
-import { join, extname, basename } from 'path';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { join, extname } from 'path';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Auth } from 'src/common/decorators';
+import { Role, Roles } from '../auth/roles.decorator';
 import { FilesService } from './files.service';
 import { Response } from 'express';
 
@@ -30,6 +34,29 @@ export class FilesController {
 			filename: file.filename,
 			url: this.filesService.getUploadedFileUrl(file.filename),
 		};
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Post('upload-multiple')
+	@ApiOperation({ summary: 'Upload several images at once' })
+	@ApiResponse({
+		status: 201,
+		description: 'Files have been successfully uploaded.',
+	})
+	@ApiResponse({ status: 400, description: 'No file was sent.' })
+	@UseInterceptors(FilesInterceptor('files'))
+	uploadFiles(
+		@UploadedFiles() files: Express.Multer.File[],
+	): { originalname: string; filename: string; url: string }[] {
+		if (!files || files.length === 0) {
+			throw new BadRequestException('Debe enviar al menos un archivo.');
+		}
+		return files.map((file) => ({
+			originalname: file.originalname,
+			filename: file.filename,
+			url: this.filesService.getUploadedFileUrl(file.filename),
+		}));
 	}
 
 	@Get('uploads/:name')
