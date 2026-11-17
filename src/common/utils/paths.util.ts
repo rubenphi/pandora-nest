@@ -21,3 +21,4 @@ export function getDataDir(): string {
 	}
 	return dir;
 }
+

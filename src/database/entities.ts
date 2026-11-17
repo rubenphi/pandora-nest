@@ -65,3 +65,4 @@ export const entities = [
 	UserToCourse,
 	UserToGroup,
 ];
+
