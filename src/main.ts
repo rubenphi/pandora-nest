@@ -27,4 +27,10 @@ async function bootstrap() {
 	);
 	await app.listen(AppModule.port);
 }
+
+try {
+	// Signal to Capacitor Node.js runtime that the process is ready
+	require('bridge');
+} catch (_) {}
+
 bootstrap();

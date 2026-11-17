@@ -54,9 +54,18 @@ import { SurveyTemplate } from './modules/surveys/survey-template.entity';
 					const dbExists = existsSync(dbPath);
 					const synchronize = configService.get<string>('DB_SYNCHRONIZE') === 'true' || !dbExists;
 
+					let driver: any = undefined;
+					try {
+						require('sqlite3');
+					} catch (_) {
+						const { createNodeSqliteShim } = require('./database/node-sqlite.shim');
+						driver = createNodeSqliteShim();
+					}
+
 					return {
 						type: 'sqlite',
 						database: dbPath,
+						driver,
 						synchronize,
 						dropSchema: false,
 						entities,
