@@ -107,6 +107,34 @@ export class QuizzesService {
 		}
 	}
 
+	async getQuizzesByYearFull(year: number, user: User): Promise<Quiz[]> {
+		const whereCondition: any = {
+			lesson: {
+				year,
+				exist: true,
+			},
+		};
+
+		if (user?.institute?.id) {
+			whereCondition.institute = { id: user.institute.id };
+		}
+
+		return await this.quizRepository.find({
+			where: whereCondition,
+			relations: [
+				'lesson',
+				'lesson.course',
+				'lesson.area',
+				'lesson.period',
+				'questions',
+				'questions.options',
+			],
+			order: {
+				id: 'ASC',
+			},
+		});
+	}
+
 	// Replicating getLesson as getQuiz
 	async getQuiz(id: number, user: User): Promise<Quiz> {
 		const quiz: Quiz = await this.quizRepository
@@ -234,7 +262,7 @@ export class QuizzesService {
 
 	async getQuizQuestions(id: number, user: User): Promise<Question[]> {
 		const quiz = await this.getQuiz(id, user);
-		return quiz.questions;
+		return (quiz.questions || []).filter((q) => q.exist !== false);
 	}
 
 	async getAnswersByQuiz(id: number, user: User): Promise<Answer[]> {
@@ -365,9 +393,8 @@ export class QuizzesService {
 						visible: false,
 					});
 
-					const questionSaved = await this.questionRepository.save(
-						questionToSave,
-					);
+					const questionSaved =
+						await this.questionRepository.save(questionToSave);
 
 					for (const option of question.options.sort((a, b) => a.id - b.id)) {
 						const optionToSave: Option = this.optionRepository.create({
@@ -426,7 +453,9 @@ export class QuizzesService {
 			});
 
 			const existingTitles = new Set(
-				toQuiz.questions.map((q) => q.title.toLowerCase().trim()),
+				(toQuiz.questions || [])
+					.filter((q) => q.exist !== false)
+					.map((q) => q.title.toLowerCase().trim()),
 			);
 
 			for (const questionData of dto.questions) {

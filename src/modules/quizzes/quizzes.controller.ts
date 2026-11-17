@@ -45,6 +45,16 @@ export class QuizzesController {
 		return this.quizzesService.getPendingGrading(query);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Auth()
+	@Get('export/year/:year')
+	getQuizzesByYearFull(
+		@Param('year') year: number,
+		@User() user: UserEntity,
+	): Promise<Quiz[]> {
+		return this.quizzesService.getQuizzesByYearFull(Number(year), user);
+	}
+
 	@Auth()
 	@Get(':id')
 	getQuiz(@Param('id') id: number, @User() user: UserEntity): Promise<Quiz> {

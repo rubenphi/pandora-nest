@@ -405,6 +405,50 @@ export class QuestionsService {
 			await queryRunner.release();
 		}
 	}
+	private getNextQuestionStartIndex(
+		existingQuestions: Question[] = [],
+	): number {
+		const activeQuestions = existingQuestions.filter((q) => q.exist !== false);
+		if (activeQuestions.length === 0) {
+			return 0;
+		}
+
+		let maxIndex = activeQuestions.length - 1;
+
+		for (const q of activeQuestions) {
+			if (!q.title) continue;
+			const cleanTitle = q.title.toLowerCase().trim();
+
+			const ordIdx = numerosOrdinales.findIndex(
+				(ord) => ord.toLowerCase().trim() === cleanTitle,
+			);
+			if (ordIdx > maxIndex) {
+				maxIndex = ordIdx;
+			}
+
+			const preguntaMatch = cleanTitle.match(/^pregunta\s+(\d+)$/i);
+			if (preguntaMatch) {
+				const num = parseInt(preguntaMatch[1], 10) - 1;
+				if (num > maxIndex) maxIndex = num;
+			}
+
+			const prefixMatch = cleanTitle.match(/^(\d+)\./);
+			if (prefixMatch) {
+				const num = parseInt(prefixMatch[1], 10) - 1;
+				if (num > maxIndex) maxIndex = num;
+			}
+		}
+
+		return maxIndex + 1;
+	}
+
+	private getOrdinalTitle(index: number): string {
+		if (index >= 0 && index < numerosOrdinales.length) {
+			return numerosOrdinales[index];
+		}
+		return `Pregunta ${index + 1}`;
+	}
+
 	async importQuestionsByType(
 		importationData: ImportQuestionByTypeDto,
 		user: User,
@@ -418,8 +462,7 @@ export class QuestionsService {
 				throw new NotFoundException('Quiz not found');
 			});
 
-		const lastQuestion: Question | undefined =
-			quiz.questions[quiz.questions.length - 1];
+		const startIndex = this.getNextQuestionStartIndex(quiz.questions);
 
 		const options: Option[] = importationData.types.map((type, index) => {
 			return this.optionRepository.create({
@@ -440,21 +483,13 @@ export class QuestionsService {
 					);
 				}
 
-				//search the last title on numerosOrdinales
-				const lastTitleIndex = numerosOrdinales.findIndex(
-					(title) => title === lastQuestion?.title,
-				);
-
-				const title =
-					lastTitleIndex >= 0
-						? numerosOrdinales[lastTitleIndex + index + 1] // +1 because we want the next title
-						: numerosOrdinales[index];
+				const title = this.getOrdinalTitle(startIndex + index);
 
 				return this.questionRepository.create({
 					title,
 					sentence: question.sentence,
 					quiz,
-					points: 10,
+					points: importationData.points ?? 10,
 					photo: question.photo ?? null,
 					visible: false,
 					exist: true,
@@ -463,9 +498,8 @@ export class QuestionsService {
 				});
 			},
 		);
-		const savedQuestions: Question[] = await this.questionRepository.save(
-			questionsToSave,
-		);
+		const savedQuestions: Question[] =
+			await this.questionRepository.save(questionsToSave);
 
 		const optionsToSave: Option[] = savedQuestions.flatMap(
 			(questionI, index) => {
@@ -497,20 +531,11 @@ export class QuestionsService {
 			.catch(() => {
 				throw new NotFoundException('Quiz not found');
 			});
-		const lastQuestion: Question | undefined =
-			quiz.questions[quiz.questions.length - 1];
+		const startIndex = this.getNextQuestionStartIndex(quiz.questions);
 
 		const questionsToSave: Question[] = importationData.questions.map(
 			(question, index) => {
-				//search the last title on numerosOrdinales
-				const lastTitleIndex = numerosOrdinales.findIndex(
-					(title) => title === lastQuestion?.title,
-				);
-
-				const title =
-					lastTitleIndex >= 0
-						? numerosOrdinales[lastTitleIndex + index + 1] // +1 because we want the next title
-						: numerosOrdinales[index];
+				const title = this.getOrdinalTitle(startIndex + index);
 
 				return this.questionRepository.create({
 					title,
@@ -526,9 +551,8 @@ export class QuestionsService {
 			},
 		);
 
-		const savedQuestions: Question[] = await this.questionRepository.save(
-			questionsToSave,
-		);
+		const savedQuestions: Question[] =
+			await this.questionRepository.save(questionsToSave);
 		const optionsToSave: Option[] = savedQuestions.flatMap(
 			(question, index) => {
 				if (importationData.shuffleOptions) {
