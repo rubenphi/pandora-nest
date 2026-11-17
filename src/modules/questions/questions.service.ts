@@ -363,6 +363,9 @@ export class QuestionsService {
 	}
 
 	async resetIndex(): Promise<string> {
+		if (this.questionRepository.manager.connection.options.type === 'sqlite') {
+			return 'SQLite maneja las secuencias automáticamente.';
+		}
 		const queryRunner =
 			this.questionRepository.manager.connection.createQueryRunner();
 

@@ -1,5 +1,6 @@
 import {
 	Column,
+	CreateDateColumn,
 	Entity,
 	JoinColumn,
 	ManyToOne,
@@ -41,6 +42,6 @@ export class ActivityEvidence {
 	@Column({ type: 'int' })
 	instituteId: number;
 
-	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@CreateDateColumn()
 	createdAt: Date;
 }

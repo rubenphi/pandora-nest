@@ -24,7 +24,7 @@ export class Poll {
 	@Column()
 	question: string;
 
-	@Column({ type: 'enum', enum: ['group', 'individual'], default: 'group' })
+	@Column({ type: 'simple-enum', enum: ['group', 'individual'], default: 'group' })
 	mode: 'group' | 'individual';
 
 	@Column({ default: true })

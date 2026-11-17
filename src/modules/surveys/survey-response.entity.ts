@@ -25,7 +25,7 @@ export class SurveyResponse {
 	@Column({ length: 10 })
 	code: string;
 
-	@Column('jsonb')
+	@Column({ type: 'simple-json' })
 	answers: Record<string, any>;
 
 	@Column({ nullable: true })

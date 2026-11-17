@@ -63,7 +63,7 @@ export class Lesson {
 	@Column({ nullable: false })
 	exist: boolean;
 	@Column({
-		type: 'enum',
+		type: 'simple-enum',
 		enum: LessonType,
 		default: LessonType.STANDARD,
 	})

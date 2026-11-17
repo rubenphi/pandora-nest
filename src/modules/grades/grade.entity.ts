@@ -37,11 +37,11 @@ export class Grade {
 	// This property will be populated manually in the service
 	gradableItem?: Gradable;
 
-	@Column({ type: 'enum', enum: ['regular', 'support'], default: 'regular' })
+	@Column({ type: 'simple-enum', enum: ['regular', 'support'], default: 'regular' })
 	gradeType: 'regular' | 'support';
 
 	@Column({
-		type: 'enum',
+		type: 'simple-enum',
 		enum: ['knowledge', 'execution', 'behavior'],
 		nullable: true,
 	})

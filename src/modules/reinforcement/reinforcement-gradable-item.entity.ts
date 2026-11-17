@@ -26,6 +26,6 @@ export class ReinforcementGradableItem {
 	@Column()
 	gradableId: number;
 
-	@Column({ type: 'enum', enum: GRADABLE_ENTITIES })
+	@Column({ type: 'simple-enum', enum: GRADABLE_ENTITIES })
 	gradableType: string;
 }

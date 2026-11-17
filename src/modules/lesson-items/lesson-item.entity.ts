@@ -25,7 +25,7 @@ export class LessonItem {
 	@Column()
 	order: number;
 
-	@Column({ type: 'enum', enum: ContentType })
+	@Column({ type: 'simple-enum', enum: ContentType })
 	contentType: ContentType;
 
 	@Column('int')

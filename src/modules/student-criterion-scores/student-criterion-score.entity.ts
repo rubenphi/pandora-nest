@@ -1,5 +1,6 @@
 import {
 	Column,
+	CreateDateColumn,
 	Entity,
 	JoinColumn,
 	ManyToOne,
@@ -34,7 +35,7 @@ export class StudentCriterionScore {
 	@JoinColumn({ name: 'gradedById' })
 	gradedBy: User;
 
-	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@CreateDateColumn()
 	gradedAt: Date;
 
 	@ManyToOne(() => Institute, (institute) => institute.studentCriterionScores)

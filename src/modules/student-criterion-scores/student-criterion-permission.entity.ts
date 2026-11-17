@@ -9,13 +9,13 @@ export class StudentCriterionPermission {
 	@Column({ type: 'int' })
 	reviserId: number;
 
-	@Column({ type: 'enum', enum: ['Group', 'User'] })
+	@Column({ type: 'simple-enum', enum: ['Group', 'User'] })
 	reviserType: 'Group' | 'User';
 
 	@Column({ type: 'int' })
 	revisedId: number;
 
-	@Column({ type: 'enum', enum: ['Group', 'User'] })
+	@Column({ type: 'simple-enum', enum: ['Group', 'User'] })
 	revisedType: 'Group' | 'User';
 
 	@ManyToOne(() => Activity, {

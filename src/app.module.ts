@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 
 import { CoursesModule } from './modules/courses/courses.module';
 import { GroupsModule } from './modules/groups/groups.module';
@@ -37,19 +39,41 @@ import { ActivityEvidencesModule } from './modules/activity-evidences/activity-e
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
-			useFactory: (configService: ConfigService) => ({
-				type: 'postgres',
-				host: configService.get<string>('DB_HOST'),
-				database: configService.get<string>('DB_NAME'),
-				username: configService.get<string>('DB_USER'),
-				password: configService.get<string>('DB_PASSWORD'),
-				port: parseInt(configService.get<string>('DB_PORT'), 10) || 5432,
-				synchronize: true,
-				dropSchema: false,
-				entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-				retryAttempts: 2,
-				retryDelay: 2000,
-			}),
+			useFactory: (configService: ConfigService) => {
+				const dbType = (configService.get<string>('DB_TYPE') || 'postgres').toLowerCase();
+
+				if (dbType === 'sqlite') {
+					const dataDir = join(process.cwd(), 'data');
+					if (!existsSync(dataDir)) {
+						mkdirSync(dataDir, { recursive: true });
+					}
+					const dbPath = configService.get<string>('DB_DATABASE') || join(dataDir, 'pandora.sqlite');
+					const dbExists = existsSync(dbPath);
+					const synchronize = configService.get<string>('DB_SYNCHRONIZE') === 'true' || !dbExists;
+
+					return {
+						type: 'sqlite',
+						database: dbPath,
+						synchronize,
+						dropSchema: false,
+						entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+					};
+				}
+
+				return {
+					type: 'postgres',
+					host: configService.get<string>('DB_HOST'),
+					database: configService.get<string>('DB_NAME'),
+					username: configService.get<string>('DB_USER'),
+					password: configService.get<string>('DB_PASSWORD'),
+					port: parseInt(configService.get<string>('DB_PORT'), 10) || 5432,
+					synchronize: true,
+					dropSchema: false,
+					entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+					retryAttempts: 2,
+					retryDelay: 2000,
+				};
+			},
 		}),
 		CoursesModule,
 		GroupsModule,

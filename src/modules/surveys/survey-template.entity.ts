@@ -22,7 +22,7 @@ export class SurveyTemplate {
 	@Column({ default: 1 })
 	version: number;
 
-	@Column('jsonb')
+	@Column({ type: 'simple-json' })
 	questionsConfig: Record<string, any>;
 
 	@Column({ default: true })

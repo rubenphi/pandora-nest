@@ -28,7 +28,7 @@ export class Material {
 	@Column()
 	title: string;
 
-	@Column({ type: 'enum', enum: MaterialType })
+	@Column({ type: 'simple-enum', enum: MaterialType })
 	type: MaterialType;
 
 	@Column({ nullable: true })

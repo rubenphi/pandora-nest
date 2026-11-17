@@ -21,25 +21,25 @@ export class Quiz {
 	@Column()
 	title: string;
 
-	@Column({ type: 'enum', enum: ['group', 'individual'], default: 'group' })
+	@Column({ type: 'simple-enum', enum: ['group', 'individual'], default: 'group' })
 	quizType: 'group' | 'individual';
 
 	@Column({
-		type: 'enum',
+		type: 'simple-enum',
 		enum: ['knowledge', 'execution', 'behavior'],
 		default: 'knowledge',
 	})
 	classification: 'knowledge' | 'execution' | 'behavior';
 
 	@Column({
-		type: 'enum',
+		type: 'simple-enum',
 		enum: EvaluationType,
 		default: EvaluationType.RELATIVE,
 	})
 	evaluationType: EvaluationType;
 
 	@Column({
-		type: 'enum',
+		type: 'simple-enum',
 		enum: ['regular', 'improvement'],
 		default: 'regular',
 	})

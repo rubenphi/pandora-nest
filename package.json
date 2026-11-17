@@ -35,6 +35,7 @@
 		"@nestjs/swagger": "^7.0.0",
 		"@nestjs/typeorm": "^10.0.0",
 		"@types/cheerio": "^0.22.35",
+		"@types/sqlite3": "^3.1.11",
 		"bcryptjs": "^2.4.3",
 		"cheerio": "^1.1.2",
 		"class-transformer": "^0.5.1",
@@ -50,6 +51,7 @@
 		"rimraf": "^5.0.0",
 		"rxjs": "^7.8.0",
 		"short-unique-id": "^4.4.4",
+		"sqlite3": "^5.1.7",
 		"swagger-ui-express": "^5.0.0",
 		"typeorm": "^0.3.2",
 		"uuid": "^9.0.0"

@@ -40,3 +40,10 @@ lerna-debug.log*
 
 .env 
 #ormconfig.ts
+
+# SQLite Database
+*.sqlite
+*.sqlite3
+*.db
+/data/*
+!/data/.gitkeep
