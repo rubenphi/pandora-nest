@@ -8,6 +8,7 @@
 	"scripts": {
 		"prebuild": "rimraf dist",
 		"build": "nest build",
+		"bundle:mobile": "nest build && ncc build dist/src/main.js -o dist/bundle -m -e sqlite3",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
 		"start:dev": "cross-env NODE_ENV=development nest start --watch",
@@ -71,6 +72,7 @@
 		"@types/supertest": "^2.0.11",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
+		"@vercel/ncc": "^0.45.0",
 		"cross-env": "^10.1.0",
 		"dotenv": "^16.0.0",
 		"eslint": "^8.16.0",

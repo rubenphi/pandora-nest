@@ -64,7 +64,7 @@ export class FilesController {
 		@Param('name') name: string,
 		@Res({ passthrough: true }) res: Response,
 	): StreamableFile {
-		const filePath = join(process.cwd(), 'uploads/' + name);
+		const filePath = join(this.filesService.getUploadDir(), name);
 		if (existsSync(filePath)) {
 			const fileExtension = extname(name).toLowerCase();
 			let contentType = 'application/octet-stream'; // Default

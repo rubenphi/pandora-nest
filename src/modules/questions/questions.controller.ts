@@ -33,6 +33,7 @@ import { Auth, User } from 'src/common/decorators';
 import { Role, Roles } from '../auth/roles.decorator';
 import { User as UserEntity } from '../users/user.entity';
 import { ImportQuestionVariableOptionDto } from './dto/import-question-variable-option';
+import { getUploadsDir } from '../../common/utils/paths.util';
 import { CourseAccessCheck } from 'src/common/authorization/course-access.service';
 
 @ApiTags('Questions Routes')
@@ -76,7 +77,9 @@ export class QuestionsController {
 	@UseInterceptors(
 		FileInterceptor('photo', {
 			storage: diskStorage({
-				destination: './uploads',
+				destination: (req, file, cb) => {
+					cb(null, getUploadsDir());
+				},
 				filename: function (req, file, cb) {
 					cb(null, `${uuid()}${extname(file.originalname)}`);
 				},
@@ -105,7 +108,9 @@ export class QuestionsController {
 	@UseInterceptors(
 		FileInterceptor('photo', {
 			storage: diskStorage({
-				destination: './uploads',
+				destination: (req, file, cb) => {
+					cb(null, getUploadsDir());
+				},
 				filename: function (req, file, cb) {
 					cb(null, `${uuid()}${extname(file.originalname)}`);
 				},

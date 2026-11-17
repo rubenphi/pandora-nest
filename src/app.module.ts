@@ -29,6 +29,12 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
 import { PollsModule } from './modules/polls/polls.module';
 import { SurveysModule } from './modules/surveys/surveys.module';
 import { ActivityEvidencesModule } from './modules/activity-evidences/activity-evidences.module';
+import { entities } from './database/entities';
+import { getDataDir } from './common/utils/paths.util';
+import { AppInitializerService } from './database/app-initializer.service';
+import { User } from './modules/users/user.entity';
+import { Institute } from './modules/institutes/institute.entity';
+import { SurveyTemplate } from './modules/surveys/survey-template.entity';
 
 @Module({
 	imports: [
@@ -43,11 +49,8 @@ import { ActivityEvidencesModule } from './modules/activity-evidences/activity-e
 				const dbType = (configService.get<string>('DB_TYPE') || 'postgres').toLowerCase();
 
 				if (dbType === 'sqlite') {
-					const dataDir = join(process.cwd(), 'data');
-					if (!existsSync(dataDir)) {
-						mkdirSync(dataDir, { recursive: true });
-					}
-					const dbPath = configService.get<string>('DB_DATABASE') || join(dataDir, 'pandora.sqlite');
+					const baseDataDir = configService.get<string>('APP_DATA_DIR') || configService.get<string>('DATA_DIR') || getDataDir();
+					const dbPath = configService.get<string>('DB_DATABASE') || join(baseDataDir, 'pandora.sqlite');
 					const dbExists = existsSync(dbPath);
 					const synchronize = configService.get<string>('DB_SYNCHRONIZE') === 'true' || !dbExists;
 
@@ -56,7 +59,7 @@ import { ActivityEvidencesModule } from './modules/activity-evidences/activity-e
 						database: dbPath,
 						synchronize,
 						dropSchema: false,
-						entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+						entities,
 					};
 				}
 
@@ -69,7 +72,7 @@ import { ActivityEvidencesModule } from './modules/activity-evidences/activity-e
 					port: parseInt(configService.get<string>('DB_PORT'), 10) || 5432,
 					synchronize: true,
 					dropSchema: false,
-					entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+					entities,
 					retryAttempts: 2,
 					retryDelay: 2000,
 				};
@@ -99,7 +102,9 @@ import { ActivityEvidencesModule } from './modules/activity-evidences/activity-e
 		PollsModule,
 		SurveysModule,
 		ActivityEvidencesModule,
+		TypeOrmModule.forFeature([User, Institute, SurveyTemplate]),
 	],
+	providers: [AppInitializerService],
 })
 export class AppModule {
 	static port: number | string;

@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { entities } from './src/database/entities';
 
 // Carga el archivo .env correcto según el entorno
 dotenv.config({
@@ -27,11 +28,7 @@ if (dbType === 'sqlite') {
     database: dbPath,
     dropSchema: false,
     synchronize: !isProduction,
-    entities: [
-      isProduction
-        ? join(__dirname, '**', '*.entity.js')
-        : join(__dirname, 'src', '**', '*.entity.ts'),
-    ],
+    entities,
   });
 } else {
   source = new DataSource({

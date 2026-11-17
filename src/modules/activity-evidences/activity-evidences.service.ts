@@ -7,12 +7,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import * as libre from 'libreoffice-convert';
+import { getUploadsDir } from '../../common/utils/paths.util';
 
 const libreConvert = promisify(libre.convert);
 
 @Injectable()
 export class ActivityEvidencesService {
-	private readonly uploadDir = path.join(process.cwd(), 'uploads');
+	private readonly uploadDir = getUploadsDir();
 
 	constructor(
 		@InjectRepository(ActivityEvidence)
