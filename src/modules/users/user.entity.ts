@@ -62,7 +62,7 @@ export class User {
 	@BeforeInsert()
 	@BeforeUpdate()
 	async hashPassword() {
-		if (!this.password) {
+		if (!this.password || /^\$2[abxy]\$\d{2}\$/.test(this.password)) {
 			return;
 		}
 		this.password = await hash(this.password, 10);

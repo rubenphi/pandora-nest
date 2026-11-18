@@ -66,11 +66,17 @@ export class UsersService {
 		const userToReturn = await this.userRepository
 			.createQueryBuilder('user')
 			.leftJoinAndSelect('user.institute', 'institute')
-			.where({ code })
+			.where('user.code = :code OR user.email = :code', { code })
 			.addSelect('user.password')
 			.getOne();
 
-		if (user && user.institute.id !== userToReturn.institute.id) {
+		if (
+			user &&
+			userToReturn &&
+			user.institute &&
+			userToReturn.institute &&
+			user.institute.id !== userToReturn.institute.id
+		) {
 			throw new ForbiddenException('You are not allowed to see this user');
 		}
 

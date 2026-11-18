@@ -5,6 +5,7 @@ import { User } from '../modules/users/user.entity';
 import { Institute } from '../modules/institutes/institute.entity';
 import { Role } from '../modules/auth/roles.decorator';
 import { SurveyTemplate } from '../modules/surveys/survey-template.entity';
+import { compare, hash } from 'bcryptjs';
 
 @Injectable()
 export class AppInitializerService implements OnApplicationBootstrap {
@@ -22,11 +23,48 @@ export class AppInitializerService implements OnApplicationBootstrap {
 	async onApplicationBootstrap() {
 		try {
 			const count = await this.userRepository.count();
+			this.logger.log(`Total usuarios en base de datos: ${count}`);
+
 			if (count === 0) {
 				this.logger.log(
 					'Base de datos vacía detectada. Inicializando datos por defecto para primer uso...',
 				);
 				await this.seedInitialData();
+			} else {
+				// Asegurar que el usuario ADM001 tenga contraseña 'admin' válida aunque haya sido doble-hasheada previamente
+				const admin = await this.userRepository
+					.createQueryBuilder('user')
+					.where('user.code = :code OR user.email = :email', {
+						code: 'ADM001',
+						email: 'admin@pandora.local',
+					})
+					.addSelect('user.password')
+					.getOne();
+
+				if (admin) {
+					const isPasswordValid = await compare('admin', admin.password);
+					if (!isPasswordValid) {
+						this.logger.log('Restableciendo contraseña para administrador ADM001...');
+						const fixedHash = await hash('admin', 10);
+						await this.userRepository.update(admin.id, { password: fixedHash });
+					}
+				} else {
+					// En caso de usar la base de datos de PC donde el admin original tiene otra clave personal,
+					// asegurar que ADM001 / admin siempre esté disponible como usuario de acceso rápido:
+					const institute = await this.instituteRepository.findOne({ where: {} });
+					const newAdmin = this.userRepository.create({
+						name: 'Administrador',
+						lastName: 'Pandora',
+						email: 'admin@pandora.local',
+						code: 'ADM001',
+						password: 'admin',
+						rol: Role.Admin,
+						exist: true,
+						institute: institute || undefined,
+					});
+					await this.userRepository.save(newAdmin);
+					this.logger.log('Usuario ADM001 asegurado en la base de datos.');
+				}
 			}
 		} catch (error) {
 			this.logger.error(

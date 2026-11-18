@@ -35,6 +35,7 @@ import { AppInitializerService } from './database/app-initializer.service';
 import { User } from './modules/users/user.entity';
 import { Institute } from './modules/institutes/institute.entity';
 import { SurveyTemplate } from './modules/surveys/survey-template.entity';
+import { createNodeSqliteShim } from './database/node-sqlite.shim';
 
 @Module({
 	imports: [
@@ -46,7 +47,7 @@ import { SurveyTemplate } from './modules/surveys/survey-template.entity';
 			imports: [ConfigModule],
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => {
-				const dbType = (configService.get<string>('DB_TYPE') || 'postgres').toLowerCase();
+				const dbType = (configService.get<string>('DB_TYPE') || process.env.DB_TYPE || 'sqlite').toLowerCase();
 
 				if (dbType === 'sqlite') {
 					const baseDataDir = configService.get<string>('APP_DATA_DIR') || configService.get<string>('DATA_DIR') || getDataDir();
@@ -56,9 +57,8 @@ import { SurveyTemplate } from './modules/surveys/survey-template.entity';
 
 					let driver: any = undefined;
 					try {
-						require('sqlite3');
+						driver = require('sqlite3');
 					} catch (_) {
-						const { createNodeSqliteShim } = require('./database/node-sqlite.shim');
 						driver = createNodeSqliteShim();
 					}
 
@@ -118,6 +118,6 @@ import { SurveyTemplate } from './modules/surveys/survey-template.entity';
 export class AppModule {
 	static port: number | string;
 	constructor(private readonly _configService: ConfigService) {
-		AppModule.port = this._configService.get(Configuration.PORT);
+		AppModule.port = this._configService.get(Configuration.PORT) || process.env.PORT || 3000;
 	}
 }

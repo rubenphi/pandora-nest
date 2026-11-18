@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { existsSync, mkdirSync, copyFileSync } from 'fs';
+import { existsSync, mkdirSync, copyFileSync, statSync, readdirSync } from 'fs';
 
 /**
  * Obtiene la ruta persistente base del sistema.
@@ -30,6 +30,27 @@ export function getPersistentBaseDir(): string {
  * (para pruebas), se copia a la ruta persistente una única vez sin riesgo
  * de ser sobreescrita en futuras actualizaciones.
  */
+function findPreloadedDb(dir: string, depth = 0): string | null {
+	if (depth > 3 || !existsSync(dir)) return null;
+	try {
+		const entries = readdirSync(dir, { withFileTypes: true });
+		for (const entry of entries) {
+			const fullPath = join(dir, entry.name);
+			if (entry.isDirectory() && entry.name !== 'pandora_storage') {
+				const found = findPreloadedDb(fullPath, depth + 1);
+				if (found) return found;
+			} else if (entry.isFile() && entry.name === 'pandora.sqlite') {
+				try {
+					if (statSync(fullPath).size > 10000000) {
+						return fullPath;
+					}
+				} catch (_) {}
+			}
+		}
+	} catch (_) {}
+	return null;
+}
+
 export function getDataDir(): string {
 	const baseDir = getPersistentBaseDir();
 	const persistentDataDir =
@@ -41,20 +62,55 @@ export function getDataDir(): string {
 
 	const targetDb = join(persistentDataDir, 'pandora.sqlite');
 
-	// Si aún no existe la base de datos persistente, verificar si se incluyó una precargada (para pruebas)
-	if (!existsSync(targetDb)) {
-		const seedCandidates = [
-			join(process.cwd(), 'data', 'pandora.sqlite'),
-			join(process.cwd(), 'seed', 'pandora.sqlite'),
-		];
-		for (const candidate of seedCandidates) {
-			if (existsSync(candidate) && candidate !== targetDb) {
-				try {
-					copyFileSync(candidate, targetDb);
-					break;
-				} catch (_) {}
-			}
+	// Ubicaciones posibles de la base de datos precargada (data/pandora.sqlite):
+	// Capacitor Node.js extrae los assets en context.getFilesDir() / 'capawesome_nodejs' / 'nodejs-project'
+	const seedCandidates = [
+		join(__dirname, 'data', 'pandora.sqlite'),
+		join(__dirname, '..', 'data', 'pandora.sqlite'),
+		join(baseDir, 'capawesome_nodejs', 'nodejs-project', 'data', 'pandora.sqlite'),
+		join(baseDir, 'public', 'nodejs', 'data', 'pandora.sqlite'),
+		join(baseDir, 'nodejs-project', 'data', 'pandora.sqlite'),
+		join(process.cwd(), 'data', 'pandora.sqlite'),
+		join(process.cwd(), 'seed', 'pandora.sqlite'),
+	];
+
+	// Si no se encuentra en las rutas directas, buscar recursivamente en baseDir
+	let foundCandidate: string | null = null;
+	for (const candidate of seedCandidates) {
+		if (existsSync(candidate) && candidate !== targetDb) {
+			foundCandidate = candidate;
+			break;
 		}
+	}
+
+	if (!foundCandidate) {
+		foundCandidate = findPreloadedDb(baseDir);
+	}
+
+	if (foundCandidate) {
+		try {
+			const candidateStat = statSync(foundCandidate);
+			const targetExists = existsSync(targetDb);
+			const targetSize = targetExists ? statSync(targetDb).size : 0;
+			console.log(
+				`[Pandora Paths] Base de datos precargada detectada en: ${foundCandidate} (${candidateStat.size} bytes). Target actual: ${targetDb} (${targetSize} bytes)`,
+			);
+
+			// Copiar si targetDb no existe, O si targetDb es la BD vacía inicial (< 5MB) y candidate tiene data completa (> 10MB)
+			if (!targetExists || (targetSize < 5000000 && candidateStat.size > 10000000)) {
+				console.log(
+					`[Pandora Paths] Copiando base de datos con toda la data (${candidateStat.size} bytes) a ${targetDb}...`,
+				);
+				copyFileSync(foundCandidate, targetDb);
+				console.log(`[Pandora Paths] Base de datos con toda la data copiada con éxito.`);
+			}
+		} catch (e) {
+			console.error('[Pandora Paths] Error al copiar base de datos precargada:', e);
+		}
+	} else {
+		console.log(
+			'[Pandora Paths] No se encontró base de datos precargada. Se usará almacenamiento persistente.',
+		);
 	}
 
 	return persistentDataDir;

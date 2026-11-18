@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,
-			secretOrKey: configService.get<string>('HASH_KEY'), // Get HASH_KEY from ConfigService
+			secretOrKey: configService.get<string>('HASH_KEY') || process.env.HASH_KEY || 'pandora-key-hash',
 		});
 	}
 

@@ -14,7 +14,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigMo
 			imports: [ConfigModule], // Import ConfigModule
 			inject: [ConfigService], // Inject ConfigService
 			useFactory: async (configService: ConfigService) => ({
-				secret: configService.get<string>('HASH_KEY'), // Get HASH_KEY from ConfigService
+				secret: configService.get<string>('HASH_KEY') || process.env.HASH_KEY || 'pandora-key-hash',
 				signOptions: { expiresIn: '604800s' },
 			}),
 		}),

@@ -32,21 +32,34 @@ export class AuthController {
 	@Get('server-ip')
 	getServerIp() {
 		const interfaces = os.networkInterfaces();
+		let fallbackIp = '127.0.0.1';
+
 		for (const devName in interfaces) {
 			const iface = interfaces[devName];
+			if (!iface) continue;
 
 			for (let i = 0; i < iface.length; i++) {
 				const alias = iface[i];
-				if (
-					alias.family === 'IPv4' &&
-					alias.address !== '127.0.0.1' &&
-					!alias.internal
-				) {
-					return { ip: alias.address };
+				const isIpv4 =
+					alias.family === 'IPv4' ||
+					(alias.family as any) === 4 ||
+					(alias.family as any) === '4';
+
+				if (isIpv4 && alias.address !== '127.0.0.1' && !alias.internal) {
+					// En Android, wlan0 es Wi-Fi y ap0 / rndis0 / wlan1 suelen ser el punto de acceso (hotspot)
+					if (
+						devName.startsWith('wlan') ||
+						devName.startsWith('ap') ||
+						devName.startsWith('eth') ||
+						devName.startsWith('en')
+					) {
+						return { ip: alias.address, interface: devName };
+					}
+					fallbackIp = alias.address;
 				}
 			}
 		}
-		return { ip: 'localhost' };
+		return { ip: fallbackIp };
 	}
 
 	@Get('server-time')
