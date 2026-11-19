@@ -17,36 +17,31 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { getWwwDir } from './common/utils/paths.util';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.enableCors({ origin: '*' });
 
 	// Servir frontend web estático si existe (para acceso desde otros dispositivos vía navegador)
-	const wwwCandidates = [
-		join(__dirname, 'www'),
-		join(__dirname, '..', 'www'),
-		join(process.cwd(), 'www'),
-	];
+	const www = getWwwDir();
+	if (www && existsSync(join(www, 'index.html'))) {
+		console.log(`[Pandora Web] Sirviendo frontend web para otros dispositivos desde: ${www}`);
+		app.use(express.static(www));
+		app.use((req: any, res: any, next: any) => {
+			const isDocOrFile = req.path.startsWith('/api') || req.path.startsWith('/files');
+			const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html');
 
-	for (const www of wwwCandidates) {
-		if (existsSync(www) && existsSync(join(www, 'index.html'))) {
-			console.log(`[Pandora Web] Sirviendo frontend web para otros dispositivos desde: ${www}`);
-			app.use(express.static(www));
-			app.use((req: any, res: any, next: any) => {
-				const isDocOrFile = req.path.startsWith('/api') || req.path.startsWith('/files');
-				const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html');
-
-				// Si el navegador solicita una página HTML (navegación SPA directa o refresco),
-				// devolver siempre index.html para que el router de Vue maneje la vista en el cliente.
-				if (req.method === 'GET' && acceptsHtml && !isDocOrFile) {
-					const indexPath = join(www, 'index.html');
-					return res.sendFile(indexPath);
-				}
-				next();
-			});
-			break;
-		}
+			// Si es la ruta raíz '/' o el navegador solicita una página HTML (navegación SPA directa o refresco),
+			// devolver siempre index.html para que el router de Vue maneje la vista en el cliente.
+			if (req.method === 'GET' && (req.path === '/' || req.path === '' || acceptsHtml) && !isDocOrFile) {
+				const indexPath = join(www, 'index.html');
+				return res.sendFile(indexPath);
+			}
+			next();
+		});
+	} else {
+		console.warn('[Pandora Web] AVISO: No se encontró la carpeta www con index.html. Solo se atenderán llamadas API.');
 	}
 
 	const swaggerOptions = new DocumentBuilder()

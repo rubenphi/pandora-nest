@@ -1,5 +1,6 @@
 # compiled output
 /dist
+/www
 /node_modules
 #ignore uploads folder 
 /uploads
@@ -12,6 +13,14 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+
+pandora_storage/*
+
+# Artefactos compilados del backend y web embebida
+public/nodejs/www/
+public/nodejs/index.js
+public/nodejs/data/*.sqlite
+!public/nodejs/data/.gitkeep
 
 # OS
 .DS_Store

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { join, isAbsolute } from 'path';
+import { existsSync, mkdirSync, statSync } from 'fs';
 
 import { CoursesModule } from './modules/courses/courses.module';
 import { GroupsModule } from './modules/groups/groups.module';
@@ -30,7 +30,7 @@ import { PollsModule } from './modules/polls/polls.module';
 import { SurveysModule } from './modules/surveys/surveys.module';
 import { ActivityEvidencesModule } from './modules/activity-evidences/activity-evidences.module';
 import { entities } from './database/entities';
-import { getDataDir } from './common/utils/paths.util';
+import { getDataDir, isValidSqlite } from './common/utils/paths.util';
 import { AppInitializerService } from './database/app-initializer.service';
 import { User } from './modules/users/user.entity';
 import { Institute } from './modules/institutes/institute.entity';
@@ -51,8 +51,14 @@ import { createNodeSqliteShim } from './database/node-sqlite.shim';
 
 				if (dbType === 'sqlite') {
 					const baseDataDir = configService.get<string>('APP_DATA_DIR') || configService.get<string>('DATA_DIR') || getDataDir();
-					const dbPath = configService.get<string>('DB_DATABASE') || join(baseDataDir, 'pandora.sqlite');
-					const dbExists = existsSync(dbPath);
+					let dbPath = configService.get<string>('DB_DATABASE') || join(baseDataDir, 'pandora.sqlite');
+					if (!isAbsolute(dbPath)) {
+						dbPath = join(process.cwd(), dbPath);
+					}
+					if (!isValidSqlite(dbPath)) {
+						dbPath = join(baseDataDir, 'pandora.sqlite');
+					}
+					const dbExists = isValidSqlite(dbPath);
 					const synchronize = configService.get<string>('DB_SYNCHRONIZE') === 'true' || !dbExists;
 
 					let driver: any = undefined;

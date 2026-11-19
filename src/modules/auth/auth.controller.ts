@@ -5,12 +5,15 @@ import { User as UserEntity } from '../users/user.entity';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto';
 import { LocalAuthGuard } from './guards';
-import * as os from 'os';
+import { NetworkDiscoveryService } from '../../common/services/network-discovery.service';
 
 @ApiTags('Auth Routes')
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(
+		private readonly authService: AuthService,
+		private readonly networkDiscoveryService: NetworkDiscoveryService,
+	) {}
 	@UseGuards(LocalAuthGuard)
 	@Post('login')
 	async login(@Body() loginDto: LoginDto, @User() user: UserEntity) {
@@ -31,35 +34,7 @@ export class AuthController {
 
 	@Get('server-ip')
 	getServerIp() {
-		const interfaces = os.networkInterfaces();
-		let fallbackIp = '127.0.0.1';
-
-		for (const devName in interfaces) {
-			const iface = interfaces[devName];
-			if (!iface) continue;
-
-			for (let i = 0; i < iface.length; i++) {
-				const alias = iface[i];
-				const isIpv4 =
-					alias.family === 'IPv4' ||
-					(alias.family as any) === 4 ||
-					(alias.family as any) === '4';
-
-				if (isIpv4 && alias.address !== '127.0.0.1' && !alias.internal) {
-					// En Android, wlan0 es Wi-Fi y ap0 / rndis0 / wlan1 suelen ser el punto de acceso (hotspot)
-					if (
-						devName.startsWith('wlan') ||
-						devName.startsWith('ap') ||
-						devName.startsWith('eth') ||
-						devName.startsWith('en')
-					) {
-						return { ip: alias.address, interface: devName };
-					}
-					fallbackIp = alias.address;
-				}
-			}
-		}
-		return { ip: fallbackIp };
+		return this.networkDiscoveryService.getServerNetworkInfo(process.env.PORT || 3000);
 	}
 
 	@Get('server-time')
