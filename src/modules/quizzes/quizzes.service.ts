@@ -246,7 +246,6 @@ export class QuizzesService {
 					'answers.option',
 					'answers.question',
 					'answers.group',
-					'answers.option',
 					'answers.user',
 					'institute',
 				],
@@ -258,6 +257,28 @@ export class QuizzesService {
 			throw new ForbiddenException('You are not allowed to see this quiz');
 		}
 		await this.courseAccessService.assertQuizAccess(id, user);
+
+		const isStaff =
+			user.rol === Role.Admin ||
+			user.rol === Role.Teacher ||
+			user.rol === Role.Director ||
+			user.rol === Role.Coordinator;
+
+		if (!isStaff) {
+			// Para estudiantes, ocultar puntos y si fue correcta en preguntas que aún siguen abiertas
+			return quiz.answers.map((ans) => {
+				if (ans.question?.available !== false) {
+					return {
+						...ans,
+						points: 0,
+						option: ans.option
+							? ({ id: ans.option.id, identifier: ans.option.identifier } as Option)
+							: null,
+					} as Answer;
+				}
+				return ans;
+			});
+		}
 		return quiz.answers;
 	}
 
@@ -271,7 +292,6 @@ export class QuizzesService {
 					'answers.question',
 					'answers.group',
 					'answers.user',
-					'answers.option',
 					'institute',
 				],
 			})
@@ -283,6 +303,12 @@ export class QuizzesService {
 		}
 		await this.courseAccessService.assertQuizAccess(id, user);
 
+		const isStaff =
+			user.rol === Role.Admin ||
+			user.rol === Role.Teacher ||
+			user.rol === Role.Director ||
+			user.rol === Role.Coordinator;
+
 		const resultQuiz = [];
 
 		if (quiz.quizType === 'individual') {
@@ -291,12 +317,16 @@ export class QuizzesService {
 					res[value.user.id] = { user: value.user, points: 0 };
 					resultQuiz.push(res[value.user.id]);
 				}
-				if (typeof value.points === 'number') {
-					value.points = value.points;
-				} else {
-					value.points = parseFloat(value.points);
+				// Para estudiantes, solo sumar puntos de preguntas CERRADAS (available === false)
+				if (isStaff || value.question?.available === false) {
+					let pts = 0;
+					if (typeof value.points === 'number') {
+						pts = value.points;
+					} else {
+						pts = parseFloat(value.points) || 0;
+					}
+					res[value.user.id].points += pts;
 				}
-				res[value.user.id].points += value.points;
 
 				return res;
 			}, {});
@@ -308,12 +338,16 @@ export class QuizzesService {
 					res[value.group.id] = { group: value.group, points: 0 };
 					resultQuiz.push(res[value.group.id]);
 				}
-				if (typeof value.points === 'number') {
-					value.points = value.points;
-				} else {
-					value.points = parseFloat(value.points);
+				// Para estudiantes, solo sumar puntos de preguntas CERRADAS (available === false)
+				if (isStaff || value.question?.available === false) {
+					let pts = 0;
+					if (typeof value.points === 'number') {
+						pts = value.points;
+					} else {
+						pts = parseFloat(value.points) || 0;
+					}
+					res[value.group.id].points += pts;
 				}
-				res[value.group.id].points += value.points;
 
 				return res;
 			}, {});
@@ -496,7 +530,17 @@ export class QuizzesService {
 		}
 		await this.courseAccessService.assertQuizAccess(id, user);
 
-		const points = quiz.questions.reduce((res, value) => res + value.points, 0);
+		const isStaff =
+			user.rol === Role.Admin ||
+			user.rol === Role.Teacher ||
+			user.rol === Role.Director ||
+			user.rol === Role.Coordinator;
+
+		const questionsToCount = isStaff
+			? quiz.questions
+			: quiz.questions.filter((q) => q.available === false);
+
+		const points = questionsToCount.reduce((res, value) => res + value.points, 0);
 
 		return { points };
 	}

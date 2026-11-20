@@ -289,6 +289,28 @@ export class QuestionsService {
 			throw new ForbiddenException('You are not allowed to see this question');
 		}
 		await this.courseAccessService.assertQuestionAccess(id, user);
+
+		const isStaff =
+			user.rol === Role.Admin ||
+			user.rol === Role.Teacher ||
+			user.rol === Role.Director ||
+			user.rol === Role.Coordinator;
+
+		if (!isStaff && question.available !== false) {
+			// Si la pregunta sigue abierta, los estudiantes no pueden ver las respuestas correctas ni puntos
+			return question.answers
+				.map((ans) => {
+					return {
+						...ans,
+						points: 0,
+						option: ans.option
+							? ({ id: ans.option.id, identifier: ans.option.identifier } as Option)
+							: null,
+					} as Answer;
+				})
+				.sort(comparar);
+		}
+
 		//order Answers by created (DESC) and points (ASC)
 		return question.answers.sort(comparar);
 	}

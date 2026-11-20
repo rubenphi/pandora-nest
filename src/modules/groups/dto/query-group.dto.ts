@@ -39,6 +39,17 @@ export class QueryGroupDto {
 	@IsInt()
 	readonly year?: number;
 
+	@ApiProperty({
+		description: 'Filter group by active status',
+		required: false,
+	})
+	@IsOptional()
+	@Transform(({ value }) => {
+		return [true, 'enabled', 'true', 1, '1'].indexOf(value) > -1;
+	})
+	@IsBoolean()
+	readonly active?: boolean;
+
 	@IsOptional()
 	@Transform(({ value }) => {
 		return [true, 'enabled', 'true'].indexOf(value) > -1;

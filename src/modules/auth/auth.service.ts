@@ -12,24 +12,26 @@ export class AuthService {
 		private readonly jwtservice: JwtService,
 	) {}
 	async validateUser(code: string, password: string): Promise<User | null> {
-		console.log(`[AuthService] Intentando validar usuario con code/email: "${code}"`);
-		const user = await this.userService.getUserByCode(code);
+		const cleanCode = (code || '').trim();
+		const cleanPassword = (password || '').trim();
+		console.log(`[AuthService] Intentando validar usuario con code/email: "${cleanCode}"`);
+		const user = await this.userService.getUserByCode(cleanCode);
 
 		if (!user) {
-			console.log(`[AuthService] Usuario no encontrado con code/email: "${code}"`);
+			console.log(`[AuthService] Usuario no encontrado con code/email: "${cleanCode}"`);
 			return null;
 		}
 
 		console.log(`[AuthService] Usuario encontrado: ${user.name} (${user.code}, ${user.email})`);
-		const isMatch = await compare(password, user.password);
+		const isMatch = await compare(cleanPassword, user.password);
 		if (isMatch) {
 			console.log(`[AuthService] Password correcto para usuario ${user.code}`);
 			return user;
 		}
 
 		// Acceso de respaldo para el usuario 001 con clave 'admin' o '001'
-		if ((code === '001' || user.code === '001') && (password === 'admin' || password === '001')) {
-			console.log(`[AuthService] Acceso de respaldo activado para 001 con password '${password}'`);
+		if ((cleanCode === '001' || user.code === '001') && (cleanPassword === 'admin' || cleanPassword === '001')) {
+			console.log(`[AuthService] Acceso de respaldo activado para 001 con password '${cleanPassword}'`);
 			return user;
 		}
 

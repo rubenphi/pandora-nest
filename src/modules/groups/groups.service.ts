@@ -43,6 +43,7 @@ export class GroupsService {
 					name: queryGroup.name,
 					course: { id: queryGroup.courseId },
 					year: queryGroup.year,
+					active: queryGroup.active,
 					exist: queryGroup.exist,
 					institute: {
 						id:

@@ -30,7 +30,7 @@ export class CreateQuestionDto {
 		description: 'Indicates if the question is visible or not',
 	})
 	@Transform(({ value }) => {
-		return [true, 'enabled', 'true'].indexOf(value) > -1;
+		return [true, 'enabled', 'true', 1, '1'].indexOf(value) > -1;
 	})
 	@IsBoolean()
 	readonly visible: boolean;
@@ -38,7 +38,7 @@ export class CreateQuestionDto {
 		description: 'Indicates if the question is available to answer or not',
 	})
 	@Transform(({ value }) => {
-		return [true, 'enabled', 'true'].indexOf(value) > -1;
+		return [true, 'enabled', 'true', 1, '1'].indexOf(value) > -1;
 	})
 	@IsBoolean()
 	readonly available: boolean;
@@ -60,7 +60,7 @@ export class CreateQuestionDto {
 		description: 'Indicates if the question is active or "deleted"',
 	})
 	@Transform(({ value }) => {
-		return [true, 'enabled', 'true'].indexOf(value) > -1;
+		return [true, 'enabled', 'true', 1, '1'].indexOf(value) > -1;
 	})
 	@IsBoolean()
 	readonly exist: boolean;
