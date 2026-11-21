@@ -81,7 +81,10 @@ export class MaterialsService {
 	}
 
 	async findOne(id: number): Promise<Material> {
-		const material = await this.materialRepository.findOne({ where: { id } });
+		const material = await this.materialRepository.findOne({
+			where: { id },
+			relations: ['lesson', 'lesson.course', 'lesson.area', 'lesson.period', 'institute'],
+		});
 		if (!material) {
 			throw new NotFoundException(`Material with ID ${id} not found`);
 		}

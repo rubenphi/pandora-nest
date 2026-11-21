@@ -546,12 +546,21 @@ export class CoursesService {
 		}
 
 		if (active === true) {
-			course.groups =  course.groups.filter((group) => group.active === true);
+			course.groups = course.groups.filter((group) => group.active === true);
+		} else if (active === false) {
+			course.groups = course.groups.filter((group) => group.active === false);
 		}
 
-		if (active === false) {
-			course.groups = course.groups.filter((group) => group.active === true);
-		}
+		// Filter usersToGroup within each group to only keep active members matching the year
+		course.groups.forEach((group) => {
+			if (group.usersToGroup) {
+				group.usersToGroup = group.usersToGroup.filter((utg) => {
+					const isActive = utg.active === true;
+					const matchesYear = year ? utg.year === Number(year) : true;
+					return isActive && matchesYear;
+				});
+			}
+		});
 
 		return course.groups;
 	}

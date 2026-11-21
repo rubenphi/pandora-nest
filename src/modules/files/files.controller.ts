@@ -104,6 +104,42 @@ export class FilesController {
 					contentType = 'audio/wav';
 					contentDisposition = 'inline';
 					break;
+				case '.docx':
+					contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+					contentDisposition = 'attachment';
+					break;
+				case '.doc':
+					contentType = 'application/msword';
+					contentDisposition = 'attachment';
+					break;
+				case '.xlsx':
+					contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+					contentDisposition = 'attachment';
+					break;
+				case '.xls':
+					contentType = 'application/vnd.ms-excel';
+					contentDisposition = 'attachment';
+					break;
+				case '.pptx':
+					contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+					contentDisposition = 'attachment';
+					break;
+				case '.ppt':
+					contentType = 'application/vnd.ms-powerpoint';
+					contentDisposition = 'attachment';
+					break;
+				case '.zip':
+					contentType = 'application/zip';
+					contentDisposition = 'attachment';
+					break;
+				case '.rar':
+					contentType = 'application/x-rar-compressed';
+					contentDisposition = 'attachment';
+					break;
+				case '.txt':
+					contentType = 'text/plain';
+					contentDisposition = 'inline';
+					break;
 				// Add more cases for other viewable types if needed
 			}
 
