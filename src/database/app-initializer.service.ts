@@ -1,6 +1,6 @@
 import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '../modules/users/user.entity';
 import { Institute } from '../modules/institutes/institute.entity';
 import { Role } from '../modules/auth/roles.decorator';
@@ -12,6 +12,7 @@ export class AppInitializerService implements OnApplicationBootstrap {
 	private readonly logger = new Logger(AppInitializerService.name);
 
 	constructor(
+		private readonly dataSource: DataSource,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Institute)
@@ -71,6 +72,49 @@ export class AppInitializerService implements OnApplicationBootstrap {
 				'Error al verificar inicialización de la base de datos:',
 				error,
 			);
+		}
+
+		try {
+			await this.ensureQuizScansTable();
+		} catch (error) {
+			this.logger.warn('No se pudo verificar la tabla quiz_scans:', error);
+		}
+	}
+
+	private async ensureQuizScansTable() {
+		const isPostgres = this.dataSource.options.type === 'postgres';
+		if (isPostgres) {
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "quiz_scans" (
+					"id" SERIAL PRIMARY KEY,
+					"quizId" integer NOT NULL,
+					"userId" integer NOT NULL,
+					"section" integer NOT NULL DEFAULT 1,
+					"imageUrl" varchar(255) NOT NULL,
+					"filename" varchar(255) NOT NULL,
+					"instituteId" integer,
+					"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+					CONSTRAINT "FK_quiz_scans_quiz" FOREIGN KEY ("quizId") REFERENCES "quizzes" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_quiz_scans_user" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_quiz_scans_institute" FOREIGN KEY ("instituteId") REFERENCES "institute" ("id") ON DELETE CASCADE
+				);
+			`);
+		} else {
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "quiz_scans" (
+					"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					"quizId" integer NOT NULL,
+					"userId" integer NOT NULL,
+					"section" integer NOT NULL DEFAULT 1,
+					"imageUrl" varchar(255) NOT NULL,
+					"filename" varchar(255) NOT NULL,
+					"instituteId" integer,
+					"createdAt" datetime NOT NULL DEFAULT (datetime('now')),
+					CONSTRAINT "FK_quiz_scans_quiz" FOREIGN KEY ("quizId") REFERENCES "quizzes" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_quiz_scans_user" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_quiz_scans_institute" FOREIGN KEY ("instituteId") REFERENCES "institute" ("id") ON DELETE CASCADE
+				);
+			`);
 		}
 	}
 

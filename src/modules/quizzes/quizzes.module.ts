@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Quiz } from './quiz.entity';
+import { QuizScan } from './quiz-scan.entity';
 import { QuizzesController } from './quizzes.controller';
 import { QuizzesService } from './quizzes.service';
+import { FilesModule } from '../files/files.module';
 
 import { Lesson } from '../lessons/lesson.entity';
 import { Institute } from '../institutes/institute.entity';
@@ -30,7 +32,9 @@ import { CourseAccessModule } from 'src/common/authorization/course-access.modul
 			Answer, // New entity
 			Option, // New entity
 			Grade,
+			QuizScan,
 		]),
+		FilesModule,
 		ActivitiesModule,
 		MaterialsModule,
 		CourseAccessModule,

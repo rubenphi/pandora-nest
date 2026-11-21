@@ -20,6 +20,7 @@ import { PollVote } from '../modules/polls/poll-vote.entity';
 import { Poll } from '../modules/polls/poll.entity';
 import { Question } from '../modules/questions/question.entity';
 import { Quiz } from '../modules/quizzes/quiz.entity';
+import { QuizScan } from '../modules/quizzes/quiz-scan.entity';
 import { ReinforcementGradableItem } from '../modules/reinforcement/reinforcement-gradable-item.entity';
 import { Reinforcement } from '../modules/reinforcement/reinforcement.entity';
 import { StudentCriterionPermission } from '../modules/student-criterion-scores/student-criterion-permission.entity';
@@ -54,6 +55,7 @@ export const entities = [
 	Poll,
 	Question,
 	Quiz,
+	QuizScan,
 	ReinforcementGradableItem,
 	Reinforcement,
 	StudentCriterionPermission,

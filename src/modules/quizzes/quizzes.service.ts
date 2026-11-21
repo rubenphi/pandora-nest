@@ -19,6 +19,8 @@ import {
 } from 'typeorm';
 
 import { Quiz } from './quiz.entity';
+import { QuizScan } from './quiz-scan.entity';
+import { FilesService } from '../files/files.service';
 import {
 	CreateQuizDto,
 	UpdateQuizDto,
@@ -69,6 +71,9 @@ export class QuizzesService {
 		private readonly optionRepository: Repository<Option>,
 		@InjectRepository(Grade)
 		private readonly gradeRepository: Repository<Grade>,
+		@InjectRepository(QuizScan)
+		private readonly quizScanRepository: Repository<QuizScan>,
+		private readonly filesService: FilesService,
 		private readonly activitiesService: ActivitiesService,
 		private readonly materialsService: MaterialsService,
 		private readonly courseAccessService: CourseAccessService,
@@ -91,18 +96,31 @@ export class QuizzesService {
 					category: queryQuiz.category,
 					lesson: {
 						id: queryQuiz.lessonId,
-						course: { id: queryQuiz.courseId },
-						period: { id: queryQuiz.periodId },
+						course: queryQuiz.courseId ? { id: queryQuiz.courseId } : undefined,
+						area: queryQuiz.areaId ? { id: queryQuiz.areaId } : undefined,
+						period: queryQuiz.periodId ? { id: queryQuiz.periodId } : undefined,
 						year: queryQuiz.year,
 						exist: queryQuiz.exist,
 					},
-					institute: { id: queryQuiz.instituteId },
+					institute: queryQuiz.instituteId ? { id: queryQuiz.instituteId } : undefined,
 				},
-				relations: ['lesson', 'institute', 'lesson.course', 'lesson.period'],
+				relations: [
+					'lesson',
+					'institute',
+					'lesson.course',
+					'lesson.period',
+					'lesson.area',
+				],
 			});
 		} else {
 			return await this.quizRepository.find({
-				relations: ['lesson', 'institute', 'lesson.course', 'lesson.period'],
+				relations: [
+					'lesson',
+					'institute',
+					'lesson.course',
+					'lesson.period',
+					'lesson.area',
+				],
 			});
 		}
 	}
@@ -580,5 +598,112 @@ export class QuizzesService {
 		}
 
 		return quizzesWithPendingGrading;
+	}
+
+	async saveScan(
+		quizId: number,
+		data: {
+			userId: number;
+			section?: number;
+			image?: string;
+			studentCode?: string;
+			instituteId?: number;
+		},
+	): Promise<QuizScan> {
+		if (!data.userId) {
+			throw new BadRequestException(
+				'userId es requerido para guardar el escaneo de la hoja',
+			);
+		}
+
+		const quiz = await this.quizRepository.findOne({
+			where: { id: quizId },
+			relations: ['institute'],
+		});
+		if (!quiz) {
+			throw new NotFoundException(`Cuestionario ${quizId} no encontrado`);
+		}
+
+		const section = data.section ? Number(data.section) : 1;
+
+		let scan = await this.quizScanRepository.findOne({
+			where: {
+				quizId,
+				userId: data.userId,
+				section,
+			},
+		});
+
+		// Si ya existía un escaneo previo para este estudiante y sección, eliminar el archivo anterior del disco
+		if (scan?.filename) {
+			this.filesService.deleteTestScan(String(quizId), scan.filename);
+		}
+		if (data.studentCode) {
+			this.filesService.deleteStudentScans(
+				String(quizId),
+				String(data.studentCode),
+				section,
+			);
+		}
+		if (data.userId) {
+			this.filesService.deleteStudentScans(
+				String(quizId),
+				String(data.userId),
+				section,
+			);
+		}
+
+		const fileResult = await this.filesService.saveTestScan(
+			String(quizId),
+			undefined,
+			{
+				image: data.image,
+				studentCode: data.studentCode,
+				studentId: data.userId,
+				section,
+			},
+		);
+
+		if (!scan) {
+			scan = this.quizScanRepository.create({
+				quizId,
+				userId: data.userId,
+				section,
+				imageUrl: fileResult.url,
+				filename: fileResult.filename,
+				instituteId: data.instituteId || quiz.institute?.id || null,
+			});
+		} else {
+			scan.imageUrl = fileResult.url;
+			scan.filename = fileResult.filename;
+			if (data.instituteId) {
+				scan.instituteId = data.instituteId;
+			}
+		}
+
+		return this.quizScanRepository.save(scan);
+	}
+
+	async getScans(quizId: number, userId?: number): Promise<QuizScan[]> {
+		try {
+			const whereClause: any = { quizId };
+			if (userId) {
+				whereClause.userId = userId;
+			}
+
+			return await this.quizScanRepository.find({
+				where: whereClause,
+				relations: ['user'],
+				order: {
+					section: 'ASC',
+					createdAt: 'DESC',
+				},
+			});
+		} catch (error) {
+			if (error?.message?.includes('no such table')) {
+				return [];
+			}
+			throw error;
+		}
 	}
 }

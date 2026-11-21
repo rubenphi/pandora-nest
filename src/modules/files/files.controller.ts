@@ -12,6 +12,7 @@ import {
 	Res,
 	Delete,
 	HttpStatus,
+	Body,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { createReadStream, existsSync } from 'fs';
@@ -57,6 +58,28 @@ export class FilesController {
 			filename: file.filename,
 			url: this.filesService.getUploadedFileUrl(file.filename),
 		}));
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Post('upload/test/:quizId')
+	@ApiOperation({ summary: 'Upload scanned OMR test sheet for a quiz' })
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadTestScan(
+		@Param('quizId') quizId: string,
+		@UploadedFile() file?: Express.Multer.File,
+		@Body() body?: any,
+	) {
+		return this.filesService.saveTestScan(quizId, file, body);
+	}
+
+	@Get('uploads/test/:quizId/:name')
+	getTestScanFile(
+		@Param('quizId') quizId: string,
+		@Param('name') name: string,
+		@Res({ passthrough: true }) res: Response,
+	): StreamableFile {
+		return this.filesService.getTestScanStream(quizId, name, res);
 	}
 
 	@Get('uploads/:name')

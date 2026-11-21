@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 import { Quiz } from './quiz.entity';
+import { QuizScan } from './quiz-scan.entity';
 import {
 	CreateQuizDto,
 	UpdateQuizDto,
@@ -145,5 +146,31 @@ export class QuizzesController {
 		@User() user: UserEntity,
 	): Promise<{ points: number }> {
 		return this.quizzesService.getPointsByQuiz(id, user);
+	}
+
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Post(':id/scans')
+	saveScan(
+		@Param('id') id: number,
+		@Body()
+		body: {
+			userId: number;
+			section?: number;
+			image?: string;
+			studentCode?: string;
+			instituteId?: number;
+		},
+	): Promise<QuizScan> {
+		return this.quizzesService.saveScan(id, body);
+	}
+
+	@Auth()
+	@Get(':id/scans')
+	getScans(
+		@Param('id') id: number,
+		@Query('userId') userId?: number,
+	): Promise<QuizScan[]> {
+		return this.quizzesService.getScans(id, userId ? Number(userId) : undefined);
 	}
 }

@@ -103,6 +103,8 @@ export class GradesService {
 			userId,
 			gradableId,
 			gradableType,
+			gradeType,
+			classification,
 			periodId,
 			gradeMin,
 			gradeMax,
@@ -112,11 +114,12 @@ export class GradesService {
 			year,
 		} = queryGrades;
 
-		const where: any = {
-			user: { id: userId },
-			period: { id: periodId },
-			institute: { id: instituteId },
-		};
+		const where: any = {};
+		if (userId) where.user = { id: userId };
+		if (periodId) where.period = { id: periodId };
+		if (instituteId) where.institute = { id: instituteId };
+		if (gradeType) where.gradeType = gradeType;
+		if (classification) where.classification = classification;
 
 		// Handle gradableId and gradableType filters
 		if (gradableId) {
@@ -132,50 +135,57 @@ export class GradesService {
 			const activityIds: number[] = [];
 
 			// Filter Quizzes
-			const quizWhere: any = { lesson: {} };
-			if (courseId) quizWhere.lesson.course = { id: courseId };
-			if (areaId) quizWhere.lesson.area = { id: areaId };
-			if (year) quizWhere.lesson.year = year;
+			if (!gradableType || gradableType === 'quiz') {
+				const quizWhere: any = { lesson: {} };
+				if (courseId) quizWhere.lesson.course = { id: courseId };
+				if (areaId) quizWhere.lesson.area = { id: areaId };
+				if (year) quizWhere.lesson.year = year;
+				if (periodId) quizWhere.lesson.period = { id: periodId };
 
-			const quizzes = await this.quizRepository.find({
-				where: quizWhere,
-				relations: ['lesson', 'lesson.course', 'lesson.area'],
-			});
-			quizIds.push(...quizzes.map((q) => q.id));
+				const quizzes = await this.quizRepository.find({
+					where: quizWhere,
+					relations: ['lesson', 'lesson.course', 'lesson.area', 'lesson.period'],
+				});
+				quizIds.push(...quizzes.map((q) => q.id));
+			}
 
 			// Filter Activities
-			const activityWhere: any = { lesson: {} };
-			if (courseId) activityWhere.lesson.course = { id: courseId };
-			if (areaId) activityWhere.lesson.area = { id: areaId };
-			if (year) activityWhere.lesson.year = year;
+			if (!gradableType || gradableType === 'activity') {
+				const activityWhere: any = { lesson: {} };
+				if (courseId) activityWhere.lesson.course = { id: courseId };
+				if (areaId) activityWhere.lesson.area = { id: areaId };
+				if (year) activityWhere.lesson.year = year;
+				if (periodId) activityWhere.lesson.period = { id: periodId };
 
-			const activities = await this.activityRepository.find({
-				where: activityWhere,
-				relations: ['lesson', 'lesson.course', 'lesson.area'],
-			});
-			activityIds.push(...activities.map((a) => a.id));
-
-			// Combine filters for gradableId and gradableType
-			const combinedGradableFilters: any[] = [];
-			if (quizIds.length > 0) {
-				combinedGradableFilters.push({
-					gradableType: 'quiz',
-					gradableId: In(quizIds),
+				const activities = await this.activityRepository.find({
+					where: activityWhere,
+					relations: ['lesson', 'lesson.course', 'lesson.area', 'lesson.period'],
 				});
-			}
-			if (activityIds.length > 0) {
-				combinedGradableFilters.push({
-					gradableType: 'activity',
-					gradableId: In(activityIds),
-				});
+				activityIds.push(...activities.map((a) => a.id));
 			}
 
-			if (combinedGradableFilters.length > 0) {
-				where.gradableId = In([...quizIds, ...activityIds]);
-				where.gradableType = In(['quiz', 'activity']);
+			if (gradableType === 'quiz') {
+				if (quizIds.length > 0) {
+					where.gradableId = In(quizIds);
+					where.gradableType = 'quiz';
+				} else {
+					return [];
+				}
+			} else if (gradableType === 'activity') {
+				if (activityIds.length > 0) {
+					where.gradableId = In(activityIds);
+					where.gradableType = 'activity';
+				} else {
+					return [];
+				}
 			} else {
-				// If no quizzes or activities match the lesson filters, return empty array
-				return [];
+				const allIds = [...quizIds, ...activityIds];
+				if (allIds.length > 0) {
+					where.gradableId = In(allIds);
+					where.gradableType = In(['quiz', 'activity']);
+				} else {
+					return [];
+				}
 			}
 		}
 

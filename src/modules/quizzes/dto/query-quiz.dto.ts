@@ -55,6 +55,15 @@ export class QueryQuizDto {
 	readonly courseId?: number;
 
 	@ApiProperty({
+		description: 'Search quiz using the area ID of the associated lesson',
+		required: false,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	readonly areaId?: number;
+
+	@ApiProperty({
 		description: 'Search quiz using the period ID of the associated lesson',
 		required: false,
 	})
