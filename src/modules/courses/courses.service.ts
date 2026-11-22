@@ -248,17 +248,18 @@ export class CoursesService {
 
 	async getCourses(queryCourse: QueryCourseDto, user: User): Promise<Course[]> {
 		if (queryCourse) {
-			return await this.courseRepository.find({
-				where: {
-					name: queryCourse.name,
-					exist: queryCourse.exist,
-					institute: {
-						id:
-							user.rol == Role.Admin
-								? queryCourse.instituteId
-								: user.institute.id,
-					},
+			const where: any = {
+				institute: {
+					id:
+						user.rol == Role.Admin
+							? queryCourse.instituteId
+							: user.institute.id,
 				},
+			};
+			if (queryCourse.name) where.name = queryCourse.name;
+			if (queryCourse.exist !== undefined) where.exist = queryCourse.exist;
+			return await this.courseRepository.find({
+				where,
 				relations: ['institute', 'courseAreas', 'courseAreas.area'],
 			});
 		} else {

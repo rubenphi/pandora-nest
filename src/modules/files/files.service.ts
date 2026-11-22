@@ -198,6 +198,88 @@ export class FilesService {
 		};
 	}
 
+	saveSurveyScan(
+		scopeId: string | number,
+		base64Image: string,
+		code?: string,
+	): { filename: string; url: string; path: string } {
+		const baseUploadDir = this.getUploadDir();
+		const surveyDir = join(baseUploadDir, 'surveys', String(scopeId));
+		if (!existsSync(surveyDir)) {
+			mkdirSync(surveyDir, { recursive: true });
+		}
+
+		const devSurveyDir = join(
+			process.cwd(),
+			'uploads',
+			'surveys',
+			String(scopeId),
+		);
+		if (devSurveyDir !== surveyDir && !existsSync(devSurveyDir)) {
+			try {
+				mkdirSync(devSurveyDir, { recursive: true });
+			} catch (_) {}
+		}
+
+		const safeCode = code
+			? String(code).replace(/[^a-zA-Z0-9_-]/g, '')
+			: 'scan';
+		const filename = `${safeCode}_${Date.now()}.png`;
+		const filePath = join(surveyDir, filename);
+
+		const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+		const buffer = Buffer.from(base64Data, 'base64');
+		writeFileSync(filePath, buffer);
+
+		if (devSurveyDir !== surveyDir && existsSync(devSurveyDir)) {
+			try {
+				writeFileSync(join(devSurveyDir, filename), buffer);
+			} catch (_) {}
+		}
+
+		return {
+			filename,
+			url: `files/uploads/surveys/${scopeId}/${filename}`,
+			path: `uploads/surveys/${scopeId}/${filename}`,
+		};
+	}
+
+	getSurveyScanStream(
+		scopeId: string,
+		name: string,
+		res: Response,
+	): StreamableFile {
+		const filePath = join(this.getUploadDir(), 'surveys', scopeId, name);
+		if (existsSync(filePath)) {
+			res.set({
+				'Content-Type': 'image/png',
+				'Content-Disposition': `inline; filename="${name}"`,
+			});
+			const fileStream = createReadStream(filePath);
+			return new StreamableFile(fileStream);
+		}
+
+		const fallbackPath = join(
+			process.cwd(),
+			'uploads',
+			'surveys',
+			scopeId,
+			name,
+		);
+		if (existsSync(fallbackPath)) {
+			res.set({
+				'Content-Type': 'image/png',
+				'Content-Disposition': `inline; filename="${name}"`,
+			});
+			const fileStream = createReadStream(fallbackPath);
+			return new StreamableFile(fileStream);
+		}
+
+		throw new NotFoundException(
+			`El archivo ${name} no existe para la encuesta ${scopeId}`,
+		);
+	}
+
 	getTestScanStream(
 		quizId: string,
 		name: string,

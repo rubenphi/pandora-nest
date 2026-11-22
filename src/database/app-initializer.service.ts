@@ -79,6 +79,183 @@ export class AppInitializerService implements OnApplicationBootstrap {
 		} catch (error) {
 			this.logger.warn('No se pudo verificar la tabla quiz_scans:', error);
 		}
+
+		try {
+			await this.ensureSurveyTables();
+		} catch (error) {
+			this.logger.warn('No se pudieron verificar las tablas de encuestas:', error);
+		}
+	}
+
+	private async ensureSurveyTables() {
+		const isPostgres = this.dataSource.options.type === 'postgres';
+		if (isPostgres) {
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "survey_templates" (
+					"id" SERIAL PRIMARY KEY,
+					"name" varchar(255) NOT NULL,
+					"slug" varchar(255) NOT NULL UNIQUE,
+					"version" integer NOT NULL DEFAULT 1,
+					"questionsConfig" jsonb NOT NULL,
+					"active" boolean NOT NULL DEFAULT true,
+					"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+					"updatedAt" TIMESTAMP NOT NULL DEFAULT now()
+				);
+			`);
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "survey_sessions" (
+					"id" SERIAL PRIMARY KEY,
+					"templateId" integer NOT NULL,
+					"year" integer NOT NULL,
+					"label" varchar(255) NOT NULL,
+					"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+					CONSTRAINT "FK_survey_sessions_template" FOREIGN KEY ("templateId") REFERENCES "survey_templates" ("id") ON DELETE CASCADE
+				);
+			`);
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "survey_responses" (
+					"id" SERIAL PRIMARY KEY,
+					"templateId" integer NOT NULL,
+					"sessionId" integer,
+					"code" varchar(10) NOT NULL,
+					"answers" jsonb NOT NULL,
+					"imageUrl" varchar(255),
+					"respondent" varchar(100),
+					"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+					CONSTRAINT "FK_survey_responses_template" FOREIGN KEY ("templateId") REFERENCES "survey_templates" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_survey_responses_session" FOREIGN KEY ("sessionId") REFERENCES "survey_sessions" ("id") ON DELETE SET NULL
+				);
+			`);
+		} else {
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "survey_templates" (
+					"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					"name" varchar NOT NULL,
+					"slug" varchar NOT NULL,
+					"version" integer NOT NULL DEFAULT (1),
+					"questionsConfig" text NOT NULL,
+					"active" boolean NOT NULL DEFAULT (1),
+					"createdAt" datetime NOT NULL DEFAULT (datetime('now')),
+					"updatedAt" datetime NOT NULL DEFAULT (datetime('now')),
+					CONSTRAINT "UQ_survey_templates_slug" UNIQUE ("slug")
+				);
+			`);
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "survey_sessions" (
+					"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					"templateId" integer NOT NULL,
+					"year" integer NOT NULL,
+					"label" varchar NOT NULL,
+					"createdAt" datetime NOT NULL DEFAULT (datetime('now')),
+					CONSTRAINT "FK_survey_sessions_template" FOREIGN KEY ("templateId") REFERENCES "survey_templates" ("id") ON DELETE CASCADE
+				);
+			`);
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "survey_responses" (
+					"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					"templateId" integer NOT NULL,
+					"sessionId" integer,
+					"code" varchar(10) NOT NULL,
+					"answers" text NOT NULL,
+					"imageUrl" varchar,
+					"respondent" varchar,
+					"createdAt" datetime NOT NULL DEFAULT (datetime('now')),
+					CONSTRAINT "FK_survey_responses_template" FOREIGN KEY ("templateId") REFERENCES "survey_templates" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_survey_responses_session" FOREIGN KEY ("sessionId") REFERENCES "survey_sessions" ("id") ON DELETE SET NULL
+				);
+			`);
+		}
+
+		try {
+			await this.ensureDefaultSurveyTemplates();
+		} catch (e) {
+			this.logger.warn('Error al verificar plantillas por defecto:', e);
+		}
+	}
+
+	private async ensureDefaultSurveyTemplates() {
+		const parentTemplate = await this.templateRepository.findOne({
+			where: { slug: 'parent-survey' },
+		});
+		if (!parentTemplate) {
+			await this.templateRepository.save({
+				name: 'Encuesta a Padres',
+				slug: 'parent-survey',
+				questionsConfig: {
+					sections: [
+						{
+							id: 'seccion1',
+							title: 'Preguntas 1 a 14',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 14,
+						},
+						{
+							id: 'seccion2',
+							title: 'Preguntas 15 a 18',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 4,
+						},
+					],
+				},
+			});
+			this.logger.log('Plantilla parent-survey creada automáticamente.');
+		}
+
+		const studentTemplate = await this.templateRepository.findOne({
+			where: { slug: 'student-survey' },
+		});
+		if (!studentTemplate) {
+			await this.templateRepository.save({
+				name: 'Encuesta a Estudiantes',
+				slug: 'student-survey',
+				questionsConfig: {
+					sections: [
+						{
+							id: 'seccion1',
+							title: 'Pregunta 1',
+							type: 'yesno',
+							options: ['Sí', 'No'],
+							count: 1,
+						},
+						{
+							id: 'seccion2',
+							title: 'Preguntas 2 a 15',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 14,
+						},
+						{
+							id: 'seccion3',
+							title: 'Preguntas 16 a 19',
+							type: 'likert',
+							options: ['Nunca', 'Algunas veces', 'Casi siempre', 'Siempre'],
+							count: 4,
+						},
+						{
+							id: 'seccion4',
+							title: 'Pregunta 20 - Multiselect',
+							type: 'multiselect',
+							options: [
+								'Tablero',
+								'Películas y videos',
+								'Láminas y otros materiales gráficos',
+								'Computadores',
+								'Diapositivas o acetatos',
+								'Música',
+								'Libros de texto',
+								'Laboratorios',
+								'Otros',
+								'Programas educativos computarizados',
+								'Mapas',
+							],
+						},
+					],
+				},
+			});
+			this.logger.log('Plantilla student-survey creada automáticamente.');
+		}
 	}
 
 	private async ensureQuizScansTable() {

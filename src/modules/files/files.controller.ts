@@ -82,6 +82,15 @@ export class FilesController {
 		return this.filesService.getTestScanStream(quizId, name, res);
 	}
 
+	@Get('uploads/surveys/:id/:name')
+	getSurveyScanFile(
+		@Param('id') id: string,
+		@Param('name') name: string,
+		@Res({ passthrough: true }) res: Response,
+	): StreamableFile {
+		return this.filesService.getSurveyScanStream(id, name, res);
+	}
+
 	@Get('uploads/:name')
 	getFile(
 		@Param('name') name: string,

@@ -4,10 +4,11 @@ import {
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { SurveyTemplate } from './survey-template.entity';
 import { SurveyResponse } from './survey-response.entity';
 import { SurveySession } from './survey-session.entity';
+import { FilesService } from '../files/files.service';
 import {
 	CreateSurveyTemplateDto,
 	CreateSurveyResponseDto,
@@ -15,6 +16,7 @@ import {
 	QuerySurveyResponseDto,
 	QuerySurveySessionDto,
 	QuerySurveyTemplateDto,
+	UpdateSurveySessionDto,
 	UpdateSurveyTemplateDto,
 } from './dto';
 
@@ -27,6 +29,7 @@ export class SurveysService {
 		private readonly responseRepository: Repository<SurveyResponse>,
 		@InjectRepository(SurveySession)
 		private readonly sessionRepository: Repository<SurveySession>,
+		private readonly filesService: FilesService,
 	) {}
 
 	// ─── Templates ─────────────────────────────────────────────────────
@@ -130,6 +133,16 @@ export class SurveysService {
 			});
 	}
 
+	async updateSession(
+		id: number,
+		dto: UpdateSurveySessionDto,
+	): Promise<SurveySession> {
+		const session = await this.findSessionById(id);
+		if (dto.year !== undefined) session.year = dto.year;
+		if (dto.label !== undefined) session.label = dto.label;
+		return this.sessionRepository.save(session);
+	}
+
 	// ─── Responses ──────────────────────────────────────────────────────
 
 	async createResponse(dto: CreateSurveyResponseDto): Promise<SurveyResponse> {
@@ -144,12 +157,27 @@ export class SurveysService {
 				});
 		}
 
+		let imageUrl = dto.imageUrl || null;
+		if (imageUrl && imageUrl.startsWith('data:image/')) {
+			try {
+				const scope = dto.sessionId || dto.templateId || 'general';
+				const saved = this.filesService.saveSurveyScan(
+					scope,
+					imageUrl,
+					dto.code,
+				);
+				imageUrl = saved.url;
+			} catch (e) {
+				console.error('Error saving survey scan image to disk:', e);
+			}
+		}
+
 		const response = this.responseRepository.create({
 			template,
 			session,
 			code: dto.code,
 			answers: dto.answers,
-			imageUrl: dto.imageUrl || null,
+			imageUrl,
 			respondent: dto.respondent || null,
 		});
 		return this.responseRepository.save(response);
@@ -159,7 +187,9 @@ export class SurveysService {
 		const where: any = {};
 		if (query.templateId) where.template = { id: query.templateId };
 		if (query.respondent) where.respondent = query.respondent;
-		if (query.sessionId) where.session = { id: query.sessionId };
+		if (query.sessionId !== undefined && query.sessionId !== null) {
+			where.session = query.sessionId === 0 ? IsNull() : { id: query.sessionId };
+		}
 
 		return this.responseRepository.find({
 			where,

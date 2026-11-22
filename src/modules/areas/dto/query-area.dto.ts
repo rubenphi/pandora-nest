@@ -24,7 +24,8 @@ export class QueryAreaDto {
 	})
 	@IsOptional()
 	@Transform(({ value }) => {
-		return [true, 'enabled', 'true'].indexOf(value) > -1;
+		if (value === undefined || value === null || value === '') return undefined;
+		return [true, 'enabled', 'true', 1, '1'].indexOf(value) > -1;
 	})
 	@IsBoolean()
 	readonly exist?: boolean;

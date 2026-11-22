@@ -16,6 +16,7 @@ export class QueryCourseAreaDto {
 	})
 	@IsOptional()
 	@Transform(({ value }) => {
+		if (value === undefined || value === null || value === '') return undefined;
 		return [true, 'enabled', 'true'].indexOf(value) > -1;
 	})
 	@IsBoolean()

@@ -167,3 +167,16 @@ export class QuerySurveySessionDto {
 	@Type(() => Number)
 	year?: number;
 }
+
+export class UpdateSurveySessionDto {
+	@ApiProperty({ required: false, example: 2026 })
+	@IsOptional()
+	@IsNumber()
+	@Type(() => Number)
+	year?: number;
+
+	@ApiProperty({ required: false, example: 'Primer Semestre Modificado' })
+	@IsOptional()
+	@IsString()
+	label?: string;
+}

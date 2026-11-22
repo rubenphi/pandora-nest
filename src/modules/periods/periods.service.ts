@@ -24,17 +24,18 @@ export class PeriodsService {
 
 	async getPeriods(queryPeriod: QueryPeriodDto, user: User): Promise<Period[]> {
 		if (queryPeriod) {
-			return await this.periodRepository.find({
-				where: {
-					name: queryPeriod.name,
-					exist: queryPeriod.exist,
-					institute: {
-						id:
-							user.rol == Role.Admin
-								? queryPeriod.instituteId
-								: user.institute.id,
-					},
+			const where: any = {
+				institute: {
+					id:
+						user.rol == Role.Admin
+							? queryPeriod.instituteId
+							: user.institute.id,
 				},
+			};
+			if (queryPeriod.name) where.name = queryPeriod.name;
+			if (queryPeriod.exist !== undefined) where.exist = queryPeriod.exist;
+			return await this.periodRepository.find({
+				where,
 				relations: ['institute'],
 			});
 		} else {

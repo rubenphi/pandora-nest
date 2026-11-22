@@ -25,7 +25,10 @@ export class AreasController {
 	constructor(private readonly areaService: AreasService) {}
 	@Auth()
 	@Get()
-	getAreas(queryArea: QueryAreaDto, @User() user: UserEntity): Promise<Area[]> {
+	getAreas(
+		@Query() queryArea: QueryAreaDto,
+		@User() user: UserEntity,
+	): Promise<Area[]> {
 		return this.areaService.getAreas(queryArea, user);
 	}
 

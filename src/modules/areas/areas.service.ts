@@ -24,17 +24,18 @@ export class AreasService {
 
 	async getAreas(queryArea: QueryAreaDto, user: User): Promise<Area[]> {
 		if (queryArea) {
-			return await this.areaRepository.find({
-				where: {
-					name: queryArea.name,
-					exist: queryArea.exist,
-					institute: {
-						id:
-							user.rol == Role.Admin
-								? queryArea.instituteId
-								: user.institute.id,
-					},
+			const where: any = {
+				institute: {
+					id:
+						user.rol == Role.Admin
+							? queryArea.instituteId
+							: user.institute.id,
 				},
+			};
+			if (queryArea.name) where.name = queryArea.name;
+			if (queryArea.exist !== undefined) where.exist = queryArea.exist;
+			return await this.areaRepository.find({
+				where,
 				relations: ['institute'],
 			});
 		} else {

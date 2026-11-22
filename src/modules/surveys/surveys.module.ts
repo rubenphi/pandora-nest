@@ -5,9 +5,17 @@ import { SurveysController } from './surveys.controller';
 import { SurveyTemplate } from './survey-template.entity';
 import { SurveyResponse } from './survey-response.entity';
 import { SurveySession } from './survey-session.entity';
+import { FilesModule } from '../files/files.module';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([SurveyTemplate, SurveyResponse, SurveySession])],
+	imports: [
+		TypeOrmModule.forFeature([
+			SurveyTemplate,
+			SurveyResponse,
+			SurveySession,
+		]),
+		FilesModule,
+	],
 	controllers: [SurveysController],
 	providers: [SurveysService],
 	exports: [SurveysService],

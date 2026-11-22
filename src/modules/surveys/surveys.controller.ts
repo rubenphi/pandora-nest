@@ -17,6 +17,7 @@ import {
 	QuerySurveyResponseDto,
 	QuerySurveySessionDto,
 	QuerySurveyTemplateDto,
+	UpdateSurveySessionDto,
 	UpdateSurveyTemplateDto,
 } from './dto';
 import { Auth, User } from 'src/common/decorators';
@@ -105,6 +106,18 @@ export class SurveysController {
 	@ApiResponse({ status: 404, description: 'Session not found.' })
 	findSessionById(@Param('id') id: number) {
 		return this.surveysService.findSessionById(id);
+	}
+
+	@Auth()
+	@Patch('sessions/:id')
+	@ApiOperation({ summary: 'Update a survey session (name or year)' })
+	@ApiResponse({ status: 200, description: 'Session updated.' })
+	@ApiResponse({ status: 404, description: 'Session not found.' })
+	updateSession(
+		@Param('id') id: number,
+		@Body() dto: UpdateSurveySessionDto,
+	) {
+		return this.surveysService.updateSession(id, dto);
 	}
 
 	// ─── Responses ──────────────────────────────────────────────────────
