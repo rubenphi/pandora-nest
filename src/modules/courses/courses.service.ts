@@ -295,12 +295,38 @@ export class CoursesService {
 			.catch(() => {
 				throw new NotFoundException('Institute not found');
 			});
-		const course: Course = await this.courseRepository.create({
-			name: courseDto.name,
+
+		const trimmedName = courseDto.name ? courseDto.name.trim() : '';
+		if (!trimmedName) {
+			throw new BadRequestException('Course name cannot be empty');
+		}
+
+		// Prevenir cursos duplicados con el mismo nombre en la misma institución
+		const existingCourse = await this.courseRepository
+			.createQueryBuilder('course')
+			.leftJoin('course.institute', 'institute')
+			.where('institute.id = :instituteId', {
+				instituteId: courseDto.instituteId,
+			})
+			.andWhere('LOWER(TRIM(course.name)) = LOWER(:name)', {
+				name: trimmedName,
+			})
+			.getOne();
+
+		if (existingCourse) {
+			if (!existingCourse.exist && courseDto.exist) {
+				existingCourse.exist = true;
+				return await this.courseRepository.save(existingCourse);
+			}
+			return existingCourse;
+		}
+
+		const course: Course = this.courseRepository.create({
+			name: trimmedName,
 			institute,
 			exist: courseDto.exist,
 		});
-		return this.courseRepository.save(course);
+		return await this.courseRepository.save(course);
 	}
 	async updateCourse(
 		id: number,

@@ -116,39 +116,39 @@ export class UsersService {
 			);
 		}
 
-		const invitation: Invitation = await this.invitationRepository.findOne({
-			where: { code: userDto.instituteInvitation, valid: true },
-			relations: ['institute'],
-		});
+		let invitation: Invitation = null;
+		if (userDto.instituteInvitation) {
+			invitation = await this.invitationRepository.findOne({
+				where: { code: userDto.instituteInvitation, valid: true },
+				relations: ['institute'],
+			});
+		}
 
 		let institute = invitation?.institute ?? null;
-		if (
-			institute === null &&
-			userLoged?.rol !== Role.Admin &&
-			userLoged?.rol !== Role.Director &&
-			userLoged?.rol !== Role.Coordinator &&
-			countUsers != 0
-		) {
+
+		const isPrivileged =
+			userLoged?.rol === Role.Admin ||
+			userLoged?.rol === Role.Director ||
+			userLoged?.rol === Role.Coordinator;
+
+		if (isPrivileged) {
+			institute = userLoged?.institute || institute;
+		} else if (!institute && countUsers != 0) {
 			throw new BadRequestException('Invalid invitation');
 		}
 
-		if (
-			(institute === null && userLoged?.rol === Role.Admin) ||
-			userLoged?.rol === Role.Director ||
-			userLoged?.rol === Role.Coordinator
-		) {
-			institute = userLoged.institute;
-		}
+		const userRole = isPrivileged && userDto.rol ? userDto.rol : 'user';
 
 		const user: User = await this.userRepository.create({
 			name: userDto.name,
 			lastName: userDto.lastName,
 			email: userDto.email,
 			code: userDto.code,
+			telephone: userDto.telephone,
 			institute,
 			password: userDto.password,
-			rol: 'user',
-			exist: userDto.exist,
+			rol: userRole,
+			exist: userDto.exist !== undefined ? userDto.exist : true,
 		});
 		const returnUser = await this.userRepository
 			.save(user)
@@ -179,17 +179,40 @@ export class UsersService {
 				// Update existing user
 				targetUser.name = userItemDto.name;
 				targetUser.lastName = userItemDto.lastName;
-				if (userItemDto.email) targetUser.email = userItemDto.email;
+				if (userItemDto.email) {
+					const existingEmailUser = await this.userRepository.findOne({
+						where: { email: userItemDto.email },
+					});
+					if (!existingEmailUser || existingEmailUser.id === targetUser.id) {
+						targetUser.email = userItemDto.email;
+					}
+				}
 				if (userItemDto.password) targetUser.password = userItemDto.password;
 				targetUser.exist = userItemDto.exist;
 				targetUser.rol = userItemDto.systemRol;
 				targetUser = await this.userRepository.save(targetUser);
 			} else {
+				// Prevent crashing whole bulk import if email is already taken by another user
+				let safeEmail = userItemDto.email;
+				if (safeEmail) {
+					const existingEmailUser = await this.userRepository.findOne({
+						where: { email: safeEmail },
+					});
+					if (existingEmailUser) {
+						const atIdx = safeEmail.lastIndexOf('@');
+						if (atIdx > 0) {
+							safeEmail = `${safeEmail.substring(0, atIdx)}_${userItemDto.code}${safeEmail.substring(atIdx)}`;
+						} else {
+							safeEmail = `${safeEmail}_${userItemDto.code}`;
+						}
+					}
+				}
+
 				// Extract CreateUserDto properties for the base user creation
 				const baseUserDto: CreateUserDto = {
 					name: userItemDto.name,
 					lastName: userItemDto.lastName,
-					email: userItemDto.email,
+					email: safeEmail,
 					code: userItemDto.code,
 					password: userItemDto.password,
 					exist: userItemDto.exist,
@@ -228,7 +251,7 @@ export class UsersService {
 					let assignmentUpdated = false;
 
 					for (const assignment of existingAssignments) {
-						if (assignment.course.id === course.id) {
+						if (assignment.course?.id === course.id) {
 							assignment.active = true;
 							assignment.year = new Date().getFullYear();
 							await this.userToCourseRepository.save(assignment);

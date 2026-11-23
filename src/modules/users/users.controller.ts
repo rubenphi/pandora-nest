@@ -8,6 +8,7 @@ import {
 	Patch,
 	Delete,
 	Req,
+	UseGuards,
 } from '@nestjs/common';
 
 import { User } from './user.entity';
@@ -20,6 +21,7 @@ import {
 } from './dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth, User as UserDecorator } from 'src/common/decorators';
+import { OptionalJwtAuthGuard } from '../auth/guards';
 import { Course } from '../courses/course.entity';
 import { UserToCourse } from './userToCourse.entity';
 import { QueryUserCoursesDto } from './dto/query-users-courses.dto';
@@ -52,6 +54,7 @@ export class UsersController {
 		return this.userService.getUser(id, user);
 	}
 
+	@UseGuards(OptionalJwtAuthGuard)
 	@Post()
 	@ApiOperation({ summary: 'Create a user' })
 	@ApiResponse({ status: 201, description: 'The user has been successfully created.' })

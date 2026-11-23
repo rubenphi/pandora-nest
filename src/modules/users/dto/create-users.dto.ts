@@ -50,7 +50,17 @@ export class CreateUserDto {
 	readonly password: string;
 	@ApiProperty({
 		description: 'Indicates if the question is active or "deleted"',
+		required: false,
 	})
+	@IsOptional()
 	@IsBoolean()
-	readonly exist: boolean;
+	readonly exist?: boolean;
+
+	@ApiProperty({
+		description: 'System role of the user',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	readonly rol?: string;
 }
