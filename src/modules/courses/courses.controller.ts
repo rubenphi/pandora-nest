@@ -84,7 +84,7 @@ export class CoursesController {
 	): Promise<Course> {
 		return this.courseService.updateCourse(id, course, user);
 	}
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete(':id')
 	@ApiOperation({ summary: 'Delete a course' })

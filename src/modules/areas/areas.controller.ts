@@ -56,7 +56,7 @@ export class AreasController {
 	): Promise<Area> {
 		return this.areaService.updateArea(id, area, user);
 	}
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete(':id')
 	deleteArea(@Param('id') id: number): Promise<void> {

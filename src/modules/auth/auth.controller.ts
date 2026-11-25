@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Auth, User } from 'src/common/decorators';
 import { User as UserEntity } from '../users/user.entity';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto';
+import { LoginDto, RegisterInstituteDto } from './dto';
 import { LocalAuthGuard } from './guards';
 import { NetworkDiscoveryService } from '../../common/services/network-discovery.service';
 
@@ -18,6 +18,16 @@ export class AuthController {
 	@Post('login')
 	async login(@Body() loginDto: LoginDto, @User() user: UserEntity) {
 		const userLoged = await this.authService.login(user);
+		return {
+			message: 'Successfull Request',
+			userLoged,
+		};
+	}
+
+	@Post('register-institute')
+	async registerInstitute(@Body() registerInstituteDto: RegisterInstituteDto) {
+		const userLoged =
+			await this.authService.registerInstitute(registerInstituteDto);
 		return {
 			message: 'Successfull Request',
 			userLoged,

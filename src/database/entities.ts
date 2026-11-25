@@ -2,6 +2,8 @@ import { Activity } from '../modules/activities/activity.entity';
 import { ActivityEvidence } from '../modules/activity-evidences/activity-evidence.entity';
 import { Answer } from '../modules/answers/answer.entity';
 import { Area } from '../modules/areas/area.entity';
+import { AttendanceRecord } from '../modules/attendance/attendance-record.entity';
+import { AttendanceSession } from '../modules/attendance/attendance-session.entity';
 import { CourseAreaTeacher } from '../modules/courses/course-area-teacher.entity';
 import { CourseArea } from '../modules/courses/course-area.entity';
 import { Course } from '../modules/courses/course.entity';
@@ -37,6 +39,8 @@ export const entities = [
 	ActivityEvidence,
 	Answer,
 	Area,
+	AttendanceRecord,
+	AttendanceSession,
 	CourseAreaTeacher,
 	CourseArea,
 	Course,

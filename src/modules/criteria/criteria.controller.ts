@@ -29,7 +29,7 @@ import { User as UserEntity } from 'src/modules/users/user.entity';
 export class CriteriaController {
 	constructor(private readonly criteriaService: CriteriaService) {}
 
-	@Roles(Role.Admin, Role.Teacher)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
 	@ApiOperation({ summary: 'Create a new criterion' })
@@ -59,7 +59,7 @@ export class CriteriaController {
 		return this.criteriaService.findOne(id);
 	}
 
-	@Roles(Role.Admin, Role.Teacher)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	@ApiOperation({ summary: 'Update a criterion by ID' })
@@ -72,7 +72,7 @@ export class CriteriaController {
 		return this.criteriaService.update(id, updateCriterionDto);
 	}
 
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete(':id')
 	@ApiOperation({ summary: 'Delete a criterion by ID' })

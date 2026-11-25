@@ -55,7 +55,7 @@ export class PeriodsController {
 	): Promise<Period> {
 		return this.periodService.updatePeriod(id, period, user);
 	}
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete(':id')
 	deletePeriod(@Param('id') id: number): Promise<void> {

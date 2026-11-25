@@ -1,13 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
 	IsBoolean,
+	IsEnum,
 	IsIn,
 	IsInt,
 	IsNumber,
 	IsOptional,
 	IsString,
+	ValidateIf,
 } from 'class-validator';
-import { GRADABLE_ENTITIES } from '../grade.entity';
+import {
+	EvaluationStatus,
+	GRADABLE_ENTITIES,
+	SubmissionStatus,
+} from '../grade.entity';
 
 export class UpdateGradeDto {
 	@ApiProperty({
@@ -74,12 +80,32 @@ export class UpdateGradeDto {
 
 	@ApiProperty({
 		type: Number,
+		nullable: true,
 		description: 'Grade',
 		required: false,
 	})
 	@IsOptional()
+	@ValidateIf((o) => o.grade !== null && o.grade !== undefined)
 	@IsNumber()
-	readonly grade?: number;
+	readonly grade?: number | null;
+
+	@ApiProperty({
+		enum: SubmissionStatus,
+		required: false,
+		description: 'Submission status (NOT_SUBMITTED, SUBMITTED, UNKNOWN)',
+	})
+	@IsOptional()
+	@IsEnum(SubmissionStatus)
+	readonly submissionStatus?: SubmissionStatus;
+
+	@ApiProperty({
+		enum: EvaluationStatus,
+		required: false,
+		description: 'Evaluation status (NOT_EVALUATED, PARTIAL, GRADED)',
+	})
+	@IsOptional()
+	@IsEnum(EvaluationStatus)
+	readonly evaluationStatus?: EvaluationStatus;
 
 	@ApiProperty({
 		type: Number,

@@ -363,7 +363,7 @@ export class UsersService {
 		id: number,
 	): Promise<UserToCourse[]> {
 		if (id) {
-			return await this.userToCourseRepository.find({
+			const assignments = await this.userToCourseRepository.find({
 				where: {
 					year: queryCourses.year,
 					user: { id },
@@ -371,6 +371,7 @@ export class UsersService {
 				},
 				relations: ['course', 'course.courseAreas', 'course.courseAreas.area'],
 			});
+			return assignments.filter((assignment) => Boolean(assignment.course));
 		} else {
 			throw new ForbiddenException('userId is required');
 		}

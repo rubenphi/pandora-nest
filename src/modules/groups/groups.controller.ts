@@ -70,7 +70,7 @@ export class GroupsController {
 	): Promise<Group> {
 		return this.groupService.updateGroup(id, group, user);
 	}
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete(':id')
 	@ApiOperation({ summary: 'Delete a group' })

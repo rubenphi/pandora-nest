@@ -26,7 +26,7 @@ import { User as UserEntity } from 'src/modules/users/user.entity';
 export class ActivitiesController {
 	constructor(private readonly activitiesService: ActivitiesService) {}
 
-	@Roles(Role.Admin, Role.Teacher)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
 	@ApiOperation({ summary: 'Create a new activity' })
@@ -47,7 +47,7 @@ export class ActivitiesController {
 		return this.activitiesService.findAll(query);
 	}
 
-	@Roles(Role.Admin, Role.Teacher)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post('import')
 	@ApiOperation({ summary: 'Importa y duplica múltiples actividades con sus criterios hacia un nuevo Lesson' })
@@ -60,7 +60,7 @@ export class ActivitiesController {
 		return this.activitiesService.importActivities(importDto, user);
 	}
 
-	@Roles(Role.Admin, Role.Teacher)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Get('pending-grading')
 	@ApiOperation({ summary: 'Get all activities pending for grading' })
@@ -78,7 +78,7 @@ export class ActivitiesController {
 		return this.activitiesService.findOne(id);
 	}
 
-	@Roles(Role.Admin, Role.Teacher)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	@ApiOperation({ summary: 'Update an activity by ID' })
@@ -91,7 +91,7 @@ export class ActivitiesController {
 		return this.activitiesService.update(id, updateActivityDto);
 	}
 
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete(':id')
 	@ApiOperation({ summary: 'Delete an activity by ID' })

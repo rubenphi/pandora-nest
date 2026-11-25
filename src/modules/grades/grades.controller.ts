@@ -37,6 +37,21 @@ export class GradesController {
 		return this.gradesService.getStudentAverages(courseId, periodId, year);
 	}
 
+	@Get('audit')
+	getCourseAudit(
+		@Query('courseId') courseId: number,
+		@Query('periodId') periodId: number,
+		@Query('year') year: number,
+		@Query('areaId') areaId?: number,
+	) {
+		return this.gradesService.getCourseAudit(
+			Number(courseId),
+			Number(periodId),
+			Number(year),
+			areaId ? Number(areaId) : undefined,
+		);
+	}
+
 	@Get(':id')
 	findOne(@Param('id') id: string): Promise<Grade> {
 		return this.gradesService.findOne(+id);

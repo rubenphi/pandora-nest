@@ -19,6 +19,25 @@ import { Activity } from '../activities/activity.entity';
 export type Gradable = Quiz | Activity;
 export const GRADABLE_ENTITIES = ['quiz', 'activity'];
 
+export enum SubmissionStatus {
+	NOT_SUBMITTED = 'NOT_SUBMITTED',
+	SUBMITTED = 'SUBMITTED',
+	UNKNOWN = 'UNKNOWN',
+}
+
+export enum EvaluationStatus {
+	NOT_EVALUATED = 'NOT_EVALUATED',
+	PARTIAL = 'PARTIAL',
+	GRADED = 'GRADED',
+}
+
+export type AuditClassification =
+	| 'NO_SUBMISSION'
+	| 'PENDING_GRADING'
+	| 'GRADED_ZERO'
+	| 'NEEDS_REVIEW'
+	| 'GRADED';
+
 @Entity()
 export class Grade {
 	@PrimaryGeneratedColumn('increment')
@@ -37,7 +56,11 @@ export class Grade {
 	// This property will be populated manually in the service
 	gradableItem?: Gradable;
 
-	@Column({ type: 'simple-enum', enum: ['regular', 'support'], default: 'regular' })
+	@Column({
+		type: 'simple-enum',
+		enum: ['regular', 'support'],
+		default: 'regular',
+	})
 	gradeType: 'regular' | 'support';
 
 	@Column({
@@ -51,8 +74,29 @@ export class Grade {
 	@JoinTable({ name: 'periodId' })
 	period: Period;
 
-	@Column({ nullable: false, type: 'float', default: 0 })
-	grade: number;
+	@Column({ nullable: true, type: 'float', default: null })
+	grade: number | null;
+
+	@Column({
+		type: 'simple-enum',
+		enum: SubmissionStatus,
+		nullable: true,
+		default: null,
+	})
+	submissionStatus?: SubmissionStatus | null;
+
+	@Column({
+		type: 'simple-enum',
+		enum: EvaluationStatus,
+		nullable: true,
+		default: null,
+	})
+	evaluationStatus?: EvaluationStatus | null;
+
+	// Non-persisted derived audit fields populated by GradesService
+	derivedSubmissionStatus?: SubmissionStatus;
+	derivedEvaluationStatus?: EvaluationStatus;
+	auditClassification?: AuditClassification;
 
 	@ManyToOne(() => Institute, (institute) => institute.grades)
 	@JoinColumn({ name: 'instituteId' })

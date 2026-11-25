@@ -85,6 +85,60 @@ export class AppInitializerService implements OnApplicationBootstrap {
 		} catch (error) {
 			this.logger.warn('No se pudieron verificar las tablas de encuestas:', error);
 		}
+
+		try {
+			await this.ensureGradeColumns();
+		} catch (error) {
+			this.logger.warn('No se pudieron verificar las columnas de grade:', error);
+		}
+
+		try {
+			await this.ensureAttendanceTables();
+		} catch (error) {
+			this.logger.warn('No se pudieron verificar las tablas de asistencia:', error);
+		}
+	}
+
+	private async ensureGradeColumns() {
+		const queryRunner = this.dataSource.createQueryRunner();
+		await queryRunner.connect();
+		try {
+			const table = await queryRunner.getTable('grade');
+			if (!table) return;
+
+			const driver = this.dataSource.options.type;
+			if (!table.findColumnByName('submissionStatus')) {
+				await queryRunner.query(
+					driver === 'postgres'
+						? `ALTER TABLE "grade" ADD COLUMN IF NOT EXISTS "submissionStatus" character varying`
+						: `ALTER TABLE "grade" ADD COLUMN "submissionStatus" varchar`,
+				);
+				this.logger.log('Columna grade.submissionStatus agregada.');
+			}
+
+			if (!table.findColumnByName('evaluationStatus')) {
+				await queryRunner.query(
+					driver === 'postgres'
+						? `ALTER TABLE "grade" ADD COLUMN IF NOT EXISTS "evaluationStatus" character varying`
+						: `ALTER TABLE "grade" ADD COLUMN "evaluationStatus" varchar`,
+				);
+				this.logger.log('Columna grade.evaluationStatus agregada.');
+			}
+
+			if (driver === 'postgres') {
+				const gradeCol = table.findColumnByName('grade');
+				if (gradeCol && !gradeCol.isNullable) {
+					await queryRunner.query(
+						`ALTER TABLE "grade" ALTER COLUMN "grade" DROP NOT NULL`,
+					);
+					await queryRunner.query(
+						`ALTER TABLE "grade" ALTER COLUMN "grade" SET DEFAULT NULL`,
+					);
+				}
+			}
+		} finally {
+			await queryRunner.release();
+		}
 	}
 
 	private async ensureSurveyTables() {
@@ -290,6 +344,81 @@ export class AppInitializerService implements OnApplicationBootstrap {
 					CONSTRAINT "FK_quiz_scans_quiz" FOREIGN KEY ("quizId") REFERENCES "quizzes" ("id") ON DELETE CASCADE,
 					CONSTRAINT "FK_quiz_scans_user" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE,
 					CONSTRAINT "FK_quiz_scans_institute" FOREIGN KEY ("instituteId") REFERENCES "institute" ("id") ON DELETE CASCADE
+				);
+			`);
+		}
+	}
+
+	private async ensureAttendanceTables() {
+		const isPostgres = this.dataSource.options.type === 'postgres';
+		if (isPostgres) {
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "attendance_sessions" (
+					"id" SERIAL PRIMARY KEY,
+					"scope" varchar(20) NOT NULL DEFAULT 'general',
+					"date" varchar(10) NOT NULL,
+					"closingTime" varchar(10),
+					"year" integer NOT NULL,
+					"courseId" integer,
+					"lessonId" integer,
+					"instituteId" integer,
+					"authorId" integer,
+					"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+					"updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+					CONSTRAINT "FK_att_session_course" FOREIGN KEY ("courseId") REFERENCES "course" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_session_lesson" FOREIGN KEY ("lessonId") REFERENCES "lesson" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_session_institute" FOREIGN KEY ("instituteId") REFERENCES "institute" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_session_author" FOREIGN KEY ("authorId") REFERENCES "user" ("id") ON DELETE SET NULL
+				);
+			`);
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "attendance_records" (
+					"id" SERIAL PRIMARY KEY,
+					"sessionId" integer,
+					"studentId" integer,
+					"status" varchar(20) NOT NULL DEFAULT 'absent',
+					"eventTime" varchar(10),
+					"scannedByMarker" boolean NOT NULL DEFAULT false,
+					"note" text,
+					"createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+					"updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+					CONSTRAINT "FK_att_record_session" FOREIGN KEY ("sessionId") REFERENCES "attendance_sessions" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_record_student" FOREIGN KEY ("studentId") REFERENCES "user" ("id") ON DELETE CASCADE
+				);
+			`);
+		} else {
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "attendance_sessions" (
+					"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					"scope" varchar(20) NOT NULL DEFAULT 'general',
+					"date" varchar(10) NOT NULL,
+					"closingTime" varchar(10),
+					"year" integer NOT NULL,
+					"courseId" integer,
+					"lessonId" integer,
+					"instituteId" integer,
+					"authorId" integer,
+					"createdAt" datetime NOT NULL DEFAULT (datetime('now')),
+					"updatedAt" datetime NOT NULL DEFAULT (datetime('now')),
+					CONSTRAINT "FK_att_session_course" FOREIGN KEY ("courseId") REFERENCES "course" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_session_lesson" FOREIGN KEY ("lessonId") REFERENCES "lesson" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_session_institute" FOREIGN KEY ("instituteId") REFERENCES "institute" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_session_author" FOREIGN KEY ("authorId") REFERENCES "user" ("id") ON DELETE SET NULL
+				);
+			`);
+			await this.dataSource.query(`
+				CREATE TABLE IF NOT EXISTS "attendance_records" (
+					"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					"sessionId" integer,
+					"studentId" integer,
+					"status" varchar(20) NOT NULL DEFAULT 'absent',
+					"eventTime" varchar(10),
+					"scannedByMarker" boolean NOT NULL DEFAULT (0),
+					"note" text,
+					"createdAt" datetime NOT NULL DEFAULT (datetime('now')),
+					"updatedAt" datetime NOT NULL DEFAULT (datetime('now')),
+					CONSTRAINT "FK_att_record_session" FOREIGN KEY ("sessionId") REFERENCES "attendance_sessions" ("id") ON DELETE CASCADE,
+					CONSTRAINT "FK_att_record_student" FOREIGN KEY ("studentId") REFERENCES "user" ("id") ON DELETE CASCADE
 				);
 			`);
 		}

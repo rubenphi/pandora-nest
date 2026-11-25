@@ -70,7 +70,7 @@ export class LessonsController {
 		return this.lessonService.updateLesson(id, lesson, user);
 	}
 
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Delete(':id')
 	deleteLesson(

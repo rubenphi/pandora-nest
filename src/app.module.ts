@@ -29,6 +29,7 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
 import { PollsModule } from './modules/polls/polls.module';
 import { SurveysModule } from './modules/surveys/surveys.module';
 import { ActivityEvidencesModule } from './modules/activity-evidences/activity-evidences.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 import { entities } from './database/entities';
 import { getDataDir, isValidSqlite } from './common/utils/paths.util';
 import { AppInitializerService } from './database/app-initializer.service';
@@ -117,6 +118,7 @@ import { createNodeSqliteShim } from './database/node-sqlite.shim';
 		PollsModule,
 		SurveysModule,
 		ActivityEvidencesModule,
+		AttendanceModule,
 		TypeOrmModule.forFeature([User, Institute, SurveyTemplate]),
 	],
 	providers: [AppInitializerService],
