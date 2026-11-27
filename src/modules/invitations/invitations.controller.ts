@@ -22,7 +22,7 @@ import { QueryInvitationDto } from './dto/query-invitation.dto';
 export class InvitationsController {
 	constructor(private readonly invitationsService: InvitationsService) {}
 
-	@Roles(Role.Admin, Role.Director)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post()
 	create(
@@ -38,14 +38,14 @@ export class InvitationsController {
 		return this.invitationsService.findAll(queryInvitationDto);
 	}
 
-	@Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Get(':id')
 	findOne(@Param('id') id: number, @User() user: UserEntity) {
 		return this.invitationsService.findOne(id, user);
 	}
 
-	@Roles(Role.Admin, Role.Director, Role.Coordinator)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch(':id')
 	update(
@@ -56,7 +56,7 @@ export class InvitationsController {
 		return this.invitationsService.update(id, updateInvitationDto, user);
 	}
 
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Delete(':id')
 	remove(@Param('id') id: number) {

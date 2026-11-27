@@ -28,6 +28,24 @@ import { Response } from 'express';
 export class FilesController {
 	constructor(private readonly filesService: FilesService) {}
 
+	@Get('export-storage-zip')
+	@ApiOperation({ summary: 'Export complete storage folder (sqlite data + uploads) as zip stream' })
+	exportStorageZip(@Res() res: Response) {
+		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+		res.set({
+			'Content-Type': 'application/zip',
+			'Content-Disposition': `attachment; filename="pandora_storage_${timestamp}.zip"`,
+		});
+
+		const stream = this.filesService.getStorageZipStream();
+		stream.on('error', (err: any) => {
+			if (!res.headersSent) {
+				res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error generating storage zip stream');
+			}
+		});
+		stream.pipe(res);
+	}
+
 	@Post('upload')
 	@UseInterceptors(FileInterceptor('file'))
 	uploadFile(@UploadedFile() file: Express.Multer.File) {

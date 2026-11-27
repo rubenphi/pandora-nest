@@ -16,9 +16,10 @@ import {
 	unlinkSync,
 	createReadStream,
 	readdirSync,
+	statSync,
 } from 'fs';
 import { Response } from 'express';
-import { getUploadsDir } from '../../common/utils/paths.util';
+import { getUploadsDir, getDataDir } from '../../common/utils/paths.util';
 
 @Injectable()
 export class FilesService {
@@ -308,5 +309,98 @@ export class FilesService {
 		throw new NotFoundException(
 			`El archivo ${name} no existe para el cuestionario ${quizId}`,
 		);
+	}
+
+	getStorageZipStream(): any {
+		const JSZip = require('jszip');
+		const zip = new JSZip();
+
+		const baseDataDir = getDataDir();
+		const dbPath = join(baseDataDir, 'pandora.sqlite');
+		if (existsSync(dbPath)) {
+			zip.file('data/pandora.sqlite', createReadStream(dbPath));
+		}
+		const walPath = join(baseDataDir, 'pandora.sqlite-wal');
+		if (existsSync(walPath)) {
+			zip.file('data/pandora.sqlite-wal', createReadStream(walPath));
+		}
+		const shmPath = join(baseDataDir, 'pandora.sqlite-shm');
+		if (existsSync(shmPath)) {
+			zip.file('data/pandora.sqlite-shm', createReadStream(shmPath));
+		}
+
+		const uploadsDir = getUploadsDir();
+		if (existsSync(uploadsDir)) {
+			const addFolderRecursively = (currentDir: string, zipFolder: any) => {
+				const items = readdirSync(currentDir);
+				for (const item of items) {
+					const fullPath = join(currentDir, item);
+					try {
+						const stat = statSync(fullPath);
+						if (stat.isDirectory()) {
+							const subZip = zipFolder.folder(item);
+							addFolderRecursively(fullPath, subZip);
+						} else if (stat.isFile()) {
+							zipFolder.file(item, createReadStream(fullPath));
+						}
+					} catch (_) {}
+				}
+			};
+			const uploadsZipFolder = zip.folder('uploads');
+			addFolderRecursively(uploadsDir, uploadsZipFolder);
+		}
+
+		return zip.generateNodeStream({
+			type: 'nodebuffer',
+			streamFiles: true,
+			compression: 'DEFLATE',
+			compressionOptions: { level: 1 },
+		});
+	}
+
+	async createStorageZip(): Promise<Buffer> {
+		const JSZip = require('jszip');
+		const zip = new JSZip();
+
+		const baseDataDir = getDataDir();
+		const dbPath = join(baseDataDir, 'pandora.sqlite');
+		if (existsSync(dbPath)) {
+			zip.file('data/pandora.sqlite', createReadStream(dbPath));
+		}
+		const walPath = join(baseDataDir, 'pandora.sqlite-wal');
+		if (existsSync(walPath)) {
+			zip.file('data/pandora.sqlite-wal', createReadStream(walPath));
+		}
+		const shmPath = join(baseDataDir, 'pandora.sqlite-shm');
+		if (existsSync(shmPath)) {
+			zip.file('data/pandora.sqlite-shm', createReadStream(shmPath));
+		}
+
+		const uploadsDir = getUploadsDir();
+		if (existsSync(uploadsDir)) {
+			const addFolderRecursively = (currentDir: string, zipFolder: any) => {
+				const items = readdirSync(currentDir);
+				for (const item of items) {
+					const fullPath = join(currentDir, item);
+					try {
+						const stat = statSync(fullPath);
+						if (stat.isDirectory()) {
+							const subZip = zipFolder.folder(item);
+							addFolderRecursively(fullPath, subZip);
+						} else if (stat.isFile()) {
+							zipFolder.file(item, createReadStream(fullPath));
+						}
+					} catch (_) {}
+				}
+			};
+			const uploadsZipFolder = zip.folder('uploads');
+			addFolderRecursively(uploadsDir, uploadsZipFolder);
+		}
+
+		return await zip.generateAsync({
+			type: 'nodebuffer',
+			compression: 'DEFLATE',
+			compressionOptions: { level: 1 },
+		});
 	}
 }

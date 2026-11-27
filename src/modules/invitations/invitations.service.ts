@@ -40,6 +40,7 @@ export class InvitationsService {
 
 		if (
 			user.rol !== Role.Admin &&
+			user.institute?.id &&
 			user.institute.id !== createInvitationDto.instituteId
 		) {
 			throw new ForbiddenException(
