@@ -311,6 +311,87 @@ export class FilesService {
 		);
 	}
 
+	saveOmrTemplateBackground(
+		identifier: string,
+		dataOrBuffer: string | Buffer,
+		originalName?: string,
+	): { filename: string; url: string; path: string } {
+		const baseUploadDir = this.getUploadDir();
+		const omrDir = join(baseUploadDir, 'OMR', 'templates');
+		if (!existsSync(omrDir)) {
+			mkdirSync(omrDir, { recursive: true });
+		}
+
+		const devOmrDir = join(process.cwd(), 'uploads', 'OMR', 'templates');
+		if (devOmrDir !== omrDir && !existsSync(devOmrDir)) {
+			try {
+				mkdirSync(devOmrDir, { recursive: true });
+			} catch (_) {}
+		}
+
+		const safeId = identifier
+			? String(identifier).replace(/[^a-zA-Z0-9_-]/g, '')
+			: 'template';
+		const ext = originalName
+			? extname(originalName).toLowerCase() || '.jpg'
+			: '.jpg';
+		const filename = `${safeId}_${Date.now()}${ext}`;
+		const filePath = join(omrDir, filename);
+
+		let buffer: Buffer;
+		if (Buffer.isBuffer(dataOrBuffer)) {
+			buffer = dataOrBuffer;
+		} else {
+			const cleanBase64 = String(dataOrBuffer).replace(
+				/^data:[^;]+;base64,/,
+				'',
+			);
+			buffer = Buffer.from(cleanBase64, 'base64');
+		}
+
+		writeFileSync(filePath, buffer);
+
+		if (devOmrDir !== omrDir && existsSync(devOmrDir)) {
+			try {
+				writeFileSync(join(devOmrDir, filename), buffer);
+			} catch (_) {}
+		}
+
+		return {
+			filename,
+			url: `files/uploads/OMR/templates/${filename}`,
+			path: `uploads/OMR/templates/${filename}`,
+		};
+	}
+
+	getOmrTemplateStream(name: string, res: Response): StreamableFile {
+		const filePath = join(this.getUploadDir(), 'OMR', 'templates', name);
+		const devPath = join(process.cwd(), 'uploads', 'OMR', 'templates', name);
+
+		const targetPath = existsSync(filePath)
+			? filePath
+			: existsSync(devPath)
+			? devPath
+			: null;
+
+		if (targetPath) {
+			const ext = extname(name).toLowerCase();
+			let contentType = 'image/jpeg';
+			if (ext === '.png') contentType = 'image/png';
+			else if (ext === '.pdf') contentType = 'application/pdf';
+
+			res.set({
+				'Content-Type': contentType,
+				'Content-Disposition': `inline; filename="${name}"`,
+			});
+			return new StreamableFile(createReadStream(targetPath));
+		}
+
+		throw new NotFoundException(
+			`El archivo de plantilla OMR ${name} no existe`,
+		);
+	}
+
 	getStorageZipStream(): any {
 		const JSZip = require('jszip');
 		const zip = new JSZip();

@@ -208,4 +208,9 @@ export class SurveysService {
 				throw new NotFoundException('Survey response not found');
 			});
 	}
+
+	async removeResponse(id: number): Promise<void> {
+		const response = await this.findResponseById(id);
+		await this.responseRepository.remove(response);
+	}
 }

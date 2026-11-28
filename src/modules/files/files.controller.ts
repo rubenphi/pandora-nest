@@ -100,6 +100,43 @@ export class FilesController {
 		return this.filesService.getTestScanStream(quizId, name, res);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
+	@Auth()
+	@Post('upload/omr/template')
+	@ApiOperation({ summary: 'Upload background image for an OMR template' })
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadOmrTemplateBackground(
+		@UploadedFile() file?: Express.Multer.File,
+		@Body() body?: any,
+	) {
+		const identifier = body?.identifier || body?.slug || 'template';
+		if (file) {
+			return this.filesService.saveOmrTemplateBackground(
+				identifier,
+				file.buffer,
+				file.originalname,
+			);
+		}
+		if (body?.image || body?.base64) {
+			return this.filesService.saveOmrTemplateBackground(
+				identifier,
+				body.image || body.base64,
+				body?.originalName,
+			);
+		}
+		throw new BadRequestException(
+			'Debe enviar un archivo o una imagen base64.',
+		);
+	}
+
+	@Get('uploads/OMR/templates/:name')
+	getOmrTemplateFile(
+		@Param('name') name: string,
+		@Res({ passthrough: true }) res: Response,
+	): StreamableFile {
+		return this.filesService.getOmrTemplateStream(name, res);
+	}
+
 	@Get('uploads/surveys/:id/:name')
 	getSurveyScanFile(
 		@Param('id') id: string,

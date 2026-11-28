@@ -7,6 +7,7 @@ import {
 	Patch,
 	Post,
 	Query,
+	UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SurveysService } from './surveys.service';
@@ -23,6 +24,7 @@ import {
 import { Auth, User } from 'src/common/decorators';
 import { User as UserEntity } from '../users/user.entity';
 import { Roles, Role } from '../auth/roles.decorator';
+import { OptionalJwtAuthGuard } from '../auth/guards';
 
 @ApiTags('surveys')
 @Controller('surveys')
@@ -44,14 +46,14 @@ export class SurveysController {
 		return this.surveysService.createTemplate(dto);
 	}
 
-	@Auth()
+	@UseGuards(OptionalJwtAuthGuard)
 	@Get('templates')
 	@ApiOperation({ summary: 'Get all survey templates' })
 	findAllTemplates(@Query() query: QuerySurveyTemplateDto) {
 		return this.surveysService.findAllTemplates(query);
 	}
 
-	@Auth()
+	@UseGuards(OptionalJwtAuthGuard)
 	@Get('templates/:id')
 	@ApiOperation({ summary: 'Get a survey template by id' })
 	@ApiResponse({ status: 404, description: 'Template not found.' })
@@ -72,7 +74,7 @@ export class SurveysController {
 		return this.surveysService.updateTemplate(id, dto);
 	}
 
-	@Roles(Role.Admin)
+	@Roles(Role.Admin, Role.Director)
 	@Auth()
 	@Delete('templates/:id')
 	@ApiOperation({ summary: 'Delete a survey template' })
@@ -83,6 +85,7 @@ export class SurveysController {
 
 	// ─── Sessions ────────────────────────────────────────────────────────
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Post('sessions')
 	@ApiOperation({ summary: 'Create a survey session' })
@@ -93,14 +96,21 @@ export class SurveysController {
 		return this.surveysService.createSession(dto);
 	}
 
-	@Auth()
+	@UseGuards(OptionalJwtAuthGuard)
 	@Get('sessions')
 	@ApiOperation({ summary: 'Get survey sessions (optionally filtered)' })
 	findAllSessions(@Query() query: QuerySurveySessionDto) {
 		return this.surveysService.findAllSessions(query);
 	}
 
-	@Auth()
+	@UseGuards(OptionalJwtAuthGuard)
+	@Get('sessions/by-template/:templateId')
+	@ApiOperation({ summary: 'Get survey sessions by template id' })
+	findSessionsByTemplateId(@Param('templateId') templateId: number) {
+		return this.surveysService.findAllSessions({ templateId: Number(templateId) });
+	}
+
+	@UseGuards(OptionalJwtAuthGuard)
 	@Get('sessions/:id')
 	@ApiOperation({ summary: 'Get a survey session by id' })
 	@ApiResponse({ status: 404, description: 'Session not found.' })
@@ -108,6 +118,7 @@ export class SurveysController {
 		return this.surveysService.findSessionById(id);
 	}
 
+	@Roles(Role.Admin, Role.Director, Role.Coordinator, Role.Teacher)
 	@Auth()
 	@Patch('sessions/:id')
 	@ApiOperation({ summary: 'Update a survey session (name or year)' })
@@ -147,5 +158,14 @@ export class SurveysController {
 	@ApiResponse({ status: 404, description: 'Response not found.' })
 	findResponseById(@Param('id') id: number) {
 		return this.surveysService.findResponseById(id);
+	}
+
+	@Auth()
+	@Delete('responses/:id')
+	@ApiOperation({ summary: 'Delete a survey response by id' })
+	@ApiResponse({ status: 200, description: 'Response deleted.' })
+	@ApiResponse({ status: 404, description: 'Response not found.' })
+	removeResponse(@Param('id') id: number) {
+		return this.surveysService.removeResponse(id);
 	}
 }
